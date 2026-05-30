@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
+import "./globals.css";
 
 export const metadata = {
-  title: "PermitPilot",
+  title: "PermitPilot Truth Engine",
   description: "Dynamic EHS research graph MVP"
 };
 
