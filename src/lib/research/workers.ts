@@ -58,7 +58,8 @@ function runResearchTask(task: ResearchTask, hypothesis: ResearchHypothesis): Ev
       }
     ],
     researcher_conclusion: preliminaryConclusion(hypothesis.id),
-    uncertainties: hypothesis.id === "H-WASTE-GENERATOR" ? ["Monthly hazardous waste quantity is missing."] : []
+    uncertainties: hypothesis.id === "H-WASTE-GENERATOR" ? ["Monthly hazardous waste quantity is missing."] : [],
+    permit_filing: fixture.permit_filing
   };
 }
 
