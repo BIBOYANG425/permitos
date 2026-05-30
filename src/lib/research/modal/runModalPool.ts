@@ -1,9 +1,21 @@
-import { spawn } from "node:child_process";
+import { spawn as nodeSpawn } from "node:child_process";
+import type { ChildProcess } from "node:child_process";
 import type { EvidenceBundle, ResearchHypothesis, ResearchTask } from "../types";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const BUNDLE_MARKER = "PERMITPILOT_BUNDLE_JSON ";
 const WORKER_SCRIPT = "src/lib/research/modal/worker.py";
+
+// Indirection so unit tests can inject a fake spawn without depending on
+// vitest's module-level vi.mock (which doesn't reach into source-file
+// imports of node:* modules in this project's vitest config).
+export type SpawnFn = (command: string, args: readonly string[]) => ChildProcess;
+const realSpawn: SpawnFn = (cmd, args) =>
+  nodeSpawn(cmd, args as string[], { stdio: ["ignore", "pipe", "pipe"] });
+let spawnImpl: SpawnFn = realSpawn;
+export function __setSpawnForTests(fn: SpawnFn | null): void {
+  spawnImpl = fn ?? realSpawn;
+}
 
 type SpawnFailure = {
   code: number | null;
@@ -54,7 +66,7 @@ async function runSingleTask(
 
 function spawnModalRun(argv: string[], timeoutMs: number): Promise<string> {
   return new Promise((resolve, reject) => {
-    const child = spawn("modal", argv, { stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawnImpl("modal", argv);
     let stdout = "";
     let stderr = "";
     let timedOut = false;
@@ -64,10 +76,10 @@ function spawnModalRun(argv: string[], timeoutMs: number): Promise<string> {
       child.kill("SIGKILL");
     }, timeoutMs);
 
-    child.stdout.on("data", (chunk: Buffer) => {
+    child.stdout?.on("data", (chunk: Buffer) => {
       stdout += chunk.toString("utf8");
     });
-    child.stderr.on("data", (chunk: Buffer) => {
+    child.stderr?.on("data", (chunk: Buffer) => {
       stderr += chunk.toString("utf8");
     });
 
