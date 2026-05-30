@@ -1,37 +1,61 @@
+@import "tailwindcss";
+
+/*
+ * Compatibility shim: existing inline-styled components still reference
+ * these CSS vars via `var(--bg)` etc. We re-point them at Tailwind
+ * slate/emerald/amber/red/orange hexes so un-converted components inherit
+ * the same dark slate aesthetic as the converted ones.
+ */
 :root {
-  --bg: #0f1115;
-  --panel: #161922;
-  --panel-2: #1b1f2a;
-  --border: #262b38;
-  --text: #e6e8ee;
-  --text-dim: #9aa3b2;
-  --accent: #5b9bd5;
-  --green: #3ecf8e;
-  --yellow: #f5c451;
-  --red: #ef5a6f;
-  --orange: #f59e0b;
-  --gray: #6b7280;
+  --bg: #020617;          /* slate-950 */
+  --panel: #0f172a;       /* slate-900 */
+  --panel-2: #1e293b;     /* slate-800 */
+  --border: #334155;      /* slate-700 */
+  --text: #f1f5f9;        /* slate-100 */
+  --text-dim: #94a3b8;    /* slate-400 */
+  --accent: #38bdf8;      /* sky-400 */
+  --green: #10b981;       /* emerald-500 */
+  --yellow: #f59e0b;      /* amber-500 */
+  --red: #ef4444;         /* red-500 */
+  --orange: #f97316;      /* orange-500 */
+  --gray: #64748b;        /* slate-500 */
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #020617;          /* slate-950 */
+  color: #f1f5f9;               /* slate-100 */
+  font-family: system-ui, -apple-system, sans-serif;
+}
 
+/*
+ * Node styling stays in CSS because React Flow drives state via the
+ * `data-status` attribute. Colors mirror Tailwind's slate/emerald/red/orange
+ * so the whole graph reads as part of the same dark theme.
+ */
 .node {
   padding: 8px 12px;
   border-radius: 8px;
-  border: 2px solid var(--border);
-  background: var(--panel);
+  border: 2px solid #334155;    /* slate-700 */
+  background: #0f172a;          /* slate-900 */
+  color: #f1f5f9;               /* slate-100 */
   font-size: 12px;
   min-width: 140px;
   transition: border-color 200ms, background 200ms, opacity 200ms;
 }
-.node[data-status="hidden"] { opacity: 0; pointer-events: none; }
-.node[data-status="pending"] { opacity: 0.5; border-color: var(--gray); }
-.node[data-status="running"] { border-color: var(--accent); border-style: dashed; animation: pulse 1.2s infinite; }
-.node[data-status="verified"] { border-color: var(--green); }
-.node[data-status="failed"] { border-color: var(--red); animation: shake 200ms; }
-.node[data-status="repairing"] { border-color: var(--orange); }
-.node[data-status="blocked"] { border-color: var(--gray); opacity: 0.6; }
+.node[data-status="hidden"]   { opacity: 0; pointer-events: none; }
+.node[data-status="pending"]  { opacity: 0.5; border-color: #475569; } /* slate-600 */
+.node[data-status="running"]  {
+  border-color: #38bdf8;        /* sky-400 */
+  border-style: dashed;
+  animation: pulse 1.2s infinite;
+}
+.node[data-status="verified"] { border-color: #10b981; }   /* emerald-500 */
+.node[data-status="failed"]   { border-color: #ef4444; animation: shake 200ms; } /* red-500 */
+.node[data-status="repairing"]{ border-color: #f97316; }   /* orange-500 */
+.node[data-status="blocked"]  { border-color: #475569; opacity: 0.6; } /* slate-600 */
 
 @keyframes pulse { 50% { opacity: 0.7; } }
 @keyframes shake {
@@ -40,6 +64,19 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); f
   75% { transform: translateX(4px); }
 }
 
-.row-verified { background: rgba(62, 207, 142, 0.08); }
-.row-needs-review { background: rgba(245, 196, 81, 0.12); }
-.row-failed { background: rgba(239, 90, 111, 0.12); }
+/*
+ * Matrix row tints. Kept as classes (used by ApplicabilityMatrix tr.className).
+ * Uses Tailwind palette hexes with low-alpha overlays so they read on slate-950.
+ */
+.row-verified     { background: rgba(16, 185, 129, 0.10); }  /* emerald-500/10 */
+.row-needs-review { background: rgba(245, 158, 11, 0.12); }  /* amber-500/12  */
+.row-failed       { background: rgba(239, 68, 68, 0.12); }   /* red-500/12    */
+
+/* React Flow controls — make them legible on dark slate. */
+.react-flow__controls button {
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  color: #f1f5f9;
+  fill: #f1f5f9;
+}
+.react-flow__controls button:hover { background: #1e293b; }
