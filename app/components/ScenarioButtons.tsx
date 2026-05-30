@@ -6,25 +6,19 @@ export function ScenarioButtons() {
   const startRun = useStore((s) => s.startRun);
   const isRunning = useStore((s) => s.isRunning);
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: 0.5 }}>Sample scenarios</div>
+    <div className="flex flex-col gap-2">
+      <div className="text-[11px] text-slate-400 uppercase tracking-wider">
+        Sample scenarios
+      </div>
       {SCENARIOS.map((s) => (
         <button
           key={s.id}
           disabled={isRunning}
           onClick={() => startRun(s.payload)}
-          style={{
-            padding: "10px 12px",
-            background: "var(--panel-2)",
-            color: "var(--text)",
-            border: "1px solid var(--border)",
-            borderRadius: 8,
-            textAlign: "left",
-            cursor: isRunning ? "wait" : "pointer",
-          }}
+          className="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-left text-slate-100 transition-colors disabled:opacity-50 disabled:cursor-wait"
         >
-          <div style={{ fontWeight: 600 }}>{s.label}</div>
-          <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 2 }}>{s.subtitle}</div>
+          <div className="font-semibold text-sm">{s.label}</div>
+          <div className="text-[11px] text-slate-400 mt-0.5">{s.subtitle}</div>
         </button>
       ))}
     </div>

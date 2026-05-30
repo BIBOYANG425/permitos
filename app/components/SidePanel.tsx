@@ -6,7 +6,10 @@ import { TraceStream } from "./TraceStream";
 
 export function SidePanel() {
   return (
-    <aside style={{ width: 360, borderLeft: "1px solid var(--border)", background: "var(--panel)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <aside
+      className="border-l border-slate-800 bg-slate-900 flex flex-col overflow-hidden"
+      style={{ width: 360 }}
+    >
       <VerificationSummary />
       <CoverageFamilyList />
       <RepairTicketsCard />

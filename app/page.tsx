@@ -10,11 +10,11 @@ import { useReplay } from "@/lib/ui/useReplay";
 export default function Page() {
   useReplay();
   return (
-    <div style={{ display: "grid", gridTemplateRows: "auto 1fr auto", height: "100vh" }}>
+    <div className="grid grid-rows-[auto_1fr_auto] h-screen bg-slate-950 text-slate-100">
       <Header />
-      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", overflow: "hidden", position: "relative" }}>
+      <div className="grid grid-cols-[320px_minmax(0,1fr)_360px] overflow-hidden relative">
         <InputPanel />
-        <main style={{ position: "relative", overflow: "hidden" }}>
+        <main className="relative overflow-hidden">
           <ResearchGraph />
         </main>
         <SidePanel />
