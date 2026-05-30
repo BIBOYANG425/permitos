@@ -1,4 +1,12 @@
-import type { ResearchRun, VerificationVerdict } from "@/lib/research/types";
+import type {
+  ResearchRun,
+  VerificationVerdict,
+  CoverageFamily,
+  CoverageFamilyStatus,
+  Determination,
+  EvidenceBundle,
+  RepairTicket,
+} from "@/lib/research/types";
 
 export type VerificationCounts = {
   verified: number;
@@ -102,4 +110,74 @@ export function getHypothesisState(
   if (last.phase === "repair_verification" && last.status === "done") return "verified";
   if (last.phase === "repair_verification" && last.status === "needs_review") return "failed";
   return "verified";
+}
+
+export type FamilyReport = {
+  family: CoverageFamily;
+  familyStatus: CoverageFamilyStatus;
+  determinations: Determination[];
+  evidenceBundles: EvidenceBundle[];
+  verdicts: VerificationVerdict[];
+  repairTickets: RepairTicket[];
+};
+
+export function groupDeterminationsByFamily(run: ResearchRun): Map<CoverageFamily, FamilyReport> {
+  const result = new Map<CoverageFamily, FamilyReport>();
+  const familyStatusMap = new Map(run.coverage_family_statuses.map((s) => [s.family, s]));
+  const evidenceByHyp = new Map(run.evidence_bundles.map((b) => [b.hypothesis_id, b]));
+  const lastVerdictByHyp = new Map<string, VerificationVerdict>();
+  for (const v of run.verification_verdicts) {
+    lastVerdictByHyp.set(v.hypothesis_id, v);
+  }
+  const ticketsByHyp = new Map<string, RepairTicket[]>();
+  for (const t of run.repair_tickets) {
+    const existing = ticketsByHyp.get(t.hypothesis_id) ?? [];
+    existing.push(t);
+    ticketsByHyp.set(t.hypothesis_id, existing);
+  }
+
+  run.research_graph.forEach((hypothesis, index) => {
+    const family = hypothesis.family;
+    if (!result.has(family)) {
+      const defaultStatus: CoverageFamilyStatus = familyStatusMap.get(family) ?? {
+        id: `cf-${family}`,
+        family,
+        status: "active",
+        reason: "",
+        project_facts_considered: [],
+        missing_facts: [],
+      };
+      result.set(family, {
+        family,
+        familyStatus: defaultStatus,
+        determinations: [],
+        evidenceBundles: [],
+        verdicts: [],
+        repairTickets: [],
+      });
+    }
+    const group = result.get(family)!;
+
+    const determination = run.determinations[index];
+    if (determination) {
+      group.determinations.push(determination);
+    }
+
+    const bundle = evidenceByHyp.get(hypothesis.id);
+    if (bundle) {
+      group.evidenceBundles.push(bundle);
+    }
+
+    const verdict = lastVerdictByHyp.get(hypothesis.id);
+    if (verdict) {
+      group.verdicts.push(verdict);
+    }
+
+    const tickets = ticketsByHyp.get(hypothesis.id);
+    if (tickets) {
+      group.repairTickets.push(...tickets);
+    }
+  });
+
+  return result;
 }
