@@ -6,6 +6,7 @@ import type {
   ResearchTask,
   ScopePack
 } from "./types";
+import { blockedToolIdsForRole, researchWorkerToolIds } from "./toolCatalog";
 
 const coverageFamilies: CoverageFamily[] = ["air", "stormwater", "hazmat", "waste", "wastewater"];
 
@@ -234,8 +235,8 @@ function taskForHypothesis(hypothesis: ResearchHypothesis): ResearchTask {
     task_id: `T-${hypothesis.id.slice(2)}`,
     hypothesis_id: hypothesis.id,
     assigned_agent: `${hypothesis.family}_researcher`,
-    allowed_tools: ["seed_source_cache", "official_web_fetch", "citation_extractor", "predicate_evaluator"],
-    blocked_tools: ["memory_write", "final_report_write"],
+    allowed_tools: researchWorkerToolIds(),
+    blocked_tools: blockedToolIdsForRole("researcher"),
     budget: {
       max_sources: 3,
       max_runtime_seconds: 30,

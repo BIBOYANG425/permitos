@@ -24,6 +24,7 @@ Read these in order:
 6. [Product and Build Plan](./ehs-permit-agent-autoplan-review.md)
 7. [Agent Control Loop Contract](./ehs-agent-control-loop-ceo-review.md)
 8. [Test and Eval Plan](./ehs-agent-test-plan.md)
+9. [Harness V Tool Catalog](./docs/HARNESS_V_TOOL_CATALOG.md)
 
 ## Tooling Story
 

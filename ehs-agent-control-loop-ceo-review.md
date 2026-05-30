@@ -433,6 +433,82 @@ Recommended permissions:
 | Synthesis Agent | verified verdicts, matrix/report renderer | unverified source fetch |
 | Memory Writer | verified report, source hashes, run metrics | unverified discoveries |
 
+## Verification Model
+
+The verifier is not one model pass that decides whether the answer "looks right." It is a child harness governed by the parent harness. It verifies artifacts against external or deterministic evidence, then returns structured pass/fail/needs-review results to the parent.
+
+Core rule:
+
+> The agent should never be the sole judge of its own correctness when the claim can be checked against fetched text, dates, hashes, schema, registry rows, a second source, or an eval set.
+
+### Level 1: Claim Verification
+
+Question: did this one permit-applies claim hold up?
+
+Artifact checked: `EvidenceBundle` plus `Determination`.
+
+Checks:
+
+| Check | External thing it checks against | Failure behavior |
+|---|---|---|
+| Currency | Effective, amended, superseded, or fetched dates. | Cap confidence and mark `needs_review` when currency is unconfirmed. |
+| Authority | Source rank and source pointer allowlist. | Prefer primary `.gov`; flag weak authority. |
+| Grounding | Fetched text and verbatim quote span. | Fail if the triggering clause cannot be located in current text. |
+| Predicate math | Typed project facts and extracted thresholds. | Fail or request missing facts when threshold comparison cannot be reproduced. |
+| Cross-source | A second authority pointer for high-stakes claims. | Flag conflict or low confidence. |
+
+Output: a structured `VerificationVerdict` per hypothesis. It is not "looks right." Any failed check caps confidence and can create a `RepairTicket`.
+
+### Level 2: Consistency Verification
+
+Question: does the determination hold up under perturbation?
+
+Run the determination several times with varied phrasing, ordering, or candidate presentation. Stable permit sets increase confidence. Instability is not just a low confidence score; it localizes the fact or predicate that is flipping the answer.
+
+Use this as a missing-information detector. Cap the loop. Reflection without a named decision-relevant gap is mostly confirmatory and should not run unbounded.
+
+### Level 3: Set And Coverage Verification
+
+Question: did the system miss anything?
+
+This is the most important verifier for permit work because omission is the dominant failure mode. You cannot verify a permit that was never generated.
+
+Coverage verifier requirements:
+
+- Every coverage family inspected by the coverage floor has an explicit status.
+- Every candidate permit program has an applies, does-not-apply, threshold-not-met, needs-review, or out-of-scope disposition with a basis.
+- Exemption-exceptions are checked, especially SCAQMD Rule 219-style traps.
+- Narrative catch-alls are checked, especially stormwater activity triggers that may apply regardless of SIC.
+- Comparable precedent, when available and provenance-bound, is used as a cross-check rather than trusted law.
+- No regulatory family disappears silently because the user did not ask about it.
+
+Output: a set-level verification record. A single passing claim does not allow synthesis if the candidate set still has silent holes.
+
+### Level 4: Process And Trace Verification
+
+Question: did the agent actually do the checks it claims?
+
+This is a mechanical check over the audit log and trace. It should be runnable without asking the model to believe itself.
+
+Process verifier requirements:
+
+- Every `applies=true` row has a fetched source.
+- Every cited source has a content hash.
+- Every quote shown to the user exists as an extracted quote span from that source.
+- No determination cites a source that was never fetched or cached.
+- No form is emitted unless it comes from a `human_verified=true` registry row.
+- Every repair ticket traces to a failed check and bounded repair action.
+- Every state-mutating tool call has a corresponding audit-log entry.
+
+If this check fails, the output is blocked even if the natural-language answer sounds good.
+
+### Verification Stop Rules
+
+- `schema_gate` is the hard stop before client-facing output.
+- Confidence below the calibrated threshold means abstain or escalate, not ship with nicer prose.
+- Unable to confirm currency is a successful verification catch, not a failed product moment.
+- The verifier may request repair through the parent harness, but it should not silently broaden its own tool permissions.
+
 ## Repair Loop
 
 Repair should fix the run, not mutate global skills.
