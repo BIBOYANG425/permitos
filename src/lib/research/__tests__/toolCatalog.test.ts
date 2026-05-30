@@ -81,7 +81,7 @@ describe("harness tool catalog", () => {
   });
 
   it("plans research tasks with cataloged tool ids", () => {
-    const catalogIds = new Set(harnessToolCatalog.map((tool) => tool.id));
+    const catalogIds = new Set<string>(harnessToolCatalog.map((tool) => tool.id));
     const plan = planResearch(seededComplexScope("run_tools", "demo"));
 
     expect(plan.research_tasks.length).toBeGreaterThanOrEqual(5);
