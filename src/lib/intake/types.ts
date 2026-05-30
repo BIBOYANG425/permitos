@@ -1,4 +1,6 @@
-export type ChatRole = "system" | "user" | "assistant";
+// Public ChatRole only — server-trusted system prompt is added in the route handler
+// and must NOT be reachable from the client (prevents prompt injection).
+export type ChatRole = "user" | "assistant";
 
 export type ChatMessage = {
   role: ChatRole;

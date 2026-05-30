@@ -69,9 +69,7 @@ export function IntakeChat({ onStarted, onSkip }: Props) {
           </button>
         </div>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
-          {messages
-            .filter((message) => message.role !== "system")
-            .map((message, index) => (
+          {messages.map((message, index) => (
               <div key={index} className={message.role === "user" ? "text-right" : "text-left"}>
                 <span
                   className={`inline-block rounded px-3 py-2 text-sm ${
