@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { ResearchRun, VerificationVerdict, RepairTicket, EvidenceBundle, Determination } from "@/lib/research/types";
-import { getVerificationCounts, getRepairHistory, isHypothesisVisible } from "../selectors";
+import type { ResearchRun, VerificationVerdict, RepairTicket, EvidenceBundle, Determination, ResearchHypothesis } from "@/lib/research/types";
+import { getVerificationCounts, getRepairHistory, isHypothesisVisible, hypothesisIdForDeterminationIndex } from "../selectors";
 
 function makeRun(overrides: Partial<ResearchRun> = {}): ResearchRun {
   return {
@@ -73,6 +73,29 @@ describe("getRepairHistory", () => {
 
   it("returns empty array when no repair", () => {
     expect(getRepairHistory(makeRun(), "nope")).toEqual([]);
+  });
+});
+
+describe("hypothesisIdForDeterminationIndex", () => {
+  // Contract: src/lib/research/synthesis.ts builds determinations via
+  // hypotheses.map(...), so determinations[i] is 1:1 with research_graph[i].
+  // Credit: pattern borrowed from BIBOYANG425's PR #1 / src/lib/researchSelectors.ts.
+  it("returns the hypothesis id at the same index", () => {
+    const hyps = [
+      { id: "hyp_air", angle_id: "a", family: "air", question: "?", required_facts: [], expected_source_type: "regulation", success_criteria: [], dependencies: [] },
+      { id: "hyp_hmbp", angle_id: "a", family: "hazmat", question: "?", required_facts: [], expected_source_type: "regulation", success_criteria: [], dependencies: [] },
+      { id: "hyp_stormwater", angle_id: "a", family: "stormwater", question: "?", required_facts: [], expected_source_type: "regulation", success_criteria: [], dependencies: [] },
+    ] as ResearchHypothesis[];
+    const run = makeRun({ research_graph: hyps });
+    expect(hypothesisIdForDeterminationIndex(run, 0)).toBe("hyp_air");
+    expect(hypothesisIdForDeterminationIndex(run, 1)).toBe("hyp_hmbp");
+    expect(hypothesisIdForDeterminationIndex(run, 2)).toBe("hyp_stormwater");
+  });
+
+  it("returns null for out-of-range index", () => {
+    const run = makeRun({ research_graph: [] });
+    expect(hypothesisIdForDeterminationIndex(run, 0)).toBeNull();
+    expect(hypothesisIdForDeterminationIndex(run, 5)).toBeNull();
   });
 });
 

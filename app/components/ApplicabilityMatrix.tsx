@@ -1,6 +1,6 @@
 "use client";
 import { useStore } from "@/lib/ui/store";
-import type { ResearchRun } from "@/lib/research/types";
+import { hypothesisIdForDeterminationIndex } from "@/lib/ui/selectors";
 
 export function ApplicabilityMatrix() {
   const run = useStore((s) => s.run);
@@ -14,13 +14,17 @@ export function ApplicabilityMatrix() {
       <div className="p-3 text-slate-400 text-xs">Matrix builds when replay completes…</div>
     );
 
-  const rows = run.determinations.filter((d) => {
-    if (filter === "all") return true;
-    if (filter === "verified") return d.verified;
-    if (filter === "needs_review") return d.review_flag;
-    if (filter === "failed") return !d.verified && !d.review_flag;
-    return true;
-  });
+  // Capture original index BEFORE filtering so hypothesisIdForDeterminationIndex
+  // resolves to the correct research_graph entry (filter changes positional index).
+  const rows = run.determinations
+    .map((d, originalIndex) => ({ d, originalIndex }))
+    .filter(({ d }) => {
+      if (filter === "all") return true;
+      if (filter === "verified") return d.verified;
+      if (filter === "needs_review") return d.review_flag;
+      if (filter === "failed") return !d.verified && !d.review_flag;
+      return true;
+    });
   if (rows.length === 0)
     return (
       <div className="p-3 text-slate-400 text-xs">
@@ -46,16 +50,16 @@ export function ApplicabilityMatrix() {
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-800">
-          {rows.map((d, i) => {
+          {rows.map(({ d, originalIndex }) => {
             const tone = d.verified
               ? "bg-emerald-950/30 hover:bg-emerald-900/40"
               : d.review_flag
               ? "bg-amber-950/30 hover:bg-amber-900/40"
               : "bg-red-950/30 hover:bg-red-900/40";
-            const hypId = inferHypIdFromRequirement(d.requirement, run);
+            const hypId = hypothesisIdForDeterminationIndex(run, originalIndex);
             return (
               <tr
-                key={i}
+                key={originalIndex}
                 className={`${tone} transition-colors ${
                   hypId ? "cursor-pointer" : "cursor-default"
                 }`}
@@ -87,12 +91,3 @@ export function ApplicabilityMatrix() {
   );
 }
 
-function inferHypIdFromRequirement(req: string, run: ResearchRun): string | null {
-  const lower = req.toLowerCase();
-  const hit = run.research_graph.find(
-    (h) =>
-      lower.includes(h.id.toLowerCase()) ||
-      h.question.toLowerCase().includes(lower.split(" ")[0] ?? "")
-  );
-  return hit?.id ?? null;
-}

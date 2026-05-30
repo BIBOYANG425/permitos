@@ -52,6 +52,21 @@ export function getRepairHistory(run: ResearchRun, hypothesisId: string): Repair
   });
 }
 
+/**
+ * Resolve a determination row back to its hypothesis id by index alignment.
+ *
+ * Contract: src/lib/research/synthesis.ts builds `determinations` via
+ * `hypotheses.map(...)`, so `run.determinations[i]` corresponds to
+ * `run.research_graph[i]`. This is the actual data contract, not a
+ * fuzzy text match.
+ *
+ * Credit: pattern absorbed from BIBOYANG425's PR #1
+ * (src/lib/researchSelectors.ts#hypothesisIdForDeterminationIndex).
+ */
+export function hypothesisIdForDeterminationIndex(run: ResearchRun, index: number): string | null {
+  return run.research_graph[index]?.id ?? null;
+}
+
 export function isHypothesisVisible(run: ResearchRun, _hypothesisId: string, replayedIds: Set<string>): boolean {
   const trigger = run.trace_events.find((e) => e.phase === "task_graph" && e.status === "done");
   if (!trigger) return false;
