@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ResearchRun, ResearchRunInput } from "@/lib/research/types";
+import type { ResearchRun, ResearchRunInput, CoverageFamily } from "@/lib/research/types";
 
 export type ReplaySpeed = 1 | 2;
 
@@ -15,6 +15,9 @@ export type Store = {
   drawerOpen: boolean;
   replaySpeed: ReplaySpeed;
   matrixFilter: MatrixFilter;
+  reportFamily: CoverageFamily | null;
+  openReport: (family: CoverageFamily) => void;
+  closeReport: () => void;
   startRun: (payload: ResearchRunInput) => Promise<void>;
   tickReplay: (eventId: string) => void;
   finishReplay: () => void;
@@ -34,6 +37,7 @@ const initial = {
   drawerOpen: false,
   replaySpeed: 1 as ReplaySpeed,
   matrixFilter: "all" as MatrixFilter,
+  reportFamily: null as CoverageFamily | null,
 };
 
 export const useStore = create<Store>((set, get) => ({
@@ -64,5 +68,7 @@ export const useStore = create<Store>((set, get) => ({
   setDrawerOpen: (drawerOpen) => set({ drawerOpen }),
   setSpeed: (replaySpeed) => set({ replaySpeed }),
   setMatrixFilter: (matrixFilter) => set({ matrixFilter }),
+  openReport: (family) => set({ reportFamily: family }),
+  closeReport: () => set({ reportFamily: null }),
   reset: () => set({ ...initial, replayedEventIds: new Set() }),
 }));
