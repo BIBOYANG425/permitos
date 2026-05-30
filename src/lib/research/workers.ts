@@ -2,6 +2,11 @@ import type { EvidenceBundle, ResearchHypothesis, ResearchTask } from "./types";
 import { sourceFixtures } from "./fixtures/sources";
 
 export async function runLocalResearchPool(tasks: ResearchTask[], hypotheses: ResearchHypothesis[]) {
+  if (process.env.USE_MODAL === "1") {
+    const { runModalResearchPool } = await import("./modal/runModalPool");
+    return runModalResearchPool(tasks, hypotheses);
+  }
+
   const byId = new Map(hypotheses.map((hypothesis) => [hypothesis.id, hypothesis]));
   const settled = await Promise.allSettled(
     tasks.map(async (task) => {
