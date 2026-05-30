@@ -6,14 +6,21 @@ export function MissingFactsCard() {
   const missing = run?.scope_pack?.missing_facts ?? [];
   if (missing.length === 0) return null;
   return (
-    <div style={{ background: "var(--panel-2)", border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
-      <div style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", marginBottom: 8 }}>Missing facts ({missing.length})</div>
+    <div className="bg-slate-800 border border-slate-700 rounded-lg p-3">
+      <div className="text-[11px] text-slate-400 uppercase tracking-wider mb-2">
+        Missing facts ({missing.length})
+      </div>
       {missing.map((m) => (
-        <div key={m.field} style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 12, color: "var(--yellow)" }}>⚠ {m.field}</div>
-          <div style={{ fontSize: 11, color: "var(--text-dim)" }}>{m.why_needed}</div>
-          <div style={{ fontSize: 11, color: "var(--text-dim)" }}>Blocks: {m.blocks.join(", ")}</div>
-          <input disabled placeholder="Provide value (v2)" title="v2 feature" style={{ marginTop: 4, width: "100%", padding: "4px 6px", background: "var(--bg)", color: "var(--text-dim)", border: "1px solid var(--border)", borderRadius: 4 }} />
+        <div key={m.field} className="mb-2.5 last:mb-0">
+          <div className="text-xs text-amber-500">⚠ {m.field}</div>
+          <div className="text-[11px] text-slate-400">{m.why_needed}</div>
+          <div className="text-[11px] text-slate-400">Blocks: {m.blocks.join(", ")}</div>
+          <input
+            disabled
+            placeholder="Provide value (v2)"
+            title="v2 feature"
+            className="mt-1 w-full px-1.5 py-1 bg-slate-950 text-slate-400 border border-slate-700 rounded text-xs cursor-not-allowed"
+          />
         </div>
       ))}
     </div>

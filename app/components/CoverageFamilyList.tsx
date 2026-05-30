@@ -2,22 +2,26 @@
 import { useStore } from "@/lib/ui/store";
 
 const COLORS: Record<string, string> = {
-  active: "var(--green)",
-  blocked_missing_fact: "var(--yellow)",
-  out_of_scope: "var(--text-dim)",
-  discovery_candidate: "var(--accent)",
+  active: "text-emerald-500",
+  blocked_missing_fact: "text-amber-500",
+  out_of_scope: "text-slate-500",
+  discovery_candidate: "text-sky-400",
 };
 
 export function CoverageFamilyList() {
   const run = useStore((s) => s.run);
   if (!run) return null;
   return (
-    <div style={{ padding: 12, borderBottom: "1px solid var(--border)" }}>
-      <div style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", marginBottom: 8 }}>Coverage families</div>
+    <div className="p-3 border-b border-slate-800">
+      <div className="text-[11px] text-slate-400 uppercase tracking-wider mb-2">
+        Coverage families
+      </div>
       {run.coverage_family_statuses.map((c) => (
-        <div key={c.id} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 12 }}>
+        <div key={c.id} className="flex justify-between py-1 text-xs text-slate-100">
           <span>{c.family}</span>
-          <span style={{ color: COLORS[c.status] ?? "var(--text-dim)", fontSize: 11 }}>{c.status.replace(/_/g, " ")}</span>
+          <span className={`text-[11px] ${COLORS[c.status] ?? "text-slate-400"}`}>
+            {c.status.replace(/_/g, " ")}
+          </span>
         </div>
       ))}
     </div>

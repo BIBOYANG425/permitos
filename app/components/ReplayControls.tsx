@@ -9,11 +9,31 @@ export function ReplayControls() {
   const run = useStore((s) => s.run);
   if (!run) return null;
   return (
-    <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6, padding: 6, background: "var(--panel-2)", border: "1px solid var(--border)", borderRadius: 8, zIndex: 10 }}>
+    <div className="absolute top-3 right-3 flex gap-1.5 p-1.5 bg-slate-800/90 backdrop-blur border border-slate-700 rounded-lg z-10 shadow-lg">
       {([1, 2] as const).map((s) => (
-        <button key={s} onClick={() => setSpeed(s)} style={{ padding: "2px 8px", background: speed === s ? "var(--accent)" : "transparent", color: speed === s ? "white" : "var(--text-dim)", border: 0, borderRadius: 4, cursor: "pointer", fontSize: 11 }}>{s}×</button>
+        <button
+          key={s}
+          onClick={() => setSpeed(s)}
+          className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
+            speed === s
+              ? "bg-sky-500 text-white"
+              : "bg-transparent text-slate-400 hover:text-slate-100"
+          }`}
+        >
+          {s}×
+        </button>
       ))}
-      <button disabled={replayDone} onClick={skipReplay} style={{ padding: "2px 8px", background: "transparent", color: replayDone ? "var(--text-dim)" : "var(--text)", border: "1px solid var(--border)", borderRadius: 4, cursor: replayDone ? "default" : "pointer", fontSize: 11 }}>Skip</button>
+      <button
+        disabled={replayDone}
+        onClick={skipReplay}
+        className={`px-2 py-0.5 bg-transparent border border-slate-700 rounded text-[11px] transition-colors ${
+          replayDone
+            ? "text-slate-500 cursor-default"
+            : "text-slate-100 hover:bg-slate-700 cursor-pointer"
+        }`}
+      >
+        Skip
+      </button>
     </div>
   );
 }
