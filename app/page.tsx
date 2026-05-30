@@ -2,6 +2,7 @@
 import { Header } from "./components/Header";
 import { InputPanel } from "./components/InputPanel";
 import { ResearchGraph } from "./components/ResearchGraph";
+import { SidePanel } from "./components/SidePanel";
 import { useReplay } from "@/lib/ui/useReplay";
 
 export default function Page() {
@@ -14,9 +15,7 @@ export default function Page() {
         <main style={{ position: "relative", overflow: "hidden" }}>
           <ResearchGraph />
         </main>
-        <aside style={{ width: 360, borderLeft: "1px solid var(--border)", background: "var(--panel)" }}>
-          <div style={{ padding: 20, color: "var(--text-dim)" }}>(side panel — Task 9)</div>
-        </aside>
+        <SidePanel />
       </div>
       <section style={{ borderTop: "1px solid var(--border)", background: "var(--panel)", maxHeight: 320, overflow: "auto" }}>
         <div style={{ padding: 20, color: "var(--text-dim)" }}>(bottom panel — Task 10)</div>
