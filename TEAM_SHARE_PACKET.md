@@ -31,15 +31,17 @@ Read these in order:
 
 1. [Hackathon Demo Design](./HACKATHON_DEMO_DESIGN.md)
    - The "whoa" moment, judge story, demo spine, and build focus.
-2. [Hacker Resources](./HACKER_RESOURCES.md)
+2. [Two-Person Build Split](./TWO_PERSON_BUILD_SPLIT.md)
+   - Complete Person A / Person B task split. User owns A; teammate owns B.
+3. [Hacker Resources](./HACKER_RESOURCES.md)
    - Credits and sponsor docs/blogs we should use.
-3. [Tool Integration Plan](./TOOL_INTEGRATION_PLAN.md)
+4. [Tool Integration Plan](./TOOL_INTEGRATION_PLAN.md)
    - How Raindrop, Modal, and OpenAI Agents SDK fit together.
-4. [Product and Build Plan](./ehs-permit-agent-autoplan-review.md)
+5. [Product and Build Plan](./ehs-permit-agent-autoplan-review.md)
    - Product framing, demo scope, build order, team split.
-5. [Agent Control Loop Contract](./ehs-agent-control-loop-ceo-review.md)
+6. [Agent Control Loop Contract](./ehs-agent-control-loop-ceo-review.md)
    - Agent roles, typed artifacts, harness permissions, repair loop, memory rules.
-6. [Test and Eval Plan](./ehs-agent-test-plan.md)
+7. [Test and Eval Plan](./ehs-agent-test-plan.md)
    - Golden cases, edge cases, UI flows, acceptance checklist.
 
 ## Hacker Resources
@@ -119,6 +121,8 @@ CoverageFamily
 The coverage floor should inspect air, stormwater, hazmat, waste, and wastewater, but those families are not the hypotheses. The planner must create fact-specific questions under each active family.
 
 ## Who Owns What
+
+Full implementation split: [Two-Person Build Split](./TWO_PERSON_BUILD_SPLIT.md).
 
 ### Person A: Backend, Sources, Verification
 

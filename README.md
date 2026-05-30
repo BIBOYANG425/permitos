@@ -17,12 +17,13 @@ The demo target:
 Read these in order:
 
 1. [Team Share Packet](./TEAM_SHARE_PACKET.md)
-2. [Hackathon Demo Design](./HACKATHON_DEMO_DESIGN.md)
-3. [Hacker Resources](./HACKER_RESOURCES.md)
-4. [Tool Integration Plan](./TOOL_INTEGRATION_PLAN.md)
-5. [Product and Build Plan](./ehs-permit-agent-autoplan-review.md)
-6. [Agent Control Loop Contract](./ehs-agent-control-loop-ceo-review.md)
-7. [Test and Eval Plan](./ehs-agent-test-plan.md)
+2. [Two-Person Build Split](./TWO_PERSON_BUILD_SPLIT.md)
+3. [Hackathon Demo Design](./HACKATHON_DEMO_DESIGN.md)
+4. [Hacker Resources](./HACKER_RESOURCES.md)
+5. [Tool Integration Plan](./TOOL_INTEGRATION_PLAN.md)
+6. [Product and Build Plan](./ehs-permit-agent-autoplan-review.md)
+7. [Agent Control Loop Contract](./ehs-agent-control-loop-ceo-review.md)
+8. [Test and Eval Plan](./ehs-agent-test-plan.md)
 
 ## Tooling Story
 
