@@ -32,6 +32,10 @@ OpenAI Agents SDK is the agent control loop, Modal is the elastic execution laye
 Next.js Intake UI
   -> OpenAI Agents SDK Scope Agent
   -> OpenAI Agents SDK Orchestrator Agent
+       - coverage families are checked for completeness
+       - regulatory angles are generated from project facts
+       - specific hypotheses are generated under each angle
+       - source-check tasks are generated per hypothesis
   -> Modal dynamic research fan-out
        - one Modal job per ResearchTask
        - each job runs a scoped Research Worker
@@ -46,6 +50,99 @@ Next.js Intake UI
   -> OpenAI trace / Raindrop trace / in-app trace panel
 ```
 
+## Research Graph Shape
+
+Do not treat the six EHS domains as the execution model. They are coverage families only.
+
+The execution model is a dynamic research graph:
+
+```text
+CoverageFamily
+  -> RegulatoryAngle
+    -> ResearchHypothesis
+      -> ResearchTask
+        -> EvidenceBundle
+```
+
+Coverage families force the planner to inspect broad regulatory territory. They should not become fixed checklist rows or fixed agents.
+
+Examples:
+
+```text
+air
+  -> new emitting equipment
+    -> Does the coating booth require an SCAQMD Permit to Construct?
+    -> Is the equipment exempt under Rule 219?
+    -> Does Rule 222 registration apply instead?
+    -> Do solvent VOC emissions trigger additional review?
+
+hazmat
+  -> hazardous material inventory
+    -> Does 60 gallons of flammable solvent exceed HMBP liquid thresholds?
+    -> Does lithium battery storage trigger CUPA hazardous material disclosure?
+    -> Is fire-code hazardous material inventory review needed?
+
+waste
+  -> spent solvent and battery handling
+    -> Does spent solvent make the facility a hazardous waste generator?
+    -> Is monthly generation enough to classify SQG/LQG?
+    -> Are lithium batteries universal waste, hazardous waste, or recyclable material?
+
+stormwater
+  -> industrial activity and construction disturbance
+    -> Does SIC/NAICS trigger Industrial General Permit coverage?
+    -> Does construction disturb 1 or more acres?
+    -> Is no-exposure certification plausible or blocked by outdoor operations?
+
+wastewater
+  -> process discharge
+    -> Does solvent cleaning create industrial wastewater discharge?
+    -> Is local pretreatment review needed?
+    -> Is zero-discharge claimed, documented, or missing?
+```
+
+Recommended artifact additions:
+
+```ts
+type CoverageFamily =
+  | "air"
+  | "stormwater"
+  | "hazmat"
+  | "waste"
+  | "wastewater"
+  | "land_use"
+  | "fire_code"
+  | "ceqa"
+  | "osha";
+
+type RegulatoryAngle = {
+  id: string;
+  family: CoverageFamily;
+  label: string;
+  reason: string;
+  triggering_facts: string[];
+  status: "active" | "blocked_missing_fact" | "out_of_scope" | "discovery_candidate";
+};
+
+type ResearchHypothesis = {
+  id: string;
+  angle_id: string;
+  question: string;
+  claim_to_test?: string;
+  required_facts: string[];
+  expected_source_type:
+    | "statute"
+    | "regulation"
+    | "agency_guidance"
+    | "permit_portal"
+    | "technical_doc";
+  success_criteria: string[];
+  dependencies: string[];
+};
+```
+
+This lets a simple project create a small graph while a complex facility creates many more angles and source tasks. That is the demo proof that project complexity determines agent count.
+
 ## How We Use OpenAI Agents SDK
 
 The SDK is our code-first agent harness.
@@ -53,7 +150,7 @@ The SDK is our code-first agent harness.
 We define these as Agents SDK agents:
 
 - `ScopeAgent`: turns intake into `ScopePack`.
-- `OrchestratorAgent`: creates `ResearchHypothesis[]` and `ResearchTask[]`.
+- `OrchestratorAgent`: creates `CoverageFamilyStatus[]`, `RegulatoryAngle[]`, `ResearchHypothesis[]`, and `ResearchTask[]`.
 - `ResearchWorker`: scoped template used inside each Modal job.
 - `VerifierAgent`: emits `VerificationVerdict` and `RepairTicket`.
 - `SynthesisAgent`: emits the final matrix and report.
@@ -63,7 +160,7 @@ Implementation pattern:
 
 - Prefer manager-style orchestration: the orchestrator keeps control and calls specialists as bounded tools.
 - Use handoffs only when a specialist should own a full phase.
-- Use structured outputs for every artifact: `ScopePack`, `ResearchTask`, `EvidenceBundle`, `VerificationVerdict`, `RepairTicket`, `Determination`, and `GatedMemoryWrite`.
+- Use structured outputs for every artifact: `ScopePack`, `CoverageFamilyStatus`, `RegulatoryAngle`, `ResearchTask`, `EvidenceBundle`, `VerificationVerdict`, `RepairTicket`, `Determination`, and `GatedMemoryWrite`.
 - Use guardrails around final output, tool calls with side effects, and memory writes.
 - Wrap each run in a trace so we can see model calls, tool calls, handoffs, guardrails, and custom artifact events.
 
@@ -94,14 +191,14 @@ Use Modal for:
 Fan-out rule:
 
 ```text
-worker_count = scoped research hypotheses + required source-check subtasks
+worker_count = specific research hypotheses + required source-check subtasks
 ```
 
 Examples:
 
-- Simple tenant improvement: 4-6 Modal research jobs.
-- Coating booth plus hazardous liquid demo: 8-12 Modal research jobs.
-- Complex EV battery recycling facility: 25+ Modal research jobs.
+- Simple tenant improvement: a few coverage families inspected, 4-6 source tasks.
+- Coating booth plus hazardous liquid demo: multiple active angles, 8-12 source tasks.
+- Complex EV battery recycling facility: many active angles and follow-up source checks, 25+ source tasks.
 
 What not to do:
 
@@ -137,19 +234,20 @@ What not to do:
 The judge should see this sequence:
 
 1. Intake produces a `ScopePack`.
-2. OpenAI Agents SDK orchestrator creates hypotheses.
-3. Modal launches visible dynamic research workers.
-4. Workers return `EvidenceBundle`s.
-5. OpenAI Agents SDK verifier rejects one unsupported claim.
-6. Orchestrator creates a `RepairTicket`.
-7. Modal launches one scoped repair worker.
-8. Verifier passes the repaired evidence or marks `Needs-review`.
-9. Synthesis produces the applicability matrix.
-10. Trace panel shows the whole chain; Raindrop can replay it backstage or as a quick debug reveal.
+2. OpenAI Agents SDK orchestrator checks coverage families.
+3. The orchestrator expands relevant families into regulatory angles and specific hypotheses.
+4. Modal launches visible dynamic research workers for the resulting source tasks.
+5. Workers return `EvidenceBundle`s.
+6. OpenAI Agents SDK verifier rejects one unsupported claim.
+7. Orchestrator creates a `RepairTicket`.
+8. Modal launches one scoped repair worker.
+9. Verifier passes the repaired evidence or marks `Needs-review`.
+10. Synthesis produces the applicability matrix.
+11. Trace panel shows the whole chain; Raindrop can replay it backstage or as a quick debug reveal.
 
 ## Build Order
 
-1. Define Pydantic/Zod schemas for artifacts.
+1. Define Pydantic/Zod schemas for artifacts, including coverage family statuses and regulatory angles.
 2. Implement local OpenAI Agents SDK loop with fake/cached sources.
 3. Add Modal `run_research_task(task)` for dynamic fan-out.
 4. Add source fetch/extract/hash inside the worker.

@@ -35,8 +35,9 @@ Why this wins:
    "A SoCal manufacturer is adding a coating booth and storing a new chemical."
 
 2. Dynamic fan-out
-   Orchestrator creates hypotheses across air, stormwater, hazmat, waste, wastewater.
-   Harness spawns N research workers based on scope.
+   Orchestrator inspects coverage families, expands active families into regulatory angles,
+   then creates specific hypotheses and source tasks.
+   Harness spawns N research workers based on the resulting graph.
 
 3. Evidence gathering
    Workers fetch official sources, extract quotes, and produce EvidenceBundles.

@@ -10,12 +10,13 @@ Status: implementation-ready QA/eval artifact
 Prove that the agent swarm can:
 
 1. turn intake into structured scope,
-2. create regulatory research hypotheses,
-3. retrieve primary sources,
-4. ground claims in exact quotes,
-5. verify or reject determinations,
-6. fail closed when evidence is missing,
-7. synthesize a defensible applicability matrix.
+2. inspect coverage families,
+3. expand active families into regulatory angles and specific hypotheses,
+4. retrieve primary sources,
+5. ground claims in exact quotes,
+6. verify or reject determinations,
+7. fail closed when evidence is missing,
+8. synthesize a defensible applicability matrix.
 
 ## Test Surfaces
 
@@ -23,7 +24,7 @@ Prove that the agent swarm can:
 |---|---|
 | Intake page | Validates facility facts, loads sample scenario, handles missing facts. |
 | Scope Agent | Produces `ScopePack` with assumptions and blockers. |
-| Orchestrator | Produces coverage floor, hypotheses, tasks, budgets. |
+| Orchestrator | Produces coverage family statuses, regulatory angles, hypotheses, tasks, budgets. |
 | Research Workers | Spawn dynamically by scope and produce `EvidenceBundle` with sources, quotes, hashes, extracted claims. |
 | Verifier | Produces `VerificationVerdict` with pass/fail checks and repair tickets. |
 | Repair Loop | Retries bounded failures and terminates as `Needs-review`. |
@@ -36,8 +37,8 @@ Prove that the agent swarm can:
 
 | ID | Scenario | Expected |
 |---|---|---|
-| EVAL-01 | LA metal finishing facility adds coating booth. | Air hypothesis created; source-backed SCAQMD permit determination; Rule 219 exemption/exclusion considered. |
-| EVAL-02 | Manufacturer with regulated SIC/NAICS. | Industrial stormwater hypothesis created; source-backed SMARTS/IGP row. |
+| EVAL-01 | LA metal finishing facility adds coating booth. | Air family active; emitting-equipment angle created; source-backed SCAQMD permit determination; Rule 219 exemption/exclusion considered. |
+| EVAL-02 | Manufacturer with regulated SIC/NAICS. | Stormwater family active; industrial activity angle created; source-backed SMARTS/IGP row. |
 | EVAL-03 | Facility stores 60 gallons hazardous liquid. | HMBP row applies; source-backed threshold quote. |
 | EVAL-04 | Facility stores 40 gallons hazardous liquid only. | HMBP standard liquid threshold does not apply unless another exception is found. |
 | EVAL-05 | Waste generation crosses LQG threshold with exact quantity. | Waste generator-status change flagged with cited threshold. |
@@ -87,15 +88,34 @@ Expected:
 - assumptions are recorded,
 - blocked hypotheses are named.
 
+### `CoverageFamilyStatus`
+
+Test:
+- every coverage family emits `active`, `blocked_missing_fact`, `out_of_scope`, or `discovery_candidate`,
+- each family records facts considered,
+- no family disappears silently.
+
+Expected:
+- coverage floor is a completeness guard, not a checklist of final determinations.
+
+### `RegulatoryAngle`
+
+Test:
+- active families expand into one or more fact-specific angles,
+- blocked or out-of-scope families do not spawn unnecessary source tasks,
+- discovery candidates stay untrusted until verified.
+
+Expected:
+- the graph shows why each family did or did not create deeper work.
+
 ### `ResearchHypothesis`
 
 Test:
-- every coverage-floor family emits a hypothesis, blocker, or out-of-scope reason,
 - each hypothesis has triggering facts,
 - each hypothesis has acceptance criteria.
 
 Expected:
-- no regulatory family disappears silently.
+- hypotheses are specific questions under regulatory angles, not broad family labels.
 
 ### `ResearchTask`
 
@@ -193,7 +213,7 @@ Steps:
 Expected:
 
 - stormwater does not disappear,
-- row or coverage-floor item says blocked by missing NAICS/SIC,
+- row or coverage family status says blocked by missing NAICS/SIC,
 - report asks for the missing fact.
 
 ### Flow 3: Failed Source
@@ -247,7 +267,9 @@ Expected:
 ```
 ProjectAttributes
   -> ScopePack
-  -> ResearchHypotheses
+  -> CoverageFamilyStatus[]
+  -> RegulatoryAngle[]
+  -> ResearchHypothesis[]
   -> ResearchTasks
   -> EvidenceBundles
   -> VerificationVerdicts

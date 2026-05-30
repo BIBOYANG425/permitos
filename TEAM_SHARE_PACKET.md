@@ -12,13 +12,14 @@ An AI-native EHS research swarm that turns a facility/project change into a defe
 The system:
 
 1. narrows customer intake into structured facts,
-2. creates research hypotheses,
-3. spawns as many scoped specialist research agents as the project needs,
-4. retrieves primary regulatory sources,
-5. verifies claims against exact source quotes and threshold math,
-6. repairs failed research once or twice,
-7. synthesizes a report,
-8. writes only verified, provenance-bound memories.
+2. inspects broad EHS coverage families,
+3. expands relevant families into regulatory angles and specific research hypotheses,
+4. spawns as many scoped specialist research agents as the project needs,
+5. retrieves primary regulatory sources,
+6. verifies claims against exact source quotes and threshold math,
+7. repairs failed research once or twice,
+8. synthesizes a report,
+9. writes only verified, provenance-bound memories.
 
 ## Hackathon Demo Claim
 
@@ -75,6 +76,7 @@ This proves the system is not just summarizing. It checks itself, repairs scoped
 - Use Raindrop for local trace debugging, replay, and eval creation; keep it out of the customer-critical runtime path.
 - Verifier owns truth.
 - Research agents are dynamic workers, not a fixed team size.
+- Coverage families are completeness guards, not fixed hypotheses or checklist rows.
 - Repair loop is bounded.
 - Memory writes are gated.
 - Final output is a human-review navigator, not legal advice or autonomous filing.
@@ -86,7 +88,9 @@ Use a deterministic orchestration pipeline with visible dynamic fan-out:
 ```
 Customer Intake
   -> ScopePack
-  -> ResearchHypotheses
+  -> CoverageFamilyStatus[]
+  -> RegulatoryAngle[]
+  -> ResearchHypothesis[]
   -> ResearchTasks
   -> EvidenceBundles
   -> VerificationVerdicts
@@ -102,6 +106,18 @@ This is the right hackathon compromise:
 - enough structure to demo reliably,
 - enough verification to feel credible.
 
+Planner rule:
+
+```
+CoverageFamily
+  -> RegulatoryAngle
+    -> ResearchHypothesis
+      -> ResearchTask
+        -> EvidenceBundle
+```
+
+The coverage floor should inspect air, stormwater, hazmat, waste, and wastewater, but those families are not the hypotheses. The planner must create fact-specific questions under each active family.
+
 ## Who Owns What
 
 ### Person A: Backend, Sources, Verification
@@ -114,7 +130,7 @@ This is the right hackathon compromise:
 
 ### Person B: Orchestration, Agents, UI
 
-- Build orchestrator and task graph.
+- Build coverage-family inspection, regulatory-angle expansion, and task graph.
 - Build dynamic researcher worker template and repair loop.
 - Build trace panel.
 - Build applicability matrix and evidence drawer.
@@ -123,6 +139,7 @@ This is the right hackathon compromise:
 Shared:
 
 - Artifact schemas.
+- Coverage family and regulatory angle taxonomy.
 - Determination JSON shape.
 - Trace event schema.
 - Golden eval cases.
@@ -130,7 +147,7 @@ Shared:
 ## Demo Must Show
 
 - ScopePack created from intake.
-- Hypotheses created across coverage-floor families.
+- Coverage families inspected, then expanded into fact-specific regulatory angles and hypotheses.
 - Dynamic research agents running in parallel, scaled to the project scope.
 - One verifier failure with visible repair ticket.
 - Source quote, URL, hash, and fetched date.

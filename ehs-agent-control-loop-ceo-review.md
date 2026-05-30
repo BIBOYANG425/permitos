@@ -48,8 +48,9 @@ CUSTOMER INTAKE
 +------------------------------+
 | Orchestrator                 |
 | Output: ResearchPlan         |
-| - coverage floor             |
-| - hypotheses                 |
+| - coverage family statuses   |
+| - regulatory angles          |
+| - specific hypotheses        |
 | - task graph                 |
 | - budgets                    |
 +--------------+---------------+
@@ -57,8 +58,8 @@ CUSTOMER INTAKE
                v
 +-----------------------------------------------------+
 | Dynamic Research Fan-Out                              |
-| N workers by scope: air, stormwater, hazmat, waste,   |
-| wastewater, source checks, discovery candidates       |
+| N workers by specific hypotheses, source checks,      |
+| missing-fact blockers, and discovery candidates       |
 | Output: EvidenceBundle[]                              |
 +----------------------+------------------------------+
                        |
@@ -101,6 +102,18 @@ The orchestrator owns planning. The verifier owns truth.
 
 Researchers are dynamic workers, not a fixed team size. The orchestrator should spawn as many as the scoped task graph requires, then enforce budgets, dedupe, and verification. Researchers can propose conclusions. They cannot make the final determination trustworthy by themselves. Trust comes from evidence plus verification.
 
+Coverage families are not hypotheses. They are completeness guards. The planner must inspect broad EHS families, then create more specific regulatory angles and research hypotheses only when project facts justify them.
+
+```text
+CoverageFamily
+  -> RegulatoryAngle
+    -> ResearchHypothesis
+      -> ResearchTask
+        -> EvidenceBundle
+```
+
+This keeps the product from becoming a fixed six-domain checklist. A simple project may inspect all families but activate only a few angles. A complex project can expand into many angles and source-check tasks.
+
 ## Required Typed Artifacts
 
 ### 1. `ScopePack`
@@ -141,7 +154,47 @@ Consumed by: Orchestrator
 }
 ```
 
-### 2. `ResearchHypothesis`
+### 2. `CoverageFamilyStatus`
+
+Produced by: Orchestrator
+Consumed by: Orchestrator, Trace UI, Synthesis Agent
+
+```json
+{
+  "id": "CF-AIR",
+  "family": "air",
+  "status": "active",
+  "reason": "Project adds a coating booth, which may be new emitting equipment.",
+  "project_facts_considered": ["new coating booth", "SCAQMD jurisdiction"],
+  "missing_facts": [],
+  "next": ["create_regulatory_angles"]
+}
+```
+
+Valid statuses:
+
+- `active`
+- `blocked_missing_fact`
+- `out_of_scope`
+- `discovery_candidate`
+
+### 3. `RegulatoryAngle`
+
+Produced by: Orchestrator
+Consumed by: Orchestrator, Research Workers
+
+```json
+{
+  "id": "A-AIR-EMITTING-EQUIPMENT",
+  "family": "air",
+  "label": "New or modified emitting equipment",
+  "reason": "A coating booth may emit regulated pollutants and require authorization before construction or operation.",
+  "triggering_facts": ["coating booth", "solvent use", "SCAQMD jurisdiction"],
+  "status": "active"
+}
+```
+
+### 4. `ResearchHypothesis`
 
 Produced by: Orchestrator
 Consumed by: Research Workers
@@ -149,9 +202,13 @@ Consumed by: Research Workers
 ```json
 {
   "id": "H-AIR-001",
-  "claim": "The new coating booth may require an SCAQMD Permit to Construct.",
-  "regime": "air",
+  "angle_id": "A-AIR-EMITTING-EQUIPMENT",
+  "question": "Does the new coating booth require an SCAQMD Permit to Construct?",
+  "claim_to_test": "The new coating booth may require an SCAQMD Permit to Construct before installation.",
+  "family": "air",
   "triggering_facts": ["new emitting equipment", "SCAQMD jurisdiction"],
+  "required_facts": ["equipment type", "jurisdiction", "emissions or exemption facts"],
+  "expected_source_type": "regulation",
   "must_find": [
     "current primary source for permit trigger",
     "exemption or exclusion rule",
@@ -166,7 +223,7 @@ Consumed by: Research Workers
 }
 ```
 
-### 3. `ResearchTask`
+### 5. `ResearchTask`
 
 Produced by: Orchestrator
 Consumed by: Harness
@@ -199,9 +256,9 @@ Fan-out rule:
 ```json
 {
   "spawn_policy": {
-    "unit": "one worker per hypothesis or source-check subtask",
-    "scale_with": ["regulatory_family", "jurisdiction", "source_count", "uncertainty"],
-    "min_workers": "number of relevant coverage-floor families",
+    "unit": "one worker per specific hypothesis or source-check subtask",
+    "scale_with": ["active_regulatory_angles", "jurisdiction", "source_count", "uncertainty"],
+    "min_workers": "enough tasks to represent every inspected coverage family status",
     "max_workers": "bounded by runtime/model/source budgets"
   }
 }
@@ -215,7 +272,7 @@ Examples:
 
 Do not hardcode a fixed agent count. Hardcode the roles, schemas, budgets, and verification gates.
 
-### 4. `EvidenceBundle`
+### 6. `EvidenceBundle`
 
 Produced by: Research Workers
 Consumed by: Verification Agent
@@ -251,7 +308,7 @@ Consumed by: Verification Agent
 }
 ```
 
-### 5. `VerificationVerdict`
+### 7. `VerificationVerdict`
 
 Produced by: Verification Agent
 Consumed by: Orchestrator and Synthesis Agent
@@ -287,7 +344,7 @@ Consumed by: Orchestrator and Synthesis Agent
 }
 ```
 
-### 6. `RepairTicket`
+### 8. `RepairTicket`
 
 Produced by: Verification Agent
 Consumed by: Orchestrator
@@ -304,7 +361,7 @@ Consumed by: Orchestrator
 }
 ```
 
-### 7. `Determination`
+### 9. `Determination`
 
 Produced by: Synthesis Agent
 Consumed by: UI/report
@@ -331,7 +388,7 @@ Consumed by: UI/report
 }
 ```
 
-### 8. `GatedMemoryWrite`
+### 10. `GatedMemoryWrite`
 
 Produced by: Memory Writer
 Consumed by: durable memory/store
@@ -412,10 +469,10 @@ The orchestrator must always inspect the same families before spawning specific 
 
 For each family, output one of:
 
-- hypothesis created,
-- missing fact blocks determination,
-- out of scope with reason,
-- needs discovery.
+- `active`: project facts justify one or more regulatory angles,
+- `blocked_missing_fact`: a required fact blocks determination,
+- `out_of_scope`: inspected with reason and no active work,
+- `discovery_candidate`: possible unseeded issue requiring human review.
 
 This is what prevents the system from only researching what the customer already knew to ask.
 
@@ -460,8 +517,8 @@ Blocked:
 
 - [ ] Define all artifact schemas.
 - [ ] Implement Scope Agent output as `ScopePack`.
-- [ ] Implement orchestrator coverage floor.
-- [ ] Implement `ResearchHypothesis` and `ResearchTask` creation.
+- [ ] Implement orchestrator coverage floor with `CoverageFamilyStatus`.
+- [ ] Implement `RegulatoryAngle`, `ResearchHypothesis`, and `ResearchTask` creation.
 - [ ] Implement dynamic researcher fan-out where each worker outputs an `EvidenceBundle`.
 - [ ] Implement verifier output as `VerificationVerdict`.
 - [ ] Implement bounded `RepairTicket` loop.
@@ -476,9 +533,10 @@ Use the linear pipeline with visible dynamic parallel research tasks for the hac
 Do not build a fully recursive swarm first. It is more exciting on paper but higher risk. The demo should prove:
 
 1. the orchestrator can form hypotheses,
-2. the harness can spawn as many research workers as the scoped task graph needs,
-3. verifier can reject bad evidence,
-4. the system can repair once,
-5. final report shows only verified or clearly flagged determinations.
+2. the planner can expand coverage families into specific regulatory angles,
+3. the harness can spawn as many research workers as the scoped task graph needs,
+4. verifier can reject bad evidence,
+5. the system can repair once,
+6. final report shows only verified or clearly flagged determinations.
 
 That is enough to look like a real autonomous research system.
