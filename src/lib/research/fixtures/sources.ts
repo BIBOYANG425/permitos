@@ -11,7 +11,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-scaqmd-rule-201",
     effective_date: null,
     quote: "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
-    extracted: { permit_trigger: "new or altered equipment that may emit air contaminants" }
+    extracted: { permit_trigger: "new or altered equipment that may emit air contaminants" },
+    permit_filing: {
+      form_name: "SCAQMD Permit to Construct Application",
+      form_url: "https://www.aqmd.gov/home/permits/permit-applications",
+      agency: "South Coast AQMD",
+      portal_url: "https://www.aqmd.gov/home/permits",
+      instructions: "Submit application through SCAQMD online portal or in person",
+    },
   },
   scaqmd_rule_219: {
     id: "scaqmd_rule_219",
@@ -23,7 +30,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-scaqmd-rule-219",
     effective_date: null,
     quote: "Equipment listed in this rule may be exempt from written permit requirements when the listed conditions are satisfied.",
-    extracted: { exemption_check_required: true }
+    extracted: { exemption_check_required: true },
+    permit_filing: {
+      form_name: "SCAQMD Rule 219 Exemption Worksheet",
+      form_url: "https://www.aqmd.gov/home/permits/permit-applications",
+      agency: "South Coast AQMD",
+      portal_url: "https://www.aqmd.gov/home/permits",
+      instructions: "Complete exemption worksheet to document equipment qualifies under Rule 219",
+    },
   },
   scaqmd_rule_222: {
     id: "scaqmd_rule_222",
@@ -35,7 +49,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-scaqmd-rule-222",
     effective_date: null,
     quote: "Owners or operators of specified equipment shall file registration information when the rule applies to that equipment category.",
-    extracted: { registration_possible: true }
+    extracted: { registration_possible: true },
+    permit_filing: {
+      form_name: "SCAQMD Rule 222 Registration",
+      form_url: "https://www.aqmd.gov/home/permits/permit-applications",
+      agency: "South Coast AQMD",
+      portal_url: "https://www.aqmd.gov/home/permits",
+      instructions: "File registration form for equipment category covered by Rule 222",
+    },
   },
   industrial_general_permit: {
     id: "industrial_general_permit",
@@ -47,7 +68,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-ca-igp",
     effective_date: null,
     quote: "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
-    extracted: { regulated_sic: "3471" }
+    extracted: { regulated_sic: "3471" },
+    permit_filing: {
+      form_name: "SMARTS IGP Notice of Intent",
+      form_url: "https://smarts.waterboards.ca.gov/",
+      agency: "California Water Boards",
+      portal_url: "https://smarts.waterboards.ca.gov/",
+      instructions: "File NOI through SMARTS online portal",
+    },
   },
   construction_general_permit: {
     id: "construction_general_permit",
@@ -59,7 +87,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-ca-cgp",
     effective_date: null,
     quote: "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
-    extracted: { acreage_threshold: 1 }
+    extracted: { acreage_threshold: 1 },
+    permit_filing: {
+      form_name: "SMARTS CGP Notice of Intent",
+      form_url: "https://smarts.waterboards.ca.gov/",
+      agency: "California Water Boards",
+      portal_url: "https://smarts.waterboards.ca.gov/",
+      instructions: "File NOI through SMARTS online portal before construction begins",
+    },
   },
   hmbp_threshold_bad: {
     id: "hmbp_threshold_bad",
@@ -71,7 +106,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-hmbp-bad",
     effective_date: null,
     quote: "Businesses must submit information for hazardous materials at or above threshold quantities.",
-    extracted: { overbroad_claim: "HMBP applies to all hazardous material storage" }
+    extracted: { overbroad_claim: "HMBP applies to all hazardous material storage" },
+    permit_filing: {
+      form_name: "Hazardous Materials Business Plan (HMBP)",
+      form_url: "https://cers.calepa.ca.gov/",
+      agency: "CalEPA / Local CUPA",
+      portal_url: "https://cers.calepa.ca.gov/",
+      instructions: "Submit through CERS portal to your local Certified Unified Program Agency",
+    },
   },
   hmbp_threshold_repaired: {
     id: "hmbp_threshold_repaired",
@@ -83,7 +125,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-hmbp-repaired",
     effective_date: null,
     quote: "A hazardous material must be reported when present in quantities equal to or greater than 55 gallons for liquids, 500 pounds for solids, or 200 cubic feet for compressed gases.",
-    extracted: { liquid_gallons_threshold: 55 }
+    extracted: { liquid_gallons_threshold: 55 },
+    permit_filing: {
+      form_name: "Hazardous Materials Business Plan (HMBP)",
+      form_url: "https://cers.calepa.ca.gov/",
+      agency: "CalEPA / Local CUPA",
+      portal_url: "https://cers.calepa.ca.gov/",
+      instructions: "Submit through CERS portal to your local Certified Unified Program Agency",
+    },
   },
   hazardous_waste_generator: {
     id: "hazardous_waste_generator",
@@ -95,7 +144,14 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-epa-generator",
     effective_date: null,
     quote: "Generator category depends on the amount of hazardous waste generated in a calendar month.",
-    extracted: { generator_quantity_required: true }
+    extracted: { generator_quantity_required: true },
+    permit_filing: {
+      form_name: "EPA Hazardous Waste Generator Registration",
+      form_url: "https://hwts.dtsc.ca.gov/",
+      agency: "EPA / DTSC",
+      portal_url: "https://hwts.dtsc.ca.gov/",
+      instructions: "Register through DTSC Hazardous Waste Tracking System",
+    },
   },
   wastewater_pretreatment: {
     id: "wastewater_pretreatment",
@@ -107,6 +163,13 @@ export const sourceFixtures: Record<string, SourceFixture> = {
     content_hash: "sha256:demo-epa-pretreatment",
     effective_date: null,
     quote: "Industrial users that discharge process wastewater to publicly owned treatment works may be subject to pretreatment requirements.",
-    extracted: { process_discharge_required: true }
+    extracted: { process_discharge_required: true },
+    permit_filing: {
+      form_name: "Industrial Wastewater Discharge Permit Application",
+      form_url: "https://www.epa.gov/npdes/national-pretreatment-program",
+      agency: "Local POTW",
+      portal_url: "https://www.epa.gov/npdes/national-pretreatment-program",
+      instructions: "Contact your local Publicly Owned Treatment Works for application forms",
+    },
   }
 };
