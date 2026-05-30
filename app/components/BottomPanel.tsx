@@ -6,13 +6,26 @@ import { ReportTab } from "./ReportTab";
 export function BottomPanel() {
   const [tab, setTab] = useState<"matrix" | "report">("matrix");
   return (
-    <section style={{ borderTop: "1px solid var(--border)", background: "var(--panel)", maxHeight: 320, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
+    <section
+      className="border-t border-slate-800 bg-slate-900 flex flex-col overflow-hidden"
+      style={{ maxHeight: 320 }}
+    >
+      <div className="flex border-b border-slate-800">
         {(["matrix", "report"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 14px", background: tab === t ? "var(--panel-2)" : "transparent", color: "var(--text)", border: 0, borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent", cursor: "pointer", fontSize: 12, textTransform: "uppercase" }}>{t}</button>
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-3.5 py-2 text-xs uppercase tracking-wider text-slate-100 transition-colors border-b-2 ${
+              tab === t
+                ? "bg-slate-800 border-sky-400"
+                : "bg-transparent border-transparent hover:bg-slate-800/60"
+            }`}
+          >
+            {t}
+          </button>
         ))}
       </div>
-      <div style={{ flex: 1, overflow: "auto" }}>
+      <div className="flex-1 overflow-auto">
         {tab === "matrix" ? <ApplicabilityMatrix /> : <ReportTab />}
       </div>
     </section>
