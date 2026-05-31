@@ -17,8 +17,8 @@ function getFetch(): FetchFn {
 }
 
 // All-reasoning worker: a single task can run several reasoning-model calls, so allow
-// up to 300s — matched to the Modal function's own 300s timeout.
-const REQUEST_TIMEOUT_MS = 300_000;
+// up to 600s — matched to the Modal function's own 600s timeout.
+const REQUEST_TIMEOUT_MS = 600_000;
 
 type TaskOutcome = { bundle: EvidenceBundle; transportError: boolean };
 

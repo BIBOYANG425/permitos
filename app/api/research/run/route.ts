@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runResearch } from "@/lib/research/run";
 
+// All-reasoning research runs are slow (multi-turn reasoning per task). Hold the
+// serverless function open as long as the platform allows. 800 is Vercel's fluid-
+// compute ceiling; plans without it are clamped down automatically. A run that needs
+// longer than the platform allows is the durable Function.spawn+poll case (deferred).
+export const maxDuration = 800;
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {

@@ -176,7 +176,7 @@ def _run(task_spec: dict) -> dict:
 @app.function(image=image, secrets=[
     modal.Secret.from_name("permitpilot-openai"),
     modal.Secret.from_name("permitpilot-research"),
-], timeout=300)
+], timeout=600)
 @modal.fastapi_endpoint(method="POST")
 def research(payload: dict) -> dict:
     expected = os.environ.get("RESEARCH_TOKEN", "")
@@ -186,7 +186,7 @@ def research(payload: dict) -> dict:
     return _run(task_spec)
 
 
-@app.function(image=image, secrets=[modal.Secret.from_name("permitpilot-openai")], timeout=300)
+@app.function(image=image, secrets=[modal.Secret.from_name("permitpilot-openai")], timeout=600)
 def research_task(task_spec: dict) -> dict:
     return _run(task_spec)
 

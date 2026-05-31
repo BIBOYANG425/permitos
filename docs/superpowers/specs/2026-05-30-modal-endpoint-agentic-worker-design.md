@@ -194,7 +194,9 @@ Two decisions were taken after the initial approval, reconciling with the approv
    the OpenAI calls use `max_completion_tokens` (not `max_tokens`), omit a custom
    `temperature` (reasoning models reject it), and use `tool_choice:"required"` rather than
    a forced single-function choice (broader reasoning-model compatibility). Timeouts rise:
-   Modal function `timeout` → 300s, Node fetch request timeout → 300s. Budget caps
+   Modal function `timeout` → 600s, Node fetch request timeout → 600s, and the research
+   API route `maxDuration` → 800s (Vercel fluid-compute ceiling; clamped on lesser plans).
+   Budget caps
    (`max_model_calls`, `max_sources`) remain the latency/cost backstop. NOTE: a long
    all-reasoning run amplifies the deferred Vercel-route-timeout limitation above.
 
