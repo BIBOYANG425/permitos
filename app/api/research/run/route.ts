@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runResearch } from "@/lib/research/run";
+import { isStoreConfigured } from "@/lib/research/store/supabaseStore";
+import { enqueueRun } from "@/lib/research/durable/durableRun";
 
 // Hold the serverless function open as long as the plan allows. Vercel REJECTS the
 // deploy if this exceeds the plan's ceiling (800 failed → the plan caps lower), so we
@@ -14,6 +16,14 @@ export async function POST(request: NextRequest) {
       project_description?: string;
       demo_documents?: Array<{ name: string; type: string; text: string }>;
     };
+
+    if (process.env.RESEARCH_RUNTIME === "durable" && isStoreConfigured()) {
+      const { run_id, status } = await enqueueRun({
+        project_description: body.project_description ?? "",
+        demo_documents: body.demo_documents ?? [],
+      });
+      return NextResponse.json({ run_id, status });
+    }
 
     const run = await runResearch({
       project_description: body.project_description ?? "",
