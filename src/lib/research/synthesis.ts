@@ -53,7 +53,7 @@ function determinationFor(
 ): Determination {
   const source = evidence?.sources[0];
   const verified = verdict?.verdict === "pass";
-  const applies = verified ? appliesFor(scope, hypothesis) : "needs_review";
+  const applies = verified ? appliesFor(scope, hypothesis, evidence) : "needs_review";
 
   return {
     requirement: requirementFor(hypothesis.id),
@@ -70,11 +70,24 @@ function determinationFor(
   } satisfies Determination;
 }
 
-function appliesFor(scope: ScopePack, hypothesis: ResearchHypothesis): Determination["applies"] {
+function appliesFor(
+  scope: ScopePack,
+  hypothesis: ResearchHypothesis,
+  evidence: EvidenceBundle | undefined
+): Determination["applies"] {
+  // CGP keeps its real scope-derived predicate (acre threshold).
   if (hypothesis.id === "H-STORM-CGP") {
     return (scope.project_change.disturbance_acres ?? 0) >= 1 ? "yes" : "no";
   }
-  return "yes";
+  // Generic: honor the researcher's grounded conclusion instead of always "yes".
+  switch (evidence?.researcher_conclusion) {
+    case "applies":
+      return "yes";
+    case "does_not_apply":
+      return "no";
+    default:
+      return "needs_review";
+  }
 }
 
 function requirementFor(hypothesisId: string) {

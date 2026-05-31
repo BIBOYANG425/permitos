@@ -242,7 +242,7 @@ function taskForHypothesis(hypothesis: ResearchHypothesis): ResearchTask {
     budget: {
       max_sources: 3,
       max_runtime_seconds: 30,
-      max_model_calls: 2
+      max_model_calls: 4
     }
   };
 }

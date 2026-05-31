@@ -1,29 +1,32 @@
 import type { EvidenceBundle, ResearchHypothesis, ResearchTask } from "./types";
 import { sourceFixtures } from "./fixtures/sources";
+import type { ResearchPoolResult } from "./modal/researchPool";
 
-export async function runLocalResearchPool(tasks: ResearchTask[], hypotheses: ResearchHypothesis[]) {
+export async function runLocalResearchPool(
+  tasks: ResearchTask[],
+  hypotheses: ResearchHypothesis[]
+): Promise<ResearchPoolResult> {
   if (process.env.USE_MODAL === "1") {
-    const { runModalResearchPool } = await import("./modal/runModalPool");
-    return runModalResearchPool(tasks, hypotheses);
+    const { runModalResearchPool } = await import("./modal/researchPool");
+    const result = await runModalResearchPool(tasks, hypotheses);
+    if (result.degraded) {
+      // Honest fallback: still render the demo on fixtures, but surface the reason.
+      return { bundles: runFixturePool(tasks, hypotheses), degraded: result.degraded };
+    }
+    return { bundles: result.bundles };
   }
 
+  return { bundles: runFixturePool(tasks, hypotheses) };
+}
+
+function runFixturePool(tasks: ResearchTask[], hypotheses: ResearchHypothesis[]): EvidenceBundle[] {
   const byId = new Map(hypotheses.map((hypothesis) => [hypothesis.id, hypothesis]));
-  const settled = await Promise.allSettled(
-    tasks.map(async (task) => {
-      const hypothesis = byId.get(task.hypothesis_id);
-      if (!hypothesis) {
-        throw new Error(`Missing hypothesis for task ${task.task_id}`);
-      }
-      return runResearchTask(task, hypothesis);
-    })
-  );
-
-  return settled.map((result, index) => {
-    if (result.status === "fulfilled") {
-      return result.value;
+  return tasks.map((task) => {
+    const hypothesis = byId.get(task.hypothesis_id);
+    if (!hypothesis) {
+      return failedBundle(task.hypothesis_id, `Missing hypothesis for task ${task.task_id}`);
     }
-
-    return failedBundle(tasks[index].hypothesis_id, result.reason instanceof Error ? result.reason.message : "Unknown worker failure");
+    return runResearchTask(task, hypothesis);
   });
 }
 
