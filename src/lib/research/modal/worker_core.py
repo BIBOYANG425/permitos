@@ -194,6 +194,13 @@ def _norm_ws(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _int_or(value, default):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def exposed_tool_schemas(allowed_tools: list[str]) -> list[dict]:
     """The OpenAI tools to offer = allowed_tools that we actually implement as model tools."""
     return [TOOL_SCHEMAS[t] for t in allowed_tools if t in TOOL_SCHEMAS]
@@ -213,8 +220,8 @@ def run_research_agent(task_spec: dict, *, llm_fn, fetch_fn, extract_fn, now_iso
     allowed = set(task_spec.get("allowed_tools", []))
     blocked = set(task_spec.get("blocked_tools", []))
     budget = task_spec.get("budget", {}) or {}
-    max_calls = int(budget.get("max_model_calls", 4))
-    max_sources = int(budget.get("max_sources", 3))
+    max_calls = _int_or(budget.get("max_model_calls"), 4)
+    max_sources = _int_or(budget.get("max_sources"), 3)
 
     pointer = pointers.get(hid)
     if pointer is None:
@@ -267,7 +274,7 @@ def run_research_agent(task_spec: dict, *, llm_fn, fetch_fn, extract_fn, now_iso
                 if sources_used >= max_sources:
                     payload = {"error": "max_sources budget exceeded"}
                 else:
-                    url = args.get("url") or pointer["url"]
+                    url = (args.get("url") or "").strip() or pointer["url"]
                     if not host_allowed(url):
                         payload = {"error": f"host not allowlisted: {url}"}
                     else:
@@ -275,7 +282,9 @@ def run_research_agent(task_spec: dict, *, llm_fn, fetch_fn, extract_fn, now_iso
                         sources_used += 1
                         payload = {"content_hash": content_hash, "text": fetched_text}
             elif name == "prove_currency":
-                payload = {"status": "unconfirmed" if not fetched_text else "current"}
+                payload = ({"status": "no_source", "detail": "fetch a source first"}
+                           if not fetched_text
+                           else {"status": "unconfirmed", "detail": "no effective date parsed; currency not independently verified"})
             elif name == "evaluate_predicate":
                 payload = {"note": args.get("note", "predicate recorded")}
             else:

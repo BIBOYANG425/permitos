@@ -162,6 +162,43 @@ def test_agent_budget_exhaustion_uses_deterministic_fallback():
     assert bundle["extracted_claims"][0]["field"] == "liquid_gallons_threshold"
 
 
+def test_budget_with_null_values_falls_back_to_defaults():
+    # null max_model_calls/max_sources must not crash; agent still runs and submits.
+    spec = _spec()
+    spec["budget"] = {"max_model_calls": None, "max_sources": None}
+    llm = _scripted_llm(
+        {"tool_calls": [_tc("c1", "fetch_source", {})]},
+        {"tool_calls": [_tc("c2", "extract_threshold", {
+            "field": "f", "verbatim_quote": "the rule applies", "applies": "applies", "confidence": 0.8})]},
+    )
+    fetch_fn = lambda url: ("sha256:x", "the rule applies to this facility")
+    bundle = run_research_agent(spec, llm_fn=llm, fetch_fn=fetch_fn, extract_fn=None, now_iso="t")
+    assert bundle["researcher_conclusion"] == "applies"
+
+
+def test_prove_currency_reports_unconfirmed_after_fetch():
+    # prove_currency must NOT claim "current"; it reports unconfirmed once a source is fetched.
+    captured = {}
+    seq = iter([
+        {"tool_calls": [_tc("c1", "fetch_source", {})]},
+        {"tool_calls": [_tc("c2", "prove_currency", {})]},
+        {"tool_calls": [_tc("c3", "extract_threshold", {
+            "field": "f", "verbatim_quote": "the rule applies", "applies": "applies", "confidence": 0.8})]},
+    ])
+
+    def llm_fn(messages, tools):
+        # capture the most recent tool result so we can assert prove_currency's payload
+        for m in messages:
+            if m.get("role") == "tool" and m.get("name") == "prove_currency":
+                captured["payload"] = m["content"]
+        return next(seq, {"content": "done", "tool_calls": []})
+
+    fetch_fn = lambda url: ("sha256:x", "the rule applies to this facility")
+    run_research_agent(_spec(max_calls=5), llm_fn=llm_fn, fetch_fn=fetch_fn, extract_fn=None, now_iso="t")
+    assert "unconfirmed" in captured.get("payload", "")
+    assert "current" not in captured.get("payload", "")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in tests:
