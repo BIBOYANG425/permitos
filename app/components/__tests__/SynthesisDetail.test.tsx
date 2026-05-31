@@ -117,7 +117,7 @@ describe("SynthesisDetail", () => {
     } as unknown as ResearchRun;
 
     render(<SynthesisDetail familyLabel="Hazmat" report={report} run={runWithHistory} />);
-    expect(screen.getByText(/Repair history/)).toBeDefined();
+    expect(screen.getByText(/Repair History/)).toBeDefined();
   });
 
   it("shows verified badge count", () => {

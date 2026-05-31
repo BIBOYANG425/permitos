@@ -2,6 +2,8 @@
 import { useStore } from "@/lib/ui/store";
 import { groupDeterminationsByFamily } from "@/lib/ui/selectors";
 import type { CoverageFamily } from "@/lib/research/types";
+import { Shield, Droplets, FlaskConical, Trash2, Waves } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 const FAMILY_LABELS: Record<CoverageFamily, string> = {
   air: "Air Quality",
@@ -13,6 +15,14 @@ const FAMILY_LABELS: Record<CoverageFamily, string> = {
   fire_code: "Fire Code",
   ceqa: "CEQA",
   osha: "OSHA",
+};
+
+const FAMILY_ICONS: Partial<Record<CoverageFamily, LucideIcon>> = {
+  air: Shield,
+  stormwater: Droplets,
+  hazmat: FlaskConical,
+  waste: Trash2,
+  wastewater: Waves,
 };
 
 const FAMILY_ORDER: CoverageFamily[] = ["air", "stormwater", "hazmat", "waste", "wastewater"];
@@ -28,7 +38,7 @@ export function ReportCards() {
   const familyStatusMap = new Map(run.coverage_family_statuses.map((s) => [s.family, s]));
 
   return (
-    <section className="border-t border-slate-800 bg-slate-900 p-4">
+    <section className="border-t border-slate-800/60 bg-slate-900/60 backdrop-blur-sm p-4">
       <div className="grid grid-cols-5 gap-3">
         {FAMILY_ORDER.map((family) => {
           const report = grouped.get(family);
@@ -37,14 +47,26 @@ export function ReportCards() {
           const determinations = report?.determinations ?? [];
           const verifiedCount = determinations.filter((d) => d.verified).length;
           const reviewCount = determinations.filter((d) => d.review_flag).length;
+          const Icon = FAMILY_ICONS[family];
+
+          const allVerified = verifiedCount === determinations.length && determinations.length > 0;
+          const hasReview = reviewCount > 0;
 
           const borderColor = isOutOfScope
-            ? "border-l-slate-600"
-            : reviewCount > 0
+            ? "border-l-slate-700"
+            : hasReview
             ? "border-l-amber-500"
-            : verifiedCount === determinations.length && determinations.length > 0
-            ? "border-l-emerald-500"
+            : allVerified
+            ? "border-l-teal-400"
             : "border-l-red-500";
+
+          const glowClass = isOutOfScope
+            ? ""
+            : allVerified
+            ? "hover:glow-verified"
+            : hasReview
+            ? "hover:glow-amber"
+            : "";
 
           return (
             <div
@@ -58,30 +80,40 @@ export function ReportCards() {
                   openReport(family);
                 }
               }}
-              className={`border-l-4 ${borderColor} rounded-md bg-slate-800 p-3 transition-colors ${
+              className={`border-l-4 ${borderColor} rounded-xl p-3.5 transition-all duration-300 ${glowClass} ${
                 isOutOfScope
-                  ? "opacity-40 cursor-default"
-                  : "cursor-pointer hover:bg-slate-700"
+                  ? "opacity-30 cursor-default bg-slate-900/40"
+                  : "cursor-pointer glass hover:bg-slate-800/80"
               }`}
             >
-              <div className="text-sm font-semibold text-slate-100 mb-2">
-                {FAMILY_LABELS[family]}
+              <div className="flex items-center gap-2 mb-2">
+                {Icon && (
+                  <Icon
+                    size={14}
+                    className={isOutOfScope ? "text-slate-600" : "text-cyan-300/70"}
+                  />
+                )}
+                <span className="text-sm font-semibold text-slate-100">
+                  {FAMILY_LABELS[family]}
+                </span>
               </div>
               {isOutOfScope ? (
-                <div className="text-xs text-slate-400">Not triggered</div>
+                <div className="text-xs text-slate-500">Not triggered</div>
               ) : (
                 <>
-                  <div className="text-xs text-slate-400 mb-2 line-clamp-2">
-                    {determinations.map((d) => d.requirement).join(" + ")}
+                  <div className="text-xs text-slate-400 mb-2.5 line-clamp-2 leading-relaxed">
+                    {determinations.map((d) => d.requirement).join(" · ")}
                   </div>
-                  <div className="flex gap-2 text-[10px]">
+                  <div className="flex gap-2.5 text-[10px] font-medium">
                     {verifiedCount > 0 && (
-                      <span className="text-emerald-400">
+                      <span className="flex items-center gap-1 text-teal-400">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400" />
                         {verifiedCount} verified
                       </span>
                     )}
                     {reviewCount > 0 && (
-                      <span className="text-amber-400">
+                      <span className="flex items-center gap-1 text-amber-400">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
                         {reviewCount} review
                       </span>
                     )}

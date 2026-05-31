@@ -25,7 +25,7 @@ export default function Page() {
   const showGrid = run !== null && !replayDone;
 
   return (
-    <div className="grid grid-rows-[auto_1fr_auto] h-screen bg-slate-950 text-slate-100">
+    <div className="grid grid-rows-[auto_1fr_auto] h-screen text-slate-100" style={{ background: "#05070b" }}>
       <Header />
       <div className="grid grid-cols-[320px_minmax(0,1fr)_360px] overflow-hidden relative">
         <InputPanel />
