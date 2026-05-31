@@ -5,6 +5,13 @@ import { INTAKE_SYSTEM_PROMPT, SUBMIT_INTAKE_TOOL } from "@/lib/intake/prompt";
 import { composeProjectDescription } from "@/lib/intake/compose";
 import { followUpForMissing, isIntakeComplete } from "@/lib/intake/complete";
 
+// The OpenAI call grows slower as the conversation history grows; the default
+// ~10s function budget was timing out on later turns, returning a platform HTML
+// error page (which broke the client's JSON parse). Give it real headroom.
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+const OPENAI_TIMEOUT_MS = 25_000;
 const MAX_MESSAGES = 30;
 const MAX_CONTENT_CHARS = 4000;
 const MAX_TOTAL_CHARS = 16000;
@@ -91,15 +98,22 @@ export async function POST(request: NextRequest) {
   const client = new OpenAI({ apiKey });
   const model = process.env.OPENAI_INTAKE_MODEL ?? "gpt-4o-mini";
 
+  // Abort a slow upstream call before the platform hard-kills the function, so
+  // the caller always gets a JSON error rather than an HTML timeout page.
+  const ac = new AbortController();
+  const timeout = setTimeout(() => ac.abort(), OPENAI_TIMEOUT_MS);
   try {
-    const completion = await client.chat.completions.create({
-      model,
-      // Server-owned system prompt is the ONLY trusted system message.
-      messages: [{ role: "system", content: INTAKE_SYSTEM_PROMPT }, ...messages],
-      tools: [SUBMIT_INTAKE_TOOL],
-      tool_choice: "auto",
-      max_tokens: 800,
-    });
+    const completion = await client.chat.completions.create(
+      {
+        model,
+        // Server-owned system prompt is the ONLY trusted system message.
+        messages: [{ role: "system", content: INTAKE_SYSTEM_PROMPT }, ...messages],
+        tools: [SUBMIT_INTAKE_TOOL],
+        tool_choice: "auto",
+        max_tokens: 800,
+      },
+      { signal: ac.signal },
+    );
 
     const choice = completion.choices[0]?.message;
     const toolCall = choice?.tool_calls?.[0];
@@ -132,5 +146,7 @@ export async function POST(request: NextRequest) {
     // Log full error server-side, return generic message to the unauthenticated caller.
     console.error("Intake chat upstream error:", error);
     return NextResponse.json({ error: "Intake chat failed" }, { status: 502 });
+  } finally {
+    clearTimeout(timeout);
   }
 }

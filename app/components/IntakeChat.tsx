@@ -26,7 +26,15 @@ export function IntakeChat({ onStarted, onSkip }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history }),
       });
-      const data = (await res.json()) as IntakeChatResponse | { error: string };
+      // Read as text first: a timed-out/crashed function returns an HTML error
+      // page, and a blind res.json() would throw a cryptic "Unexpected token '<'".
+      const raw = await res.text();
+      let data: IntakeChatResponse | { error: string };
+      try {
+        data = JSON.parse(raw) as IntakeChatResponse | { error: string };
+      } catch {
+        throw new Error("The assistant took too long to respond — please try again.");
+      }
       if (!res.ok || "error" in data) {
         throw new Error("error" in data ? data.error : "Intake failed");
       }
