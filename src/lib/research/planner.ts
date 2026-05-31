@@ -26,12 +26,14 @@ function coverageStatusFor(family: CoverageFamily, scope: ScopePack): CoverageFa
   const disturbance = scope.project_change.disturbance_acres;
 
   if (family === "air") {
-    const active = equipmentKinds.some((kind) => ["coating_booth", "process_equipment"].includes(kind));
+    const active = equipmentKinds.length > 0;
     return {
       id: "CF-AIR",
       family,
       status: active ? "active" : "out_of_scope",
-      reason: active ? "Project adds equipment that may emit air contaminants." : "No emitting equipment indicated.",
+      reason: active
+        ? "Project adds equipment that may emit air contaminants."
+        : "No equipment added that could emit air contaminants.",
       project_facts_considered: equipmentKinds,
       missing_facts: []
     };
