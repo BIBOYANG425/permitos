@@ -20,7 +20,7 @@ export function ScenarioButtons() {
           className="p-3 glass rounded-xl text-left text-slate-100 transition-all duration-200 disabled:opacity-40 disabled:cursor-wait cursor-pointer hover:bg-slate-800/80 group border-0"
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.06, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: i * 0.06, duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
           whileHover={{ x: 2 }}
           whileTap={{ scale: 0.98 }}
         >

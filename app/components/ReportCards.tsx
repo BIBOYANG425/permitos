@@ -43,7 +43,7 @@ export function ReportCards() {
       className="border-t border-slate-800/60 bg-slate-900/60 backdrop-blur-sm p-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
     >
       <div className="grid grid-cols-5 gap-3">
         {FAMILY_ORDER.map((family, i) => {
@@ -93,7 +93,7 @@ export function ReportCards() {
               }`}
               initial={{ opacity: 0, y: 16, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: i * 0.08, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: i * 0.08, duration: 0.35, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
               whileHover={isOutOfScope ? {} : { y: -2, transition: { duration: 0.2 } }}
               whileTap={isOutOfScope ? {} : { scale: 0.98 }}
             >

@@ -82,7 +82,7 @@ export function SandboxGrid() {
                 className={`glass rounded-xl overflow-hidden transition-all duration-300 ${meta.cls}`}
                 initial={{ opacity: 0, y: 16, scale: 0.92 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
                 layout
               >
                 {/* Animated agent scene */}

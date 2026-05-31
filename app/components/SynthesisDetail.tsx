@@ -10,7 +10,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.06, duration: 0.35, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   }),
 };
 
@@ -33,7 +33,7 @@ export function SynthesisDetail({
         className="mb-6"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
       >
         <div className="brand-label mb-2">Synthesis Report</div>
         <h2 className="text-xl font-bold text-slate-100">{familyLabel}</h2>

@@ -72,7 +72,7 @@ export function IntakeChat({ onStarted, onSkip }: Props) {
         className="flex h-[80vh] w-full max-w-2xl flex-col glass rounded-2xl shadow-card overflow-hidden"
         initial={{ opacity: 0, y: 30, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-700/40 px-5 py-3.5">
@@ -106,7 +106,7 @@ export function IntakeChat({ onStarted, onSkip }: Props) {
                 className={message.role === "user" ? "text-right" : "text-left"}
                 initial={{ opacity: 0, y: 12, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
                 layout
               >
                 <span
