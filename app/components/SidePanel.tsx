@@ -7,7 +7,7 @@ import { TraceStream } from "./TraceStream";
 export function SidePanel() {
   return (
     <aside
-      className="border-l border-slate-800 bg-slate-900 flex flex-col overflow-hidden"
+      className="border-l border-slate-800/60 bg-slate-900/80 backdrop-blur-sm flex flex-col overflow-hidden"
       style={{ width: 360 }}
     >
       <VerificationSummary />

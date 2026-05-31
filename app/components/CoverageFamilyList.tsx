@@ -1,29 +1,40 @@
 "use client";
 import { useStore } from "@/lib/ui/store";
+import { motion } from "framer-motion";
 
-const COLORS: Record<string, string> = {
-  active: "text-emerald-500",
-  blocked_missing_fact: "text-amber-500",
-  out_of_scope: "text-slate-500",
-  discovery_candidate: "text-sky-400",
+const STATUS_STYLE: Record<string, { color: string; dot: string }> = {
+  active: { color: "text-teal-400", dot: "bg-teal-400" },
+  blocked_missing_fact: { color: "text-amber-400", dot: "bg-amber-400" },
+  out_of_scope: { color: "text-slate-500", dot: "bg-slate-600" },
+  discovery_candidate: { color: "text-cyan-300", dot: "bg-cyan-300" },
 };
 
 export function CoverageFamilyList() {
   const run = useStore((s) => s.run);
   if (!run) return null;
   return (
-    <div className="p-3 border-b border-slate-800">
-      <div className="text-[11px] text-slate-400 uppercase tracking-wider mb-2">
+    <div className="p-3 border-b border-slate-800/40">
+      <div className="brand-label mb-2.5" style={{ fontSize: 11 }}>
         Coverage families
       </div>
-      {run.coverage_family_statuses.map((c) => (
-        <div key={c.id} className="flex justify-between py-1 text-xs text-slate-100">
-          <span>{c.family}</span>
-          <span className={`text-[11px] ${COLORS[c.status] ?? "text-slate-400"}`}>
-            {c.status.replace(/_/g, " ")}
-          </span>
-        </div>
-      ))}
+      {run.coverage_family_statuses.map((c, i) => {
+        const style = STATUS_STYLE[c.status] ?? { color: "text-slate-400", dot: "bg-slate-500" };
+        return (
+          <motion.div
+            key={c.id}
+            className="flex items-center justify-between py-1.5 text-xs text-slate-100"
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.03, duration: 0.25 }}
+          >
+            <span className="capitalize">{c.family.replace(/_/g, " ")}</span>
+            <span className={`flex items-center gap-1.5 text-[11px] ${style.color}`}>
+              <span className={`inline-block w-1.5 h-1.5 rounded-full ${style.dot}`} />
+              {c.status.replace(/_/g, " ")}
+            </span>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
