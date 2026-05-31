@@ -2,7 +2,12 @@ import { describe, it, expect } from "vitest";
 import { runResearch } from "@/lib/research/run";
 import { SCENARIOS } from "../scenarios";
 
-describe("scenario smoke", () => {
+// Obsolete in vitest: these end-to-end smokes asserted the OLD seeded parseScope
+// pipeline (deterministic HMBP repair, etc.). parseScope is now LLM-driven, which
+// unit tests must not call over the network — so the deterministic logic moved to
+// scope.test.ts / planner.test.ts, and full-pipeline integration moved to the
+// keyed `pnpm eval`. Skipped here rather than deleted to preserve intent.
+describe.skip("scenario smoke (moved to keyed `pnpm eval` — parseScope is LLM-driven)", () => {
   it("complex scenario produces an HMBP repair that ends verified", async () => {
     const complex = SCENARIOS.find((s) => s.id === "complex")!;
     const run = await runResearch(complex.payload);
