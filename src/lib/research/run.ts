@@ -50,8 +50,16 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
     trace(run_id, "research_pool", "fanout", "running", `Launching ${plan.research_tasks.length} local async workers`)
   );
 
-  const initialEvidence = await runLocalResearchPool(plan.research_tasks, plan.research_graph);
-  trace_events.push(trace(run_id, "research_pool", "fanout", "done", "Local worker pool returned evidence bundles"));
+  const poolResult = await runLocalResearchPool(plan.research_tasks, plan.research_graph);
+  const initialEvidence = poolResult.bundles;
+  if (poolResult.degraded) {
+    trace_events.push(
+      trace(run_id, "research_pool", "fanout", "needs_review",
+        `⚠ Modal unreachable — using cached fixtures (${poolResult.degraded.reason})`)
+    );
+  } else {
+    trace_events.push(trace(run_id, "research_pool", "fanout", "done", "Research worker pool returned evidence bundles"));
+  }
 
   const evidence_bundles: EvidenceBundle[] = [...initialEvidence];
   const verification_verdicts: VerificationVerdict[] = [];
