@@ -9,6 +9,9 @@ export function useDurableRun(runId: string | null, pollMs = 3000) {
   const [run, setRun] = useState<ResearchRun | null>(null);
   const [status, setStatus] = useState<string>("idle");
   const stopped = useRef(false);
+  // Latest status in a ref so the poll interval sees fresh values (the effect only
+  // re-runs on runId), letting it stop polling once the run is done.
+  const statusRef = useRef("idle");
 
   useEffect(() => {
     if (!runId) return;
@@ -18,6 +21,7 @@ export function useDurableRun(runId: string | null, pollMs = 3000) {
       const resp = await fetch(`/api/research/run/${runId}`);
       if (!resp.ok) return;
       const data = await resp.json();
+      statusRef.current = data.status;
       setStatus(data.status);
       if (data.determinations) setRun(data as ResearchRun);
     }
@@ -33,7 +37,7 @@ export function useDurableRun(runId: string | null, pollMs = 3000) {
       : null;
 
     void refetch();
-    const timer = setInterval(() => { if (!stopped.current && status !== "done") void refetch(); }, pollMs);
+    const timer = setInterval(() => { if (!stopped.current && statusRef.current !== "done") void refetch(); }, pollMs);
 
     return () => { stopped.current = true; clearInterval(timer); if (sb && channel) void sb.removeChannel(channel); };
     // eslint-disable-next-line react-hooks/exhaustive-deps

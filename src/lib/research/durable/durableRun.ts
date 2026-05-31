@@ -36,6 +36,9 @@ export async function getDurableRun(run_id: string, deps: DurableDeps = realDeps
   const evidence = await deps.store.listEvidence(run_id);
   const complete = run.status !== "done" && evidence.length >= run.task_count;
   if (complete) {
+    // Two concurrent polls can both finalize here. That is safe: finalizeRun is pure and
+    // deterministic over the same stored bundles, and store.finalizeRun writes the same
+    // idempotent payload — the loser is redundant work, not a wrong result.
     const bundles = evidence.map((e) => e.bundle as EvidenceBundle);
     const result = deps.finalizeRun(run_id, run.scope_pack as PlannedRun["scope_pack"], run.plan as PlannedRun["plan"], bundles, (run.trace_events as PlannedRun["trace_events"]) ?? []);
     await deps.store.finalizeRun(run_id, { determinations: result.determinations, report_markdown: result.report_markdown, trace_events: result.trace_events });
