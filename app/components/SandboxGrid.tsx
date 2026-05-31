@@ -4,6 +4,7 @@ import { useStore } from "@/lib/ui/store";
 import { deriveSandboxTiles, type SandboxStatus } from "@/lib/ui/sandboxState";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AgentWorkstation } from "./AgentWorkstation";
 
 const STATUS_META: Record<SandboxStatus, { label: string; cls: string }> = {
   queued: { label: "queued", cls: "border-slate-700/50 text-slate-500" },
@@ -17,6 +18,28 @@ const STATUS_META: Record<SandboxStatus, { label: string; cls: string }> = {
   needs_review: { label: "needs review", cls: "border-amber-700/60 text-amber-300 glow-amber" },
   out_of_scope: { label: "out of scope", cls: "border-slate-800/40 text-slate-600 opacity-40" },
 };
+
+function statusProgress(status: SandboxStatus): number {
+  switch (status) {
+    case "queued":
+      return 0;
+    case "booting":
+      return 15;
+    case "fetching":
+      return 40;
+    case "verifying":
+      return 65;
+    case "repairing":
+      return 75;
+    case "verified":
+    case "repaired":
+    case "failed":
+    case "needs_review":
+      return 100;
+    case "out_of_scope":
+      return 0;
+  }
+}
 
 export function SandboxGrid() {
   const run = useStore((s) => s.run);
@@ -46,24 +69,59 @@ export function SandboxGrid() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
       >
-        Modal Sandboxes · {workers} workers spawned
+        Agent Operations Room · {workers} workers spawned
       </motion.h2>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <AnimatePresence mode="popLayout">
           {tiles.map((tile, i) => {
             const meta = STATUS_META[tile.status];
+            const progress = statusProgress(tile.status);
             return (
               <motion.div
                 key={tile.id}
-                className={`glass rounded-xl border-l-4 p-3.5 transition-all duration-300 ${meta.cls}`}
+                className={`glass rounded-xl overflow-hidden transition-all duration-300 ${meta.cls}`}
                 initial={{ opacity: 0, y: 16, scale: 0.92 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 layout
               >
-                <div className="text-xs font-semibold uppercase tracking-wide">{tile.family}</div>
-                <div className="mt-1.5 text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{tile.label}</div>
-                <div className="mt-2.5 text-xs font-medium">{meta.label}</div>
+                {/* Animated agent scene */}
+                <AgentWorkstation
+                  family={tile.family}
+                  status={tile.status}
+                  progress={progress}
+                  index={i}
+                />
+
+                {/* Info below */}
+                <div className="p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-100">
+                      {tile.family.replace(/_/g, " ")}
+                    </div>
+                    <span
+                      className={`shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] ${meta.cls}`}
+                    >
+                      {meta.label}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                    {tile.label}
+                  </div>
+                  {/* Progress bar */}
+                  <div className="mt-2.5">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${
+                          tile.status === "needs_review" || tile.status === "failed"
+                            ? "bg-gradient-to-r from-amber-400 to-orange-500"
+                            : "bg-gradient-to-r from-cyan-400 via-indigo-400 to-teal-400"
+                        }`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             );
           })}

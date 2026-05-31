@@ -120,3 +120,416 @@ html, body {
   fill: #e5edf6;
 }
 .react-flow__controls button:hover { background: #1e293b; }
+
+/* ── Agent Workstation Scene ──────────────────────────────────────── */
+.agent-scene {
+  --agent-accent: #5eead4;
+  position: relative;
+  height: 128px;
+  overflow: hidden;
+  border: 1px solid rgba(51, 65, 85, 0.88);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--agent-accent) 22%, transparent), transparent 42%),
+    radial-gradient(circle at 18% 16%, rgba(226, 232, 240, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.92));
+}
+.agent-scene-active {
+  border-color: color-mix(in srgb, var(--agent-accent) 44%, transparent);
+}
+.agent-scene-review {
+  background:
+    radial-gradient(circle at 22% 14%, rgba(245, 158, 11, 0.24), transparent 40%),
+    linear-gradient(135deg, rgba(245, 158, 11, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.94));
+}
+
+/* Background: topography, sun, plants */
+.scene-topography {
+  position: absolute;
+  inset: 9px;
+  opacity: 0.35;
+  background:
+    repeating-radial-gradient(ellipse at 18% 75%, transparent 0 12px, rgba(236, 253, 245, 0.16) 13px 14px, transparent 15px 28px),
+    repeating-radial-gradient(ellipse at 88% 5%, transparent 0 14px, rgba(125, 211, 252, 0.12) 15px 16px, transparent 17px 31px);
+}
+.scene-sun {
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(217, 249, 157, 0.7), rgba(110, 231, 183, 0.05) 68%);
+  filter: blur(0.2px);
+}
+.scene-plant {
+  position: absolute;
+  bottom: 22px;
+  width: 25px;
+  height: 38px;
+}
+.scene-plant-left  { left: 13px; }
+.scene-plant-right { right: 14px; transform: scale(0.82); }
+.scene-plant::before {
+  position: absolute;
+  bottom: 0;
+  left: 11px;
+  width: 3px;
+  height: 32px;
+  content: "";
+  border-radius: 99px;
+  background: rgba(187, 247, 208, 0.48);
+}
+.scene-plant span {
+  position: absolute;
+  width: 15px;
+  height: 9px;
+  border-radius: 14px 14px 2px 14px;
+  background: rgba(134, 239, 172, 0.5);
+}
+.scene-plant span:nth-child(1) { left: 0;  top: 10px; transform: rotate(-24deg); }
+.scene-plant span:nth-child(2) { right: 0; top: 17px; transform: rotate(28deg) scaleX(-1); }
+.scene-plant span:nth-child(3) { left: 2px; top: 24px; transform: rotate(-18deg); }
+
+/* Monitor */
+.work-monitor {
+  position: absolute;
+  right: 25px;
+  top: 28px;
+  width: 118px;
+  height: 72px;
+  border: 1px solid color-mix(in srgb, var(--agent-accent) 42%, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(236, 253, 245, 0.15), rgba(6, 18, 20, 0.88)),
+    rgba(6, 18, 20, 0.92);
+  box-shadow:
+    0 15px 30px rgba(0, 0, 0, 0.22),
+    inset 0 0 24px color-mix(in srgb, var(--agent-accent) 10%, transparent);
+}
+.monitor-bar {
+  display: flex;
+  gap: 3px;
+  padding: 7px 8px 0;
+}
+.monitor-bar span {
+  width: 5px;
+  height: 5px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--agent-accent) 65%, white);
+}
+.monitor-title {
+  margin: 6px 8px 3px;
+  max-width: 78px;
+  overflow: hidden;
+  color: rgba(240, 253, 250, 0.82);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.monitor-map {
+  position: relative;
+  height: 22px;
+  margin: 0 8px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(15, 118, 110, 0.16);
+}
+.monitor-map i {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--agent-accent) 62%, transparent);
+  border-radius: 999px;
+}
+.monitor-map i:nth-child(1) { inset: 5px 58px 5px 8px; }
+.monitor-map i:nth-child(2) { inset: 4px 18px 8px 48px; }
+.monitor-map i:nth-child(3) { inset: 11px 38px 3px 28px; }
+.monitor-map b {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--agent-accent) 75%, white), rgba(236, 253, 245, 0.7));
+  transition: width 0.7s ease;
+}
+.monitor-lines {
+  display: grid;
+  gap: 3px;
+  margin: 5px 8px 0;
+}
+.monitor-lines span {
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(236, 253, 245, 0.18);
+}
+.monitor-lines span:nth-child(1) { width: 76%; }
+.monitor-lines span:nth-child(2) { width: 54%; }
+.monitor-lines span:nth-child(3) { width: 64%; }
+.screen-cursor {
+  position: absolute;
+  top: 30px;
+  left: 34px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--agent-accent) 80%, white);
+  box-shadow: 0 0 18px var(--agent-accent);
+  animation: cursorDrift 2.7s ease-in-out infinite;
+}
+
+/* Agent person */
+.agent-person {
+  position: absolute;
+  left: 47px;
+  bottom: 27px;
+  width: 58px;
+  height: 70px;
+  transform-origin: center bottom;
+}
+.agent-head {
+  position: absolute;
+  left: 18px;
+  top: 4px;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fde68a, #f8fafc);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.14);
+}
+.agent-hair {
+  position: absolute;
+  top: -6px;
+  left: -5px;
+  width: 34px;
+  height: 18px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--agent-accent) 56%, #0f172a);
+}
+.agent-ear {
+  position: absolute;
+  top: 12px;
+  width: 6px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fde68a;
+}
+.agent-ear-left  { left: -3px; }
+.agent-ear-right { right: -3px; }
+.agent-eye {
+  position: absolute;
+  top: 13px;
+  width: 3px;
+  height: 3px;
+  border-radius: 99px;
+  background: #14342e;
+  box-shadow: 0 0 0 1px rgba(20, 52, 46, 0.05);
+}
+.agent-eye-left  { left: 9px; }
+.agent-eye-right { right: 8px; }
+.agent-mouth {
+  position: absolute;
+  left: 11px;
+  top: 20px;
+  width: 8px;
+  height: 4px;
+  border-bottom: 1.5px solid rgba(20, 52, 46, 0.74);
+  border-radius: 0 0 10px 10px;
+}
+.agent-brow {
+  position: absolute;
+  top: 10px;
+  width: 7px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(20, 52, 46, 0.52);
+}
+.agent-brow-left  { left: 7px; transform: rotate(-8deg); }
+.agent-brow-right { right: 6px; transform: rotate(8deg); }
+.agent-nose {
+  position: absolute;
+  left: 13px;
+  top: 14px;
+  width: 4px;
+  height: 6px;
+  border-right: 1.5px solid rgba(20, 52, 46, 0.32);
+  border-bottom: 1.5px solid rgba(20, 52, 46, 0.22);
+  border-radius: 0 0 4px 0;
+}
+.agent-cheek {
+  position: absolute;
+  top: 18px;
+  width: 5px;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(251, 191, 36, 0.23);
+}
+.agent-cheek-left  { left: 6px; }
+.agent-cheek-right { right: 5px; }
+.agent-headset {
+  position: absolute;
+  top: 6px;
+  right: -5px;
+  width: 14px;
+  height: 18px;
+  border-right: 2px solid color-mix(in srgb, var(--agent-accent) 68%, #0f172a);
+  border-top: 2px solid color-mix(in srgb, var(--agent-accent) 68%, #0f172a);
+  border-radius: 0 12px 0 0;
+}
+
+/* Body */
+.agent-neck {
+  position: absolute;
+  left: 27px;
+  top: 29px;
+  width: 10px;
+  height: 9px;
+  border-radius: 0 0 6px 6px;
+  background: #fde68a;
+}
+.agent-chair {
+  position: absolute;
+  left: 8px;
+  bottom: 10px;
+  width: 48px;
+  height: 44px;
+  border-radius: 16px 16px 10px 10px;
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.5), rgba(15, 23, 42, 0.44));
+  transform: skewX(-3deg);
+}
+.agent-chair::after {
+  position: absolute;
+  left: 18px;
+  bottom: -12px;
+  width: 10px;
+  height: 18px;
+  content: "";
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.42);
+}
+.agent-shoulders {
+  position: absolute;
+  left: 8px;
+  bottom: 29px;
+  width: 48px;
+  height: 20px;
+  border-radius: 22px 22px 8px 8px;
+  background: color-mix(in srgb, var(--agent-accent) 46%, rgba(226, 232, 240, 0.7));
+  opacity: 0.8;
+}
+.agent-body {
+  position: absolute;
+  left: 13px;
+  bottom: 9px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 16px 16px 10px 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--agent-accent) 72%, white), color-mix(in srgb, var(--agent-accent) 62%, #0f766e));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+.agent-lanyard {
+  position: absolute;
+  top: 7px;
+  left: 17px;
+  width: 5px;
+  height: 17px;
+  border-left: 1px solid rgba(15, 23, 42, 0.34);
+  border-right: 1px solid rgba(15, 23, 42, 0.22);
+  transform: skewX(-12deg);
+}
+
+/* Arms & hands */
+.agent-arm {
+  position: absolute;
+  bottom: 19px;
+  width: 26px;
+  height: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--agent-accent) 66%, white);
+  transform-origin: 4px 50%;
+}
+.agent-arm-left  { left: 0; transform: rotate(-18deg); }
+.agent-arm-right {
+  right: 3px;
+  transform: rotate(20deg);
+  animation: typeArm 0.9s ease-in-out infinite;
+  animation-delay: var(--agent-delay);
+}
+.agent-hand {
+  position: absolute;
+  bottom: 17px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fde68a;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+.agent-hand-left  { left: 20px; }
+.agent-hand-right {
+  right: 10px;
+  animation: typeHand 0.9s ease-in-out infinite;
+  animation-delay: var(--agent-delay);
+}
+
+/* Legs */
+.agent-leg {
+  position: absolute;
+  bottom: 3px;
+  width: 18px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.62);
+}
+.agent-leg-left  { left: 14px; transform: rotate(8deg); }
+.agent-leg-right { left: 34px; transform: rotate(-8deg); }
+
+/* Desk */
+.work-desk {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  width: 168px;
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(236, 253, 245, 0.35), rgba(13, 148, 136, 0.34));
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+.keyboard {
+  position: absolute;
+  left: 50px;
+  top: -9px;
+  width: 46px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(236, 253, 245, 0.56);
+}
+.coffee {
+  position: absolute;
+  right: 10px;
+  top: -14px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(236, 253, 245, 0.56);
+  border-radius: 50%;
+}
+
+/* Agent scene animations */
+@keyframes typeArm {
+  0%, 100% { transform: rotate(18deg) translateY(0); }
+  50%      { transform: rotate(8deg) translateY(2px); }
+}
+@keyframes typeHand {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(2px); }
+}
+@keyframes cursorDrift {
+  0%   { transform: translate(0, 0); }
+  35%  { transform: translate(54px, 9px); }
+  70%  { transform: translate(22px, 24px); }
+  100% { transform: translate(0, 0); }
+}
