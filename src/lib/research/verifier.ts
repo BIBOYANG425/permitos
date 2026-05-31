@@ -1,5 +1,6 @@
 import type { EvidenceBundle, RepairTicket, ScopePack, VerificationVerdict } from "./types";
 import { sourceFixtures } from "./fixtures/sources";
+import { computeConfidence } from "./confidence";
 
 export function verifyEvidence(scope: ScopePack, bundle: EvidenceBundle): VerificationVerdict {
   const source = bundle.sources[0];
@@ -9,19 +10,20 @@ export function verifyEvidence(scope: ScopePack, bundle: EvidenceBundle): Verifi
   }
 
   if (bundle.hypothesis_id === "H-HAZMAT-HMBP" && source.content_hash === "sha256:demo-hmbp-bad") {
+    const checks = {
+      currency: { pass: true, reason: "source fetched from seeded cache for this run" },
+      authority: { pass: true, reason: "official/high-authority HMBP source fixture" },
+      grounding: {
+        pass: false,
+        reason: "Quote mentions threshold quantities, but extracted claim says all hazardous material storage."
+      },
+      predicate_math: { pass: false, reason: "No threshold was extracted from the quoted text." }
+    };
     return {
       hypothesis_id: bundle.hypothesis_id,
       verdict: "fail",
-      checks: {
-        currency: { pass: true, reason: "source fetched from seeded cache for this run" },
-        authority: { pass: true, reason: "official/high-authority HMBP source fixture" },
-        grounding: {
-          pass: false,
-          reason: "Quote mentions threshold quantities, but extracted claim says all hazardous material storage."
-        },
-        predicate_math: { pass: false, reason: "No threshold was extracted from the quoted text." }
-      },
-      confidence: 0.32,
+      checks,
+      confidence: computeConfidence(checks),
       repair_tickets: [
         {
           ticket_id: "R-HAZMAT-HMBP-001",
@@ -47,19 +49,20 @@ export function verifyEvidence(scope: ScopePack, bundle: EvidenceBundle): Verifi
     }
 
     const passesThreshold = quantity >= threshold;
+    const checks = {
+      currency: { pass: true, reason: "source fetched from seeded cache for this run" },
+      authority: { pass: true, reason: "official/high-authority HMBP source fixture" },
+      grounding: { pass: true, reason: "quote contains the liquid hazardous material threshold" },
+      predicate_math: {
+        pass: passesThreshold,
+        reason: `${quantity} gallons ${passesThreshold ? ">=" : "<"} ${threshold} gallon threshold.`
+      }
+    };
     return {
       hypothesis_id: bundle.hypothesis_id,
       verdict: passesThreshold ? "pass" : "needs_review",
-      checks: {
-        currency: { pass: true, reason: "source fetched from seeded cache for this run" },
-        authority: { pass: true, reason: "official/high-authority HMBP source fixture" },
-        grounding: { pass: true, reason: "quote contains the liquid hazardous material threshold" },
-        predicate_math: {
-          pass: passesThreshold,
-          reason: `${quantity} gallons ${passesThreshold ? ">=" : "<"} ${threshold} gallon threshold.`
-        }
-      },
-      confidence: passesThreshold ? 0.9 : 0.58,
+      checks,
+      confidence: computeConfidence(checks),
       repair_tickets: []
     };
   }
@@ -78,19 +81,20 @@ export function verifyEvidence(scope: ScopePack, bundle: EvidenceBundle): Verifi
   if (bundle.hypothesis_id === "H-STORM-CGP") {
     const acres = scope.project_change.disturbance_acres;
     const passesThreshold = typeof acres === "number" && acres >= 1;
+    const checks = {
+      currency: { pass: true, reason: "source fetched from seeded cache for this run" },
+      authority: { pass: true, reason: "official state stormwater source fixture" },
+      grounding: { pass: true, reason: "quote contains one-acre construction disturbance threshold" },
+      predicate_math: {
+        pass: passesThreshold,
+        reason: passesThreshold ? `${acres} acres is at or above the 1 acre threshold.` : `${acres ?? "missing"} acres does not trigger a verified yes.`
+      }
+    };
     return {
       hypothesis_id: bundle.hypothesis_id,
       verdict: passesThreshold ? "pass" : "needs_review",
-      checks: {
-        currency: { pass: true, reason: "source fetched from seeded cache for this run" },
-        authority: { pass: true, reason: "official state stormwater source fixture" },
-        grounding: { pass: true, reason: "quote contains one-acre construction disturbance threshold" },
-        predicate_math: {
-          pass: passesThreshold,
-          reason: passesThreshold ? `${acres} acres is at or above the 1 acre threshold.` : `${acres ?? "missing"} acres does not trigger a verified yes.`
-        }
-      },
-      confidence: passesThreshold ? 0.9 : 0.62,
+      checks,
+      confidence: computeConfidence(checks),
       repair_tickets: []
     };
   }
@@ -99,16 +103,17 @@ export function verifyEvidence(scope: ScopePack, bundle: EvidenceBundle): Verifi
     return needsReview(bundle.hypothesis_id, "missing_fact", "SIC/NAICS is missing; industrial stormwater coverage cannot be verified.");
   }
 
+  const checks = {
+    currency: { pass: true, reason: "source fetched from seeded cache for this run" },
+    authority: { pass: source.authority_rank <= 2, reason: "source is official or high-authority" },
+    grounding: { pass: true, reason: "quote supports the extracted trigger or review path" },
+    predicate_math: { pass: true, reason: "available project facts support this seeded determination or review path" }
+  };
   return {
     hypothesis_id: bundle.hypothesis_id,
     verdict: "pass",
-    checks: {
-      currency: { pass: true, reason: "source fetched from seeded cache for this run" },
-      authority: { pass: source.authority_rank <= 2, reason: "source is official or high-authority" },
-      grounding: { pass: true, reason: "quote supports the extracted trigger or review path" },
-      predicate_math: { pass: true, reason: "available project facts support this seeded determination or review path" }
-    },
-    confidence: 0.84,
+    checks,
+    confidence: computeConfidence(checks),
     repair_tickets: []
   };
 }
@@ -164,16 +169,17 @@ export function repairEvidence(scope: ScopePack, ticket: RepairTicket): Evidence
 }
 
 function needsReview(hypothesis_id: string, failure_type: RepairTicket["failure_type"], reason: string): VerificationVerdict {
+  const checks = {
+    currency: { pass: true, reason: "source/cache status recorded" },
+    authority: { pass: true, reason: "authority could be evaluated or source failure was explicit" },
+    grounding: { pass: failure_type !== "source_failed", reason },
+    predicate_math: { pass: false, reason }
+  };
   return {
     hypothesis_id,
     verdict: "needs_review",
-    checks: {
-      currency: { pass: true, reason: "source/cache status recorded" },
-      authority: { pass: true, reason: "authority could be evaluated or source failure was explicit" },
-      grounding: { pass: failure_type !== "source_failed", reason },
-      predicate_math: { pass: false, reason }
-    },
-    confidence: 0.45,
+    checks,
+    confidence: computeConfidence(checks),
     repair_tickets: []
   };
 }
