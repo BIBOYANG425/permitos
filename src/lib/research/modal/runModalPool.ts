@@ -2,7 +2,8 @@ import { spawn as nodeSpawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import type { EvidenceBundle, ResearchHypothesis, ResearchTask } from "../types";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+// Real fetch + PDF parse + LLM extraction is slower than the old fixture echo.
+const DEFAULT_TIMEOUT_MS = 90_000;
 const BUNDLE_MARKER = "PERMITPILOT_BUNDLE_JSON ";
 const WORKER_SCRIPT = "src/lib/research/modal/worker.py";
 
@@ -58,6 +59,7 @@ async function runSingleTask(
   const taskSpec = {
     task_id: task.task_id,
     hypothesis_id: hypothesis.id,
+    question: hypothesis.question,
   };
   const argv = ["run", WORKER_SCRIPT, "--task-json", JSON.stringify(taskSpec)];
   const stdout = await spawnModalRun(argv, DEFAULT_TIMEOUT_MS);

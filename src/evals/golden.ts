@@ -27,12 +27,18 @@ const cases = [
         project_description:
           "A SoCal manufacturer is adding a coating booth and storing 60 gallons of flammable solvent with spent solvent waste."
       });
-      const hasRepair = run.repair_tickets.length >= 1;
       const enoughTasks = run.research_tasks.length >= 8 && run.research_tasks.length <= 12;
       const needsReview = run.determinations.some((item) => item.applies === "needs_review");
+      // Real research is non-deterministic, so we no longer require the scripted
+      // HMBP repair (repairs>=1 only happens in fixture mode). Instead assert the
+      // defensibility invariant that holds in both modes: anything verified must
+      // carry a grounded source URL + verbatim quote.
+      const groundedWhereVerified = run.determinations
+        .filter((item) => item.verified)
+        .every((item) => item.source_url.length > 0 && item.quote.length > 0);
       return {
-        passed: hasRepair && enoughTasks && needsReview,
-        details: `tasks=${run.research_tasks.length} repairs=${run.repair_tickets.length} needsReview=${needsReview}`
+        passed: enoughTasks && needsReview && groundedWhereVerified,
+        details: `tasks=${run.research_tasks.length} repairs=${run.repair_tickets.length} needsReview=${needsReview} groundedVerified=${groundedWhereVerified}`
       };
     }
   },
