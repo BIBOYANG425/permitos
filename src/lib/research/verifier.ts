@@ -103,19 +103,59 @@ export function verifyEvidence(scope: ScopePack, bundle: EvidenceBundle): Verifi
     return needsReview(bundle.hypothesis_id, "missing_fact", "SIC/NAICS is missing; industrial stormwater coverage cannot be verified.");
   }
 
+  // Generalized path: verify the agent's REAL evidence instead of rubber-stamping it.
+  // Grounding = the extracted claim cites a non-empty quote that actually appears in the
+  // cited source quote (whitespace-tolerant). Predicate = respect the researcher's grounded
+  // conclusion (needs_review never passes). A grounding failure -> fail + repair ticket so
+  // the verify->repair loop generalizes beyond the HMBP demo.
+  const claim = bundle.extracted_claims[0];
+  const sourceQuote = (source.quote ?? "").trim();
+  const claimQuote = (claim?.quote ?? "").trim();
+  const grounded =
+    sourceQuote.length > 0 &&
+    claimQuote.length > 0 &&
+    normWs(sourceQuote).includes(normWs(claimQuote));
+  const conclusion = bundle.researcher_conclusion;
+  const decided = conclusion === "applies" || conclusion === "does_not_apply";
+
   const checks = {
-    currency: { pass: true, reason: "source fetched from seeded cache for this run" },
-    authority: { pass: source.authority_rank <= 2, reason: "source is official or high-authority" },
-    grounding: { pass: true, reason: "quote supports the extracted trigger or review path" },
-    predicate_math: { pass: true, reason: "available project facts support this seeded determination or review path" }
+    currency: { pass: true, reason: `source fetched ${source.fetched_at?.slice(0, 10) ?? "(unknown)"}` },
+    authority: { pass: source.authority_rank <= 2, reason: source.authority_rank <= 2 ? "official or high-authority source" : "source authority rank is low" },
+    grounding: { pass: grounded, reason: grounded ? "extracted claim quote appears in the cited source quote" : "extracted claim is not grounded in the cited source quote" },
+    predicate_math: { pass: decided, reason: decided ? `researcher reached a grounded conclusion: ${conclusion}` : "researcher could not reach a grounded conclusion" }
   };
+
+  if (!grounded) {
+    return {
+      hypothesis_id: bundle.hypothesis_id,
+      verdict: "fail",
+      checks,
+      confidence: computeConfidence(checks),
+      repair_tickets: [
+        {
+          ticket_id: `R-${bundle.hypothesis_id}-001`,
+          hypothesis_id: bundle.hypothesis_id,
+          failure_type: "grounding_failed",
+          failed_check: "grounding",
+          observed_problem: "Extracted claim is not supported by a verbatim quote from the cited source.",
+          repair_action: "rerun extraction constrained to verbatim source text",
+          max_attempts_remaining: 1
+        }
+      ]
+    };
+  }
+
   return {
     hypothesis_id: bundle.hypothesis_id,
-    verdict: "pass",
+    verdict: checks.authority.pass && checks.predicate_math.pass ? "pass" : "needs_review",
     checks,
     confidence: computeConfidence(checks),
     repair_tickets: []
   };
+}
+
+function normWs(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
 }
 
 export function repairEvidence(scope: ScopePack, ticket: RepairTicket): EvidenceBundle {
