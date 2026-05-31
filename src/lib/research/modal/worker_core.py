@@ -49,6 +49,11 @@ def host_allowed(url: str) -> bool:
     return host in ALLOWED_HOSTS
 
 
+def evidence_row(run_id: str, bundle: dict) -> dict:
+    """Pure mapping: EvidenceBundle -> research_evidence row (Supabase upsert payload)."""
+    return {"run_id": run_id, "hypothesis_id": bundle.get("hypothesis_id", ""), "bundle": bundle}
+
+
 def failed_bundle(hypothesis_id: str, reason: str) -> dict:
     return {
         "hypothesis_id": hypothesis_id,

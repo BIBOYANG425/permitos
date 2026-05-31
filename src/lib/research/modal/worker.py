@@ -21,6 +21,7 @@ import modal
 from worker_core import (
     EXTRACTION_HINTS,
     SOURCE_POINTERS,
+    evidence_row,
     failed_bundle,
     run_research_agent,
 )
@@ -29,7 +30,7 @@ app = modal.App("permitpilot-research")
 
 image = (
     modal.Image.debian_slim()
-    .pip_install("httpx", "pymupdf", "beautifulsoup4", "openai", "fastapi[standard]")
+    .pip_install("httpx", "pymupdf", "beautifulsoup4", "openai", "fastapi[standard]", "supabase")
     .add_local_python_source("worker_core")
 )
 
@@ -189,6 +190,46 @@ def research(payload: dict) -> dict:
 @app.function(image=image, secrets=[modal.Secret.from_name("permitpilot-openai")], timeout=600)
 def research_task(task_spec: dict) -> dict:
     return _run(task_spec)
+
+
+def _supabase():
+    from supabase import create_client
+    return create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
+
+
+def _write_bundle(sb, run_id: str, bundle: dict) -> None:
+    sb.table("research_evidence").upsert(evidence_row(run_id, bundle)).execute()
+
+
+@app.function(image=image, secrets=[
+    modal.Secret.from_name("permitpilot-openai"),
+    modal.Secret.from_name("permitpilot-supabase"),
+], timeout=3600)
+def research_run(run_id: str, task_specs: list) -> dict:
+    sb = _supabase()
+    sb.table("research_runs").update({"status": "running"}).eq("run_id", run_id).execute()
+    written = 0
+    for result in research_task.map(task_specs):
+        _write_bundle(sb, run_id, result)
+        written += 1
+    sb.table("research_runs").update({"status": "bundles_complete"}).eq("run_id", run_id).execute()
+    return {"run_id": run_id, "written": written}
+
+
+@app.function(image=image, secrets=[
+    modal.Secret.from_name("permitpilot-research"),
+], timeout=60)
+@modal.fastapi_endpoint(method="POST")
+def start_run(payload: dict) -> dict:
+    expected = os.environ.get("RESEARCH_TOKEN", "")
+    if not expected or payload.get("token") != expected:
+        return {"error": "unauthorized"}
+    run_id = payload.get("run_id")
+    task_specs = payload.get("task_specs") or []
+    if not run_id:
+        return {"error": "missing run_id"}
+    research_run.spawn(run_id, task_specs)
+    return {"run_id": run_id, "status": "queued"}
 
 
 @app.local_entrypoint()

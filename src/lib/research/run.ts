@@ -11,56 +11,36 @@ const raindrop = new Raindrop({
   endpoint: process.env.RAINDROP_LOCAL_DEBUGGER,
 });
 
-export async function runResearch(input: ResearchRunInput): Promise<ResearchRun> {
-  const run_id = createRunId();
-  const interaction = raindrop.begin({
-    eventId: run_id,
-    event: "permit_research_run",
-    userId: "permitpilot-demo",
-    input: input.project_description,
-    properties: {
-      project_description_chars: input.project_description.length,
-      demo_documents_count: input.demo_documents?.length ?? 0,
-      use_modal: process.env.USE_MODAL === "1",
-    },
-  });
-  const trace_events = [
-    trace(run_id, "scope_agent", "scope", "running", "Parsing intake into ScopePack")
-  ];
+export type PlannedRun = {
+  run_id: string;
+  scope_pack: Awaited<ReturnType<typeof parseScope>>;
+  plan: ReturnType<typeof planResearch>;
+  trace_events: ReturnType<typeof trace>[];
+};
 
+export async function planRun(input: ResearchRunInput): Promise<PlannedRun> {
+  const run_id = createRunId();
+  const trace_events = [trace(run_id, "scope_agent", "scope", "running", "Parsing intake into ScopePack")];
   const scope_pack = await parseScope(input, run_id);
   trace_events.push(trace(run_id, "scope_agent", "scope", "done", "ScopePack created", run_id));
-
   const plan = planResearch(scope_pack);
   trace_events.push(
-    trace(
-      run_id,
-      "orchestrator",
-      "coverage",
-      "done",
-      `Inspected ${plan.coverage_family_statuses.length} coverage families and created ${plan.regulatory_angles.length} regulatory angles`
-    ),
-    trace(
-      run_id,
-      "orchestrator",
-      "task_graph",
-      "done",
-      `Created ${plan.research_graph.length} hypotheses and ${plan.research_tasks.length} source tasks`
-    ),
-    trace(run_id, "research_pool", "fanout", "running", `Launching ${plan.research_tasks.length} local async workers`)
+    trace(run_id, "orchestrator", "coverage", "done",
+      `Inspected ${plan.coverage_family_statuses.length} coverage families and created ${plan.regulatory_angles.length} regulatory angles`),
+    trace(run_id, "orchestrator", "task_graph", "done",
+      `Created ${plan.research_graph.length} hypotheses and ${plan.research_tasks.length} source tasks`)
   );
+  return { run_id, scope_pack, plan, trace_events };
+}
 
-  const poolResult = await runLocalResearchPool(plan.research_tasks, plan.research_graph);
-  const initialEvidence = poolResult.bundles;
-  if (poolResult.degraded) {
-    trace_events.push(
-      trace(run_id, "research_pool", "fanout", "needs_review",
-        `⚠ Modal unreachable — using cached fixtures (${poolResult.degraded.reason})`)
-    );
-  } else {
-    trace_events.push(trace(run_id, "research_pool", "fanout", "done", "Research worker pool returned evidence bundles"));
-  }
-
+export function finalizeRun(
+  run_id: string,
+  scope_pack: PlannedRun["scope_pack"],
+  plan: PlannedRun["plan"],
+  initialEvidence: EvidenceBundle[],
+  baseTrace: ReturnType<typeof trace>[]
+): ResearchRun {
+  const trace_events = [...baseTrace];
   const evidence_bundles: EvidenceBundle[] = [...initialEvidence];
   const verification_verdicts: VerificationVerdict[] = [];
   const repair_tickets = [];
@@ -68,33 +48,18 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
   for (const bundle of initialEvidence) {
     const verdict = verifyEvidence(scope_pack, bundle);
     verification_verdicts.push(verdict);
-
     if (verdict.verdict === "fail") {
-      trace_events.push(
-        trace(run_id, "verifier", "verification", "failed", `Verifier rejected ${bundle.hypothesis_id}`, bundle.hypothesis_id)
-      );
+      trace_events.push(trace(run_id, "verifier", "verification", "failed", `Verifier rejected ${bundle.hypothesis_id}`, bundle.hypothesis_id));
     }
-
     for (const ticket of verdict.repair_tickets) {
       repair_tickets.push(ticket);
-      trace_events.push(
-        trace(run_id, "orchestrator", "repair_ticket", "queued", ticket.observed_problem, ticket.ticket_id)
-      );
-
+      trace_events.push(trace(run_id, "orchestrator", "repair_ticket", "queued", ticket.observed_problem, ticket.ticket_id));
       const repairedEvidence = repairEvidence(scope_pack, ticket);
       evidence_bundles.push(repairedEvidence);
       const repairedVerdict = verifyEvidence(scope_pack, repairedEvidence);
       verification_verdicts.push(repairedVerdict);
-      trace_events.push(
-        trace(
-          run_id,
-          "verifier",
-          "repair_verification",
-          repairedVerdict.verdict === "pass" ? "done" : "needs_review",
-          `Repair verdict for ${ticket.hypothesis_id}: ${repairedVerdict.verdict}`,
-          ticket.hypothesis_id
-        )
-      );
+      trace_events.push(trace(run_id, "verifier", "repair_verification", repairedVerdict.verdict === "pass" ? "done" : "needs_review",
+        `Repair verdict for ${ticket.hypothesis_id}: ${repairedVerdict.verdict}`, ticket.hypothesis_id));
     }
   }
 
@@ -102,12 +67,10 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
   const latestEvidence = latestByHypothesis(evidence_bundles);
   const synthesis = synthesize(scope_pack, plan.research_graph, plan.regulatory_angles, latestEvidence, latestVerdicts);
   trace_events.push(trace(run_id, "synthesis_agent", "matrix", "done", "Applicability matrix synthesized"));
-
   const status = synthesis.determinations.some((row) => row.review_flag) ? "needs_review" : "done";
 
-  const result: ResearchRun = {
-    run_id,
-    status,
+  return {
+    run_id, status,
     project_facts: projectFacts(scope_pack),
     jurisdiction_stack: scope_pack.facility.jurisdiction_stack,
     scope_pack,
@@ -121,31 +84,58 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
     memory_updates: synthesis.memory_updates,
     determinations: synthesis.determinations,
     trace_events,
-    report_markdown: synthesis.report_markdown
+    report_markdown: synthesis.report_markdown,
   };
+}
 
+export async function runResearch(input: ResearchRunInput): Promise<ResearchRun> {
+  const planned = await planRun(input);
+  const { run_id } = planned;
+  const interaction = raindrop.begin({
+    eventId: run_id,
+    event: "permit_research_run",
+    userId: "permitpilot-demo",
+    input: input.project_description,
+    properties: {
+      project_description_chars: input.project_description.length,
+      demo_documents_count: input.demo_documents?.length ?? 0,
+      use_modal: process.env.USE_MODAL === "1",
+    },
+  });
+  const fanoutTrace = [...planned.trace_events,
+    trace(run_id, "research_pool", "fanout", "running", `Launching ${planned.plan.research_tasks.length} local async workers`)];
+  const poolResult = await runLocalResearchPool(planned.plan.research_tasks, planned.plan.research_graph);
+  if (poolResult.degraded) {
+    fanoutTrace.push(
+      trace(run_id, "research_pool", "fanout", "needs_review",
+        `⚠ Modal unreachable — using cached fixtures (${poolResult.degraded.reason})`)
+    );
+  } else {
+    fanoutTrace.push(trace(run_id, "research_pool", "fanout", "done", "Research worker pool returned evidence bundles"));
+  }
+  const result = finalizeRun(run_id, planned.scope_pack, planned.plan, poolResult.bundles, fanoutTrace);
   interaction.setProperties({
-    status,
-    hypotheses_count: plan.research_graph.length,
-    tasks_count: plan.research_tasks.length,
-    evidence_bundles_count: latestEvidence.length,
-    verdicts_count: latestVerdicts.length,
-    repair_tickets_count: repair_tickets.length,
-    determinations_count: synthesis.determinations.length,
-    needs_review_count: synthesis.determinations.filter((d) => d.review_flag).length,
-    trace_events_count: trace_events.length,
+    status: result.status,
+    hypotheses_count: planned.plan.research_graph.length,
+    tasks_count: planned.plan.research_tasks.length,
+    evidence_bundles_count: result.evidence_bundles.length,
+    verdicts_count: result.verification_verdicts.length,
+    repair_tickets_count: result.repair_tickets.length,
+    determinations_count: result.determinations.length,
+    needs_review_count: result.determinations.filter((d) => d.review_flag).length,
+    trace_events_count: result.trace_events.length,
   });
 
   // Real LLM-as-judge — independent GPT pass over the FINAL HMBP determination.
   // Doesn't override verifier verdict (preserves HMBP fail→repair demo); attaches
   // concurrence + reasoning as Raindrop trace properties so evaluators can see
   // a real LLM reasoning about real evidence inside the harness.
-  await runLlmJudgeOnHmbp(interaction, latestEvidence, latestVerdicts, trace_events, run_id);
+  await runLlmJudgeOnHmbp(interaction, result.evidence_bundles, result.verification_verdicts, result.trace_events, run_id);
 
   // Fire-and-forget — don't block the API response on Workshop ingestion.
   // SDK auto-flushes via internal timer; no external flush needed.
   void interaction
-    .finish({ output: synthesis.report_markdown.slice(0, 2000) })
+    .finish({ output: result.report_markdown.slice(0, 2000) })
     .catch(() => {
       // Workshop not running / Raindrop unreachable → silent in demo.
     });

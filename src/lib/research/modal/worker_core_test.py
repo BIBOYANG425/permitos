@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from worker_core import (  # noqa: E402
     SOURCE_POINTERS,
     assemble_evidence,
+    evidence_row,
     host_allowed,
     run_research_agent,
     exposed_tool_schemas,
@@ -197,6 +198,14 @@ def test_prove_currency_reports_unconfirmed_after_fetch():
     run_research_agent(_spec(max_calls=5), llm_fn=llm_fn, fetch_fn=fetch_fn, extract_fn=None, now_iso="t")
     assert "unconfirmed" in captured.get("payload", "")
     assert "current" not in captured.get("payload", "")
+
+
+def test_evidence_row_maps_bundle_to_supabase_row():
+    bundle = {"hypothesis_id": "H-AIR-201", "sources": [], "extracted_claims": [], "researcher_conclusion": "applies", "uncertainties": []}
+    row = evidence_row("run_9", bundle)
+    assert row["run_id"] == "run_9"
+    assert row["hypothesis_id"] == "H-AIR-201"
+    assert row["bundle"] == bundle
 
 
 if __name__ == "__main__":
