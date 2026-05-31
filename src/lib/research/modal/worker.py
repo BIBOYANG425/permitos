@@ -12,9 +12,9 @@ Prereqs: `modal setup`; a Modal secret `permitpilot-openai` holding OPENAI_API_K
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 
@@ -33,9 +33,13 @@ app = modal.App("permitpilot-research")
 # worker_core is a local module the function needs at runtime.
 image = (
     modal.Image.debian_slim()
-    .pip_install("httpx", "pypdf", "beautifulsoup4", "openai")
+    .pip_install("httpx", "pymupdf", "beautifulsoup4", "openai")
     .add_local_python_source("worker_core")
 )
+
+
+def _norm_ws(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
 
 MAX_BYTES = 5_000_000
 MAX_TEXT_CHARS = 24_000
@@ -84,10 +88,11 @@ def _fetch_and_parse(url: str) -> tuple[str, str]:
     content_hash = "sha256:" + hashlib.sha256(data).hexdigest()
 
     if "pdf" in ctype or url.lower().endswith(".pdf"):
-        from pypdf import PdfReader
+        import fitz  # pymupdf — far more robust text extraction than pypdf
 
-        reader = PdfReader(io.BytesIO(data))
-        text = "\n".join((page.extract_text() or "") for page in reader.pages)
+        doc = fitz.open(stream=data, filetype="pdf")
+        text = "\n".join(page.get_text() for page in doc)
+        doc.close()
     else:
         from bs4 import BeautifulSoup
 
@@ -122,7 +127,10 @@ def _extract(text: str, question: str, hint: dict) -> dict:
     out = json.loads(tool_calls[0].function.arguments or "{}")
     # Grounding guard: the quote must literally appear in the fetched text.
     quote = (out.get("verbatim_quote") or "").strip()
-    if quote and quote not in text:
+    # Grounding guard (whitespace-tolerant): the quote must appear in the fetched
+    # text once whitespace is normalized (PDF/HTML extraction spacing is irregular).
+    grounded = bool(quote) and _norm_ws(quote) in _norm_ws(text)
+    if quote and not grounded:
         out["verbatim_quote"] = ""
         out["applies"] = "needs_review"
     out.setdefault("field", field)

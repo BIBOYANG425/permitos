@@ -45,11 +45,11 @@ runResearch()
 
 - `src/lib/research/modal/worker.py` — Modal app `permitpilot-research`.
   For each task it fetches the allowlisted official `.gov` source
-  (`SOURCE_POINTERS` in `worker_core.py`), parses PDF (`pypdf`) or HTML
+  (`SOURCE_POINTERS` in `worker_core.py`), parses PDF (`pymupdf`) or HTML
   (`beautifulsoup4`), and asks `gpt-4o-mini` to extract the triggering clause +
-  a **verbatim quote** + threshold. The quote is grounding-checked (must be a
-  substring of the fetched text); any fetch/parse/extract failure or missing
-  quote degrades to a `needs_review` bundle. The final stdout line is marked
+  a **verbatim quote** + threshold. The quote is grounding-checked
+  (whitespace-normalized substring of the fetched text); any fetch/parse/extract
+  failure or missing/ungrounded quote degrades to a `needs_review` bundle. The final stdout line is marked
   `PERMITPILOT_BUNDLE_JSON ...` so the TS bridge can grep it.
 - `src/lib/research/modal/worker_core.py` — pure registry + `assemble_evidence`,
   unit-tested via `python3 src/lib/research/modal/worker_core_test.py` (no Modal needed).
