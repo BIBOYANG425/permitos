@@ -28,7 +28,7 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
     trace(run_id, "scope_agent", "scope", "running", "Parsing intake into ScopePack")
   ];
 
-  const scope_pack = parseScope(input, run_id);
+  const scope_pack = await parseScope(input, run_id);
   trace_events.push(trace(run_id, "scope_agent", "scope", "done", "ScopePack created", run_id));
 
   const plan = planResearch(scope_pack);
