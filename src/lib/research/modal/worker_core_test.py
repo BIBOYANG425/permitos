@@ -7,6 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from worker_core import (  # noqa: E402
+    SKILL_FOR_HYPOTHESIS,
     SOURCE_POINTERS,
     assemble_evidence,
     evidence_row,
@@ -28,6 +29,12 @@ def test_source_pointer_parity():
     assert not missing, f"SOURCE_POINTERS missing: {missing}"
     for hid, pointer in SOURCE_POINTERS.items():
         assert host_allowed(pointer["url"]), f"{hid} url not allowlisted: {pointer['url']}"
+
+
+def test_skill_for_hypothesis_parity():
+    # Every hypothesis the planner can emit must map to a skill (mirrors the TS parity test).
+    missing = PLANNER_HYPOTHESIS_IDS - set(SKILL_FOR_HYPOTHESIS)
+    assert not missing, f"SKILL_FOR_HYPOTHESIS missing: {missing}"
 
 
 def test_host_allowed():
@@ -65,7 +72,7 @@ def test_assemble_evidence_ungrounded_fails_closed():
 
 
 RESEARCHER_ALLOWED = [
-    "get_triggers", "get_source_pointers", "get_cached_source", "fetch_source",
+    "read_skill", "get_triggers", "get_source_pointers", "get_cached_source", "fetch_source",
     "prove_currency", "extract_threshold", "evaluate_predicate", "quarantine_injection",
 ]
 RESEARCHER_BLOCKED = [
@@ -206,6 +213,61 @@ def test_evidence_row_maps_bundle_to_supabase_row():
     assert row["run_id"] == "run_9"
     assert row["hypothesis_id"] == "H-AIR-201"
     assert row["bundle"] == bundle
+
+
+def test_agent_read_skill_returns_injected_content():
+    # read_skill resolves the hypothesis -> skill via SKILL_FOR_HYPOTHESIS and returns the
+    # injected content; the agent then grounds and submits.
+    captured = {}
+    seq = iter([
+        {"tool_calls": [_tc("c1", "read_skill", {})]},
+        {"tool_calls": [_tc("c2", "fetch_source", {})]},
+        {"tool_calls": [_tc("c3", "extract_threshold", {
+            "field": "liquid_gallons_threshold", "verbatim_quote": "55 gallons or more",
+            "applies": "applies", "confidence": 0.9})]},
+    ])
+
+    def llm_fn(messages, tools):
+        for m in messages:
+            if m.get("role") == "tool" and m.get("name") == "read_skill":
+                captured["payload"] = m["content"]
+        return next(seq, {"content": "done", "tool_calls": []})
+
+    fetch_fn = lambda url: ("sha256:x", "A facility storing 55 gallons or more must file an HMBP.")
+    read_skill_fn = lambda skill_id: f"SKILL[{skill_id}]: HMBP liquid threshold is 55 gallons."
+    bundle = run_research_agent(_spec(max_calls=5), llm_fn=llm_fn, fetch_fn=fetch_fn,
+                                extract_fn=None, now_iso="t", read_skill_fn=read_skill_fn)
+    assert "ca-hmbp" in captured.get("payload", "")  # resolved from SKILL_FOR_HYPOTHESIS
+    assert "55 gallons" in captured.get("payload", "")
+    assert bundle["researcher_conclusion"] == "applies"
+
+
+def test_read_skill_refused_when_not_allowed():
+    # read_skill out of scope -> dispatcher refuses (read_skill_fn never invoked), run continues.
+    allowed = [t for t in RESEARCHER_ALLOWED if t != "read_skill"]
+    captured = {}
+    seq = iter([
+        {"tool_calls": [_tc("c1", "read_skill", {})]},
+        {"tool_calls": [_tc("c2", "fetch_source", {})]},
+        {"tool_calls": [_tc("c3", "extract_threshold", {
+            "field": "f", "verbatim_quote": "the rule applies", "applies": "applies", "confidence": 0.8})]},
+    ])
+
+    def llm_fn(messages, tools):
+        for m in messages:
+            if m.get("role") == "tool" and m.get("name") == "read_skill":
+                captured["payload"] = m["content"]
+        return next(seq, {"content": "done", "tool_calls": []})
+
+    fetch_fn = lambda url: ("sha256:x", "the rule applies to this facility")
+
+    def _must_not_call(skill_id):
+        raise AssertionError("read_skill_fn must not be invoked for an out-of-scope tool")
+
+    bundle = run_research_agent(_spec(allowed=allowed, max_calls=5), llm_fn=llm_fn, fetch_fn=fetch_fn,
+                                extract_fn=None, now_iso="t", read_skill_fn=_must_not_call)
+    assert "not permitted" in captured.get("payload", "")
+    assert bundle["researcher_conclusion"] == "applies"
 
 
 if __name__ == "__main__":
