@@ -1,20 +1,18 @@
-"""Modal worker — real research: fetch the allowlisted source, LLM-extract the
-triggering clause/quote/threshold, return an EvidenceBundle.
+"""Modal worker — catalog-governed agentic researcher behind an HTTP endpoint.
 
-Pure registry + assembly live in worker_core.py (unit-tested without modal).
+The agentic loop + guardrails live in worker_core.run_research_agent (unit-tested
+without modal/openai). This module supplies the real llm/fetch/extract functions
+and a token-authed FastAPI endpoint. ALL-REASONING: uses a reasoning-tier model for
+both the loop and extraction (max_completion_tokens, no temperature, tool_choice=required).
 
-Invocation:
-    modal run src/lib/research/modal/worker.py \
-      --task-json '{"task_id":"T-1","hypothesis_id":"H-AIR-201","question":"Does the coating booth need an SCAQMD permit?"}'
-
-Prereqs: `modal setup`; a Modal secret `permitpilot-openai` holding OPENAI_API_KEY.
+Deploy:  modal deploy src/lib/research/modal/worker.py
+Secrets: `permitpilot-openai` (OPENAI_API_KEY), `permitpilot-research` (RESEARCH_TOKEN)
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import os
-import re
 import sys
 from datetime import datetime, timezone
 
@@ -23,60 +21,36 @@ import modal
 from worker_core import (
     EXTRACTION_HINTS,
     SOURCE_POINTERS,
-    assemble_evidence,
     failed_bundle,
-    host_allowed,
+    run_research_agent,
 )
 
 app = modal.App("permitpilot-research")
 
-# worker_core is a local module the function needs at runtime.
 image = (
     modal.Image.debian_slim()
-    .pip_install("httpx", "pymupdf", "beautifulsoup4", "openai")
+    .pip_install("httpx", "pymupdf", "beautifulsoup4", "openai", "fastapi[standard]")
     .add_local_python_source("worker_core")
 )
-
-
-def _norm_ws(text: str) -> str:
-    return re.sub(r"\s+", " ", text).strip()
 
 MAX_BYTES = 5_000_000
 MAX_TEXT_CHARS = 24_000
 HTTP_TIMEOUT_S = 15.0
 
 EXTRACT_SYSTEM = (
-    "You are an EHS regulatory research assistant. You are given the text of an "
-    "official regulatory source and a research question. Extract ONLY what the "
-    "text actually says. The verbatim_quote MUST be copied exactly from the source "
-    "text. If the text does not support a finding, set applies to needs_review and "
-    "leave verbatim_quote empty. Never invent thresholds or quotes."
+    "You are an EHS regulatory research assistant. Extract ONLY what the text actually "
+    "says. The verbatim_quote MUST be copied exactly from the source text. If the text "
+    "does not support a finding, set applies to needs_review and leave verbatim_quote empty."
 )
 
 
-def _extract_tool(field: str) -> dict:
-    return {
-        "type": "function",
-        "function": {
-            "name": "extract_finding",
-            "description": "Return the grounded finding for the research question.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "field": {"type": "string", "enum": [field]},
-                    "threshold_value": {"type": ["number", "null"]},
-                    "triggering_clause": {"type": "string"},
-                    "verbatim_quote": {"type": "string"},
-                    "applies": {"type": "string", "enum": ["applies", "does_not_apply", "needs_review"]},
-                    "confidence": {"type": "number"},
-                },
-                "required": ["field", "verbatim_quote", "applies", "confidence"],
-            },
-        },
-    }
+def _model() -> str:
+    # All-reasoning worker: default to a reasoning-tier model; operator overrides via env
+    # with a reasoning model their OpenAI account has access to.
+    return os.environ.get("OPENAI_RESEARCH_MODEL", "o4-mini")
 
 
-def _fetch_and_parse(url: str) -> tuple[str, str]:
+def _fetch_fn(url: str) -> tuple[str, str]:
     import httpx
 
     with httpx.Client(follow_redirects=True, timeout=HTTP_TIMEOUT_S) as client:
@@ -84,11 +58,9 @@ def _fetch_and_parse(url: str) -> tuple[str, str]:
         resp.raise_for_status()
         ctype = resp.headers.get("content-type", "").lower()
         data = resp.content[:MAX_BYTES]
-
     content_hash = "sha256:" + hashlib.sha256(data).hexdigest()
-
     if "pdf" in ctype or url.lower().endswith(".pdf"):
-        import fitz  # pymupdf — far more robust text extraction than pypdf
+        import fitz
 
         doc = fitz.open(stream=data, filetype="pdf")
         text = "\n".join(page.get_text() for page in doc)
@@ -97,77 +69,130 @@ def _fetch_and_parse(url: str) -> tuple[str, str]:
         from bs4 import BeautifulSoup
 
         text = BeautifulSoup(data, "html.parser").get_text(" ", strip=True)
-
     return content_hash, text[:MAX_TEXT_CHARS]
 
 
-def _extract(text: str, question: str, hint: dict) -> dict:
+def _to_openai_messages(messages: list[dict]) -> list[dict]:
+    """Translate the loop's internal messages into OpenAI chat format.
+
+    Internal assistant turns carry tool_calls as {"id","name","arguments"(dict)};
+    internal tool turns carry {"tool_call_id","content"}. System/user pass through.
+    """
+    out = []
+    for m in messages:
+        role = m.get("role")
+        if role == "assistant" and m.get("tool_calls"):
+            out.append({
+                "role": "assistant",
+                "content": m.get("content") or "",
+                "tool_calls": [
+                    {"id": c["id"], "type": "function",
+                     "function": {"name": c["name"], "arguments": json.dumps(c.get("arguments", {}))}}
+                    for c in m["tool_calls"]
+                ],
+            })
+        elif role == "tool":
+            out.append({"role": "tool", "tool_call_id": m.get("tool_call_id", ""), "content": m.get("content", "")})
+        else:
+            out.append({"role": role, "content": m.get("content") or ""})
+    return out
+
+
+def _llm_fn(messages: list[dict], tools: list[dict]) -> dict:
+    """One OpenAI chat call. Returns the assistant turn normalized for the loop.
+
+    Does NOT mutate `messages` — the loop records the assistant turn itself.
+    Reasoning-model compatible: max_completion_tokens, no temperature.
+    """
     from openai import OpenAI
 
-    client = OpenAI()  # OPENAI_API_KEY from the Modal secret env
+    client = OpenAI()
+    kwargs = {"model": _model(), "messages": _to_openai_messages(messages), "max_completion_tokens": 4000}
+    if tools:
+        kwargs["tools"] = tools
+    msg = client.chat.completions.create(**kwargs).choices[0].message
+    out = []
+    for tc in (msg.tool_calls or []):
+        try:
+            args = json.loads(tc.function.arguments or "{}")
+        except json.JSONDecodeError:
+            args = {}
+        out.append({"id": tc.id, "name": tc.function.name, "arguments": args})
+    return {"content": msg.content, "tool_calls": out}
+
+
+def _extract_fn(text: str, question: str, hint: dict) -> dict:
+    from openai import OpenAI
+
+    client = OpenAI()
     field = hint.get("field", "source_claim")
     ask = hint.get("ask", "the clause that determines whether this requirement applies")
-    model = os.environ.get("OPENAI_INTAKE_MODEL", "gpt-4o-mini")
-
+    tool = {
+        "type": "function",
+        "function": {
+            "name": "extract_finding",
+            "description": "Return the grounded finding.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "field": {"type": "string", "enum": [field]},
+                    "threshold_value": {"type": ["number", "null"]},
+                    "verbatim_quote": {"type": "string"},
+                    "applies": {"type": "string", "enum": ["applies", "does_not_apply", "needs_review"]},
+                    "confidence": {"type": "number"},
+                },
+                "required": ["field", "verbatim_quote", "applies", "confidence"],
+            },
+        },
+    }
     completion = client.chat.completions.create(
-        model=model,
+        model=_model(),
         messages=[
             {"role": "system", "content": EXTRACT_SYSTEM},
             {"role": "user", "content": f"Research question: {question}\nExtract {ask}.\n\nSOURCE TEXT:\n{text}"},
         ],
-        tools=[_extract_tool(field)],
-        tool_choice={"type": "function", "function": {"name": "extract_finding"}},
-        max_tokens=600,
+        tools=[tool],
+        tool_choice="required",
+        max_completion_tokens=2000,
     )
-
-    tool_calls = completion.choices[0].message.tool_calls or []
-    if not tool_calls:
+    calls = completion.choices[0].message.tool_calls or []
+    if not calls:
         return {"field": field, "verbatim_quote": "", "applies": "needs_review", "confidence": 0.3}
-
-    out = json.loads(tool_calls[0].function.arguments or "{}")
-    # Grounding guard: the quote must literally appear in the fetched text.
-    quote = (out.get("verbatim_quote") or "").strip()
-    # Grounding guard (whitespace-tolerant): the quote must appear in the fetched
-    # text once whitespace is normalized (PDF/HTML extraction spacing is irregular).
-    grounded = bool(quote) and _norm_ws(quote) in _norm_ws(text)
-    if quote and not grounded:
-        out["verbatim_quote"] = ""
-        out["applies"] = "needs_review"
-    out.setdefault("field", field)
-    return out
+    return json.loads(calls[0].function.arguments or "{}")
 
 
-@app.function(image=image, secrets=[modal.Secret.from_name("permitpilot-openai")], timeout=120)
+def _run(task_spec: dict) -> dict:
+    hid = task_spec.get("hypothesis_id", "")
+    if SOURCE_POINTERS.get(hid) is None:
+        return failed_bundle(hid, f"No source pointer for {hid}")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        return run_research_agent(task_spec, llm_fn=_llm_fn, fetch_fn=_fetch_fn,
+                                  extract_fn=_extract_fn, now_iso=now_iso)
+    except Exception as exc:  # noqa: BLE001 — never throw out of the worker
+        return failed_bundle(hid, f"Agent failed: {exc}")
+
+
+@app.function(image=image, secrets=[
+    modal.Secret.from_name("permitpilot-openai"),
+    modal.Secret.from_name("permitpilot-research"),
+], timeout=300)
+@modal.fastapi_endpoint(method="POST")
+def research(payload: dict) -> dict:
+    expected = os.environ.get("RESEARCH_TOKEN", "")
+    if not expected or payload.get("token") != expected:
+        return {"error": "unauthorized"}
+    task_spec = payload.get("task_spec") or {}
+    return _run(task_spec)
+
+
+@app.function(image=image, secrets=[modal.Secret.from_name("permitpilot-openai")], timeout=300)
 def research_task(task_spec: dict) -> dict:
-    hypothesis_id = task_spec.get("hypothesis_id", "")
-    question = task_spec.get("question") or hypothesis_id
-    pointer = SOURCE_POINTERS.get(hypothesis_id)
-    if pointer is None:
-        return failed_bundle(hypothesis_id, f"No source pointer for {hypothesis_id}")
-    if not host_allowed(pointer["url"]):
-        return failed_bundle(hypothesis_id, f"Refused non-allowlisted host for {pointer['url']}")
-
-    try:
-        content_hash, text = _fetch_and_parse(pointer["url"])
-    except Exception as exc:  # noqa: BLE001 — fail closed with the reason
-        return failed_bundle(hypothesis_id, f"Fetch/parse failed: {exc}")
-
-    if not text.strip():
-        return failed_bundle(hypothesis_id, "Fetched source had no extractable text.")
-
-    try:
-        extract = _extract(text, question, EXTRACTION_HINTS.get(hypothesis_id, {}))
-    except Exception as exc:  # noqa: BLE001
-        return failed_bundle(hypothesis_id, f"Extraction failed: {exc}")
-
-    fetched_at = datetime.now(timezone.utc).isoformat()
-    return assemble_evidence(hypothesis_id, pointer, content_hash, fetched_at, extract)
+    return _run(task_spec)
 
 
 @app.local_entrypoint()
 def main(task_json: str) -> None:
-    task_spec = json.loads(task_json)
-    result = research_task.remote(task_spec)
-    # Single marked JSON line on stdout for the TS bridge to grep.
+    result = research_task.remote(json.loads(task_json))
     sys.stdout.write("PERMITPILOT_BUNDLE_JSON " + json.dumps(result) + "\n")
     sys.stdout.flush()
