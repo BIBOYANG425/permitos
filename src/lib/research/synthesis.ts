@@ -65,7 +65,8 @@ function determinationFor(
     source_url: source?.url ?? "",
     confidence: verdict?.confidence ?? 0.2,
     verified,
-    review_flag: !verified
+    review_flag: !verified,
+    permit_filing: verified ? evidence?.permit_filing : undefined
   } satisfies Determination;
 }
 

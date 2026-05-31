@@ -5,9 +5,25 @@ import { runLocalResearchPool } from "./workers";
 import { repairEvidence, verifyEvidence } from "./verifier";
 import { synthesize } from "./synthesis";
 import { trace } from "./trace";
+import { Raindrop } from "raindrop-ai";
+
+const raindrop = new Raindrop({
+  endpoint: process.env.RAINDROP_LOCAL_DEBUGGER,
+});
 
 export async function runResearch(input: ResearchRunInput): Promise<ResearchRun> {
   const run_id = createRunId();
+  const interaction = raindrop.begin({
+    eventId: run_id,
+    event: "permit_research_run",
+    userId: "permitpilot-demo",
+    input: input.project_description,
+    properties: {
+      project_description_chars: input.project_description.length,
+      demo_documents_count: input.demo_documents?.length ?? 0,
+      use_modal: process.env.USE_MODAL === "1",
+    },
+  });
   const trace_events = [
     trace(run_id, "scope_agent", "scope", "running", "Parsing intake into ScopePack")
   ];
@@ -81,7 +97,7 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
 
   const status = synthesis.determinations.some((row) => row.review_flag) ? "needs_review" : "done";
 
-  return {
+  const result: ResearchRun = {
     run_id,
     status,
     project_facts: projectFacts(scope_pack),
@@ -99,6 +115,27 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
     trace_events,
     report_markdown: synthesis.report_markdown
   };
+
+  interaction.setProperties({
+    status,
+    hypotheses_count: plan.research_graph.length,
+    tasks_count: plan.research_tasks.length,
+    evidence_bundles_count: latestEvidence.length,
+    verdicts_count: latestVerdicts.length,
+    repair_tickets_count: repair_tickets.length,
+    determinations_count: synthesis.determinations.length,
+    needs_review_count: synthesis.determinations.filter((d) => d.review_flag).length,
+    trace_events_count: trace_events.length,
+  });
+  // Fire-and-forget — don't block the API response on Workshop ingestion.
+  // SDK auto-flushes via internal timer; no external flush needed.
+  void interaction
+    .finish({ output: synthesis.report_markdown.slice(0, 2000) })
+    .catch(() => {
+      // Workshop not running / Raindrop unreachable → silent in demo.
+    });
+
+  return result;
 }
 
 function latestByHypothesis<T extends { hypothesis_id: string }>(items: T[]) {

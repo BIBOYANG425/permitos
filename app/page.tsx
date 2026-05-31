@@ -4,7 +4,8 @@ import { Header } from "./components/Header";
 import { InputPanel } from "./components/InputPanel";
 import { ResearchGraph } from "./components/ResearchGraph";
 import { SidePanel } from "./components/SidePanel";
-import { BottomPanel } from "./components/BottomPanel";
+import { ReportCards } from "./components/ReportCards";
+import { ReportOverlay } from "./components/ReportOverlay";
 import { EvidenceDrawer } from "./components/EvidenceDrawer";
 import { SandboxGrid } from "./components/SandboxGrid";
 import { IntakeChat } from "./components/IntakeChat";
@@ -34,7 +35,8 @@ export default function Page() {
         <SidePanel />
         <EvidenceDrawer />
       </div>
-      <BottomPanel />
+      <ReportCards />
+      <ReportOverlay />
     </div>
   );
 }

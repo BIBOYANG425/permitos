@@ -1,3 +1,5 @@
+import type { HarnessToolId } from "./toolCatalog";
+
 export type RunStatus =
   | "idle"
   | "queued"
@@ -84,8 +86,8 @@ export type ResearchTask = {
   task_id: string;
   hypothesis_id: string;
   assigned_agent: string;
-  allowed_tools: string[];
-  blocked_tools: string[];
+  allowed_tools: HarnessToolId[];
+  blocked_tools: HarnessToolId[];
   budget: {
     max_sources: number;
     max_runtime_seconds: number;
@@ -104,6 +106,13 @@ export type SourceFixture = {
   effective_date: string | null;
   quote: string;
   extracted: Record<string, string | number | boolean | null>;
+  permit_filing?: {
+    form_name: string;
+    form_url: string;
+    agency: string;
+    portal_url: string;
+    instructions?: string;
+  };
 };
 
 export type EvidenceBundle = {
@@ -126,6 +135,13 @@ export type EvidenceBundle = {
   }>;
   researcher_conclusion: "applies" | "does_not_apply" | "needs_review";
   uncertainties: string[];
+  permit_filing?: {
+    form_name: string;
+    form_url: string;
+    agency: string;
+    portal_url: string;
+    instructions?: string;
+  };
 };
 
 export type VerificationVerdict = {
@@ -157,6 +173,13 @@ export type Determination = {
   confidence: number;
   verified: boolean;
   review_flag: boolean;
+  permit_filing?: {
+    form_name: string;
+    form_url: string;
+    agency: string;
+    portal_url: string;
+    instructions?: string;
+  };
 };
 
 export type TraceEvent = {
