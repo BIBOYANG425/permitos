@@ -166,7 +166,37 @@ endpoint: fixtures + degraded trace.
 - Caching fetched sources across runs (`get_cached_source` stays a catalog entry, not wired).
 - Streaming partial results to the UI (still one bundle per task at the end).
 - Re-implementing the TS catalog in Python (scope is passed in per task instead).
-- Changing the verifier / synthesis / determinations contract.
+- Durable `Function.spawn` + `modal.Dict` + polling topology (a real multi-agent run can still
+  hit the Vercel route timeout — deferred; see the live-agent-sdk autoplan v2).
+
+## Amendments (2026-05-30, post-approval)
+
+Two decisions were taken after the initial approval, reconciling with the approved
+`2026-05-30-live-agent-sdk-modal-runtime.md` autoplan (same goal, different engine):
+
+1. **Consume-side generalization is now IN scope (was excluded above).** Confirmed against
+   the code: `verifier.ts:106` rubber-stamps any non-special-cased bundle
+   (`grounding`/`predicate_math` hardcoded `pass:true`), and `synthesis.ts:73` `appliesFor`
+   returns `"yes"` for everything except `H-STORM-CGP`, ignoring `researcher_conclusion`.
+   So real worker evidence would be auto-passed / overwritten for non-demo hypotheses — a
+   correctness/safety hole in a compliance product. We generalize the **verifier** (real
+   grounding: the extracted claim's quote must appear in the cited source quote; predicate
+   respects `researcher_conclusion`; grounding-fail → `fail` + repair ticket) and
+   **synthesis** (`appliesFor` reads `researcher_conclusion`). The HMBP/CGP special cases
+   stay (the fixture demo moment is preserved). `confidence.ts` check-names already align
+   with the verifier's emitted names (`currency/authority/grounding/predicate_math`) — no
+   change. `repairEvidence`'s generic `needs_review` return is acceptable given the
+   generalized verifier now routes correctly.
+
+2. **All-reasoning worker.** The worker uses a reasoning-tier model for BOTH the agentic
+   loop and the extraction/judgment (chosen for max quality). Implications baked into the
+   plan: model is env-configurable (`OPENAI_RESEARCH_MODEL`, default a reasoning model);
+   the OpenAI calls use `max_completion_tokens` (not `max_tokens`), omit a custom
+   `temperature` (reasoning models reject it), and use `tool_choice:"required"` rather than
+   a forced single-function choice (broader reasoning-model compatibility). Timeouts rise:
+   Modal function `timeout` → 300s, Node fetch request timeout → 300s. Budget caps
+   (`max_model_calls`, `max_sources`) remain the latency/cost backstop. NOTE: a long
+   all-reasoning run amplifies the deferred Vercel-route-timeout limitation above.
 
 ## Success Criteria
 

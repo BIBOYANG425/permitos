@@ -1155,3 +1155,268 @@ pnpm build
 All green = ready for the final review and PR. The live endpoint behavior (Success
 Criteria 1) is validated by the operator via Task 6's smoke check after `modal deploy`.
 ```
+
+---
+
+## ADDENDUM (2026-05-30, post-approval) — consume-side generalization + all-reasoning worker
+
+Two scope additions approved after the initial plan (see the spec Amendments). New tasks
+**2A** and **2B** run BEFORE Task 3 (consume-side first, per the autoplan's risk-ordering).
+Tasks 3 and 4 get small deltas for the all-reasoning model + timeouts.
+
+### Task 2A: Generalize the verifier (real grounding, no rubber-stamp)
+
+**Files:**
+- Modify: `src/lib/research/verifier.ts` (replace the generic branch at lines ~106-118; add a `normWs` helper)
+- Test: `src/lib/research/__tests__/verifier.test.ts` (CREATE)
+
+Keep ALL existing special cases (HMBP demo-bad, HMBP threshold, WASTE/WASTEWATER gates,
+STORM-CGP acres, STORM-IGP sic/naics gate) UNCHANGED — only the final generic branch changes.
+
+- [ ] **Step 1: Write failing tests** — create `src/lib/research/__tests__/verifier.test.ts`:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { verifyEvidence } from "../verifier";
+import type { EvidenceBundle, ScopePack } from "../types";
+
+const scope: ScopePack = {
+  run_id: "r",
+  facility: { address: "X", jurisdiction_stack: [], naics: "323111", sic: null },
+  project_change: { description: "d", equipment: [], chemicals: [], waste_streams: [], disturbance_acres: null, process_discharge: null },
+  missing_facts: [],
+  assumptions: [],
+};
+
+function bundle(over: Partial<EvidenceBundle> = {}): EvidenceBundle {
+  const quote = "A permit to construct is required for this equipment.";
+  return {
+    hypothesis_id: "H-AIR-201",
+    sources: [{ url: "https://www.aqmd.gov/x", source_name: "SCAQMD Rule 201", authority_rank: 1, fetched_at: "2026-05-30T00:00:00Z", content_hash: "sha256:z", effective_date: null, quote }],
+    extracted_claims: [{ field: "permit_trigger", value: "permit required", source_url: "https://www.aqmd.gov/x", quote, confidence: 0.9 }],
+    researcher_conclusion: "applies",
+    uncertainties: [],
+    ...over,
+  };
+}
+
+describe("verifyEvidence generic path", () => {
+  it("passes a grounded, decided bundle (quote appears in the cited source)", () => {
+    const v = verifyEvidence(scope, bundle());
+    expect(v.verdict).toBe("pass");
+    expect(v.checks.grounding.pass).toBe(true);
+    expect(v.checks.predicate_math.pass).toBe(true);
+  });
+
+  it("fails + emits a repair ticket when the extracted claim quote is NOT in the source quote", () => {
+    const ungrounded = bundle({
+      extracted_claims: [{ field: "permit_trigger", value: "x", source_url: "https://www.aqmd.gov/x", quote: "TEXT THAT IS NOT IN THE SOURCE", confidence: 0.9 }],
+    });
+    const v = verifyEvidence(scope, ungrounded);
+    expect(v.verdict).toBe("fail");
+    expect(v.checks.grounding.pass).toBe(false);
+    expect(v.repair_tickets).toHaveLength(1);
+    expect(v.repair_tickets[0].failed_check).toBe("grounding");
+  });
+
+  it("needs_review when grounded but the researcher reached no decision", () => {
+    const undecided = bundle({ researcher_conclusion: "needs_review" });
+    const v = verifyEvidence(scope, undecided);
+    expect(v.verdict).toBe("needs_review");
+    expect(v.checks.grounding.pass).toBe(true);
+    expect(v.checks.predicate_math.pass).toBe(false);
+  });
+
+  it("needs_review when source authority is low even if grounded + decided", () => {
+    const lowAuth = bundle({
+      sources: [{ url: "https://www.aqmd.gov/x", source_name: "blog", authority_rank: 3, fetched_at: "2026-05-30T00:00:00Z", content_hash: "sha256:z", effective_date: null, quote: "A permit to construct is required for this equipment." }],
+    });
+    const v = verifyEvidence(scope, lowAuth);
+    expect(v.verdict).toBe("needs_review");
+    expect(v.checks.authority.pass).toBe(false);
+  });
+});
+```
+
+- [ ] **Step 2: Run to verify they fail** — `pnpm test -- verifier` → FAIL (the current generic branch hardcodes grounding/predicate `pass:true`, so the ungrounded and needs_review cases wrongly pass).
+
+- [ ] **Step 3: Implement** — in `src/lib/research/verifier.ts` replace the FINAL generic block (currently):
+
+```typescript
+  const checks = {
+    currency: { pass: true, reason: "source fetched from seeded cache for this run" },
+    authority: { pass: source.authority_rank <= 2, reason: "source is official or high-authority" },
+    grounding: { pass: true, reason: "quote supports the extracted trigger or review path" },
+    predicate_math: { pass: true, reason: "available project facts support this seeded determination or review path" }
+  };
+  return {
+    hypothesis_id: bundle.hypothesis_id,
+    verdict: "pass",
+    checks,
+    confidence: computeConfidence(checks),
+    repair_tickets: []
+  };
+}
+```
+
+with:
+
+```typescript
+  // Generalized path: verify the agent's REAL evidence instead of rubber-stamping it.
+  // Grounding = the extracted claim cites a non-empty quote that actually appears in the
+  // cited source quote (whitespace-tolerant). Predicate = respect the researcher's grounded
+  // conclusion (needs_review never passes). A grounding failure -> fail + repair ticket so
+  // the verify->repair loop generalizes beyond the HMBP demo.
+  const claim = bundle.extracted_claims[0];
+  const sourceQuote = (source.quote ?? "").trim();
+  const claimQuote = (claim?.quote ?? "").trim();
+  const grounded =
+    sourceQuote.length > 0 &&
+    claimQuote.length > 0 &&
+    normWs(sourceQuote).includes(normWs(claimQuote));
+  const conclusion = bundle.researcher_conclusion;
+  const decided = conclusion === "applies" || conclusion === "does_not_apply";
+
+  const checks = {
+    currency: { pass: true, reason: `source fetched ${source.fetched_at?.slice(0, 10) ?? "(unknown)"}` },
+    authority: { pass: source.authority_rank <= 2, reason: source.authority_rank <= 2 ? "official or high-authority source" : "source authority rank is low" },
+    grounding: { pass: grounded, reason: grounded ? "extracted claim quote appears in the cited source quote" : "extracted claim is not grounded in the cited source quote" },
+    predicate_math: { pass: decided, reason: decided ? `researcher reached a grounded conclusion: ${conclusion}` : "researcher could not reach a grounded conclusion" }
+  };
+
+  if (!grounded) {
+    return {
+      hypothesis_id: bundle.hypothesis_id,
+      verdict: "fail",
+      checks,
+      confidence: computeConfidence(checks),
+      repair_tickets: [
+        {
+          ticket_id: `R-${bundle.hypothesis_id}-001`,
+          hypothesis_id: bundle.hypothesis_id,
+          failure_type: "grounding_failed",
+          failed_check: "grounding",
+          observed_problem: "Extracted claim is not supported by a verbatim quote from the cited source.",
+          repair_action: "rerun extraction constrained to verbatim source text",
+          max_attempts_remaining: 1
+        }
+      ]
+    };
+  }
+
+  return {
+    hypothesis_id: bundle.hypothesis_id,
+    verdict: checks.authority.pass && checks.predicate_math.pass ? "pass" : "needs_review",
+    checks,
+    confidence: computeConfidence(checks),
+    repair_tickets: []
+  };
+}
+
+function normWs(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+```
+
+- [ ] **Step 4: Run** — `pnpm test -- verifier` PASS; then `pnpm test` full suite green; `pnpm typecheck` clean.
+- [ ] **Step 5: Commit** — `git add src/lib/research/verifier.ts src/lib/research/__tests__/verifier.test.ts && git commit -m "feat(verifier): real grounding for the generic path (no rubber-stamp); grounding-fail -> repair"`
+
+### Task 2B: Synthesis reads `researcher_conclusion`
+
+**Files:**
+- Modify: `src/lib/research/synthesis.ts` (`appliesFor` + its call site)
+- Test: `src/lib/research/__tests__/synthesis.test.ts` (CREATE)
+
+- [ ] **Step 1: Write failing tests** — create `src/lib/research/__tests__/synthesis.test.ts`:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { synthesize } from "../synthesis";
+import type { EvidenceBundle, RegulatoryAngle, ResearchHypothesis, ScopePack, VerificationVerdict } from "../types";
+
+const scope: ScopePack = {
+  run_id: "r",
+  facility: { address: "X", jurisdiction_stack: [], naics: null, sic: null },
+  project_change: { description: "d", equipment: [], chemicals: [], waste_streams: [], disturbance_acres: null, process_discharge: null },
+  missing_facts: [],
+  assumptions: [],
+};
+const hypothesis: ResearchHypothesis = {
+  id: "H-AIR-201", angle_id: "A-AIR", family: "air", question: "Permit to construct?",
+  required_facts: [], expected_source_type: "regulation", success_criteria: [], dependencies: [],
+};
+const angle: RegulatoryAngle = { id: "A-AIR", family: "air", label: "Air permit", reason: "", triggering_facts: [], status: "active" };
+function ev(conclusion: EvidenceBundle["researcher_conclusion"]): EvidenceBundle {
+  return {
+    hypothesis_id: "H-AIR-201",
+    sources: [{ url: "u", source_name: "s", authority_rank: 1, fetched_at: "2026-05-30T00:00:00Z", content_hash: "h", effective_date: null, quote: "q" }],
+    extracted_claims: [{ field: "permit_trigger", value: "v", source_url: "u", quote: "q", confidence: 0.9 }],
+    researcher_conclusion: conclusion,
+    uncertainties: [],
+  };
+}
+const passVerdict: VerificationVerdict = {
+  hypothesis_id: "H-AIR-201", verdict: "pass",
+  checks: { grounding: { pass: true, reason: "" } }, confidence: 0.9, repair_tickets: [],
+};
+
+describe("synthesize reads researcher_conclusion", () => {
+  it("maps a verified does_not_apply finding to applies=no", () => {
+    const { determinations } = synthesize(scope, [hypothesis], [angle], [ev("does_not_apply")], [passVerdict]);
+    expect(determinations[0].applies).toBe("no");
+    expect(determinations[0].verified).toBe(true);
+  });
+  it("maps a verified applies finding to applies=yes", () => {
+    const { determinations } = synthesize(scope, [hypothesis], [angle], [ev("applies")], [passVerdict]);
+    expect(determinations[0].applies).toBe("yes");
+  });
+});
+```
+
+- [ ] **Step 2: Run to verify they fail** — `pnpm test -- synthesis` → FAIL (current `appliesFor` returns "yes" for non-CGP regardless of conclusion, so the does_not_apply case wrongly yields "yes").
+
+- [ ] **Step 3: Implement** — in `src/lib/research/synthesis.ts`:
+  (a) change the call site (currently line 56) from
+  `const applies = verified ? appliesFor(scope, hypothesis) : "needs_review";`
+  to
+  `const applies = verified ? appliesFor(scope, hypothesis, evidence) : "needs_review";`
+  (b) replace `appliesFor` with:
+
+```typescript
+function appliesFor(
+  scope: ScopePack,
+  hypothesis: ResearchHypothesis,
+  evidence: EvidenceBundle | undefined
+): Determination["applies"] {
+  // CGP keeps its real scope-derived predicate (acre threshold).
+  if (hypothesis.id === "H-STORM-CGP") {
+    return (scope.project_change.disturbance_acres ?? 0) >= 1 ? "yes" : "no";
+  }
+  // Generic: honor the researcher's grounded conclusion instead of always "yes".
+  switch (evidence?.researcher_conclusion) {
+    case "applies":
+      return "yes";
+    case "does_not_apply":
+      return "no";
+    default:
+      return "needs_review";
+  }
+}
+```
+
+  `EvidenceBundle` is already imported in synthesis.ts. No other change.
+
+- [ ] **Step 4: Run** — `pnpm test -- synthesis` PASS; `pnpm test` full suite green; `pnpm typecheck` clean.
+- [ ] **Step 5: Commit** — `git add src/lib/research/synthesis.ts src/lib/research/__tests__/synthesis.test.ts && git commit -m "feat(synthesis): applies reads researcher_conclusion (generic path)"`
+
+### Task 3 DELTA — all-reasoning model + 300s timeout
+
+When implementing Task 3's `worker.py`, apply these changes vs the code block above:
+- `_model()` returns `os.environ.get("OPENAI_RESEARCH_MODEL", "o4-mini")` (reasoning-tier default; rename the env var from `OPENAI_INTAKE_MODEL`). Operator sets `OPENAI_RESEARCH_MODEL` to a reasoning model they have access to.
+- In `_llm_fn`: use `"max_completion_tokens": 4000` instead of `"max_tokens": 700` (reasoning models reject `max_tokens` and consume tokens on hidden reasoning). Do NOT set `temperature`.
+- In `_extract_fn`: use `"max_completion_tokens": 2000` instead of `"max_tokens": 600`, and `tool_choice="required"` instead of `tool_choice={"type":"function",...}` (broader reasoning-model compatibility; there is only one tool so "required" forces it). Do NOT set `temperature`.
+- Both `@app.function(...)` decorators: `timeout=300` (was 180).
+
+### Task 4 DELTA — request timeout
+
+In `researchPool.ts`, set `REQUEST_TIMEOUT_MS = 300_000` (was 120_000) so a slow all-reasoning task isn't aborted by the bridge before the Modal function's own 300s limit.
