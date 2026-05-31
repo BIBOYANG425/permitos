@@ -9,6 +9,8 @@ import { AngleNode } from "./nodes/AngleNode";
 import { HypothesisNode } from "./nodes/HypothesisNode";
 import { TaskNode } from "./nodes/TaskNode";
 import { ReplayControls } from "./ReplayControls";
+import { Network } from "lucide-react";
+import { motion } from "framer-motion";
 
 const nodeTypes: NodeTypes = {
   coverage: CoverageNode,
@@ -29,14 +31,30 @@ export function ResearchGraph() {
 
   if (!run) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--text-dim)", padding: 20, textAlign: "center" }}>
-        Pick a sample scenario or describe a project on the left.
-      </div>
+      <motion.div
+        className="flex flex-col items-center justify-center h-full gap-4 text-center px-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center">
+          <Network size={28} className="text-cyan-300/40" />
+        </div>
+        <div>
+          <div className="text-sm text-slate-400 mb-1">No active research</div>
+          <div className="text-xs text-slate-500">Pick a sample scenario or describe a project on the left.</div>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    <motion.div
+      style={{ position: "relative", width: "100%", height: "100%" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <ReplayControls />
       <ReactFlow
         nodes={nodes}
@@ -52,9 +70,9 @@ export function ResearchGraph() {
         fitView
         fitViewOptions={{ padding: 0.2 }}
       >
-        <Background gap={20} color="#1f2330" />
+        <Background gap={20} color="rgba(103, 232, 249, 0.04)" />
         <Controls showInteractive={false} />
       </ReactFlow>
-    </div>
+    </motion.div>
   );
 }
