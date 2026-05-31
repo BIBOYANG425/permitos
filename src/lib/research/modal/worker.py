@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import json
 import sys
+import urllib.error
+import urllib.request
 
 import modal
 
@@ -22,6 +24,24 @@ app = modal.App("permitpilot-research")
 
 # Slim image — sandbox payload is just `echo`, no deps needed.
 sandbox_image = modal.Image.debian_slim()
+
+
+def _live_head_check(url: str) -> dict:
+    """Real outbound HTTP HEAD to verify the source URL is reachable from the
+    Modal cloud worker. Fail-soft — never raises. Printed to stdout so the
+    network proof is visible in the Modal dashboard for each task."""
+    req = urllib.request.Request(
+        url,
+        method="HEAD",
+        headers={"User-Agent": "PermitPilot/0.1 (+modal-sandbox)"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            return {"checked": True, "status_code": int(resp.status), "url": url}
+    except urllib.error.HTTPError as exc:
+        return {"checked": True, "status_code": int(exc.code), "url": url}
+    except Exception as exc:  # noqa: BLE001 — fail-soft observability
+        return {"checked": False, "error": str(exc)[:200], "url": url}
 
 
 # Mirror of src/lib/research/fixtures/sources.ts. Kept in sync by hand
@@ -207,7 +227,22 @@ def research_task(task_spec: dict) -> dict:
     finally:
         sandbox.terminate()
 
-    return _build_evidence_bundle(hypothesis_id)
+    bundle = _build_evidence_bundle(hypothesis_id)
+
+    # Real outbound HTTP HEAD to the source URL — proves the Modal worker can
+    # reach the real regulatory source. Result is attached to the bundle and
+    # logged to stdout for the Modal dashboard.
+    if bundle.get("sources"):
+        live = _live_head_check(bundle["sources"][0]["url"])
+        bundle["live_check"] = live
+        print(
+            f"PERMITPILOT_LIVE_CHECK task={task_id} hypothesis={hypothesis_id} "
+            f"checked={live.get('checked')} status={live.get('status_code')} "
+            f"url={live.get('url')}",
+            flush=True,
+        )
+
+    return bundle
 
 
 @app.local_entrypoint()

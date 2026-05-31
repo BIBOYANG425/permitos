@@ -127,6 +127,13 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
     needs_review_count: synthesis.determinations.filter((d) => d.review_flag).length,
     trace_events_count: trace_events.length,
   });
+
+  // Real LLM-as-judge — independent GPT pass over the FINAL HMBP determination.
+  // Doesn't override verifier verdict (preserves HMBP fail→repair demo); attaches
+  // concurrence + reasoning as Raindrop trace properties so evaluators can see
+  // a real LLM reasoning about real evidence inside the harness.
+  await runLlmJudgeOnHmbp(interaction, latestEvidence, latestVerdicts, trace_events, run_id);
+
   // Fire-and-forget — don't block the API response on Workshop ingestion.
   // SDK auto-flushes via internal timer; no external flush needed.
   void interaction
@@ -136,6 +143,75 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
     });
 
   return result;
+}
+
+async function runLlmJudgeOnHmbp(
+  interaction: ReturnType<Raindrop["begin"]>,
+  evidence: EvidenceBundle[],
+  verdicts: VerificationVerdict[],
+  trace_events: ResearchRun["trace_events"],
+  run_id: string,
+): Promise<void> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    interaction.setProperty("llm_judge", "skipped: OPENAI_API_KEY not set");
+    return;
+  }
+
+  const hmbpEvidence = evidence.find((e) => e.hypothesis_id === "H-HAZMAT-HMBP");
+  const hmbpVerdict = verdicts.find((v) => v.hypothesis_id === "H-HAZMAT-HMBP");
+  if (!hmbpEvidence || !hmbpVerdict || hmbpEvidence.sources.length === 0) {
+    interaction.setProperty("llm_judge", "skipped: HMBP evidence missing");
+    return;
+  }
+
+  try {
+    const OpenAI = (await import("openai")).default;
+    const client = new OpenAI({ apiKey });
+    const quote = hmbpEvidence.sources[0].quote;
+    const claim = hmbpEvidence.extracted_claims[0]?.value ?? "(no claim extracted)";
+    const verdictStr = hmbpVerdict.verdict;
+
+    const completion = await client.chat.completions.create({
+      model: process.env.OPENAI_INTAKE_MODEL ?? "gpt-4o-mini",
+      max_tokens: 250,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            'You are an EHS compliance auditor independently reviewing a verifier verdict. Given the source quote, the extracted claim, and the verifier verdict, judge whether the quote actually supports the claim and verdict. Respond with strict JSON: {"concurs": boolean, "reasoning": string (one sentence)}.',
+        },
+        {
+          role: "user",
+          content: `Source quote: ${quote}\n\nExtracted claim: ${claim}\n\nVerifier verdict: ${verdictStr}\n\nDoes the quote support the claim and verdict?`,
+        },
+      ],
+    });
+
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const parsed = JSON.parse(raw) as { concurs?: boolean; reasoning?: string };
+    interaction.setProperties({
+      llm_judge_concurs: parsed.concurs === true,
+      llm_judge_verdict_under_review: verdictStr,
+      llm_judge_reasoning: String(parsed.reasoning ?? ""),
+    });
+    trace_events.push({
+      id: `${run_id}-llm-judge`,
+      run_id,
+      ts: new Date().toISOString(),
+      actor: "verifier",
+      phase: "llm_judge",
+      status: parsed.concurs ? "done" : "needs_review",
+      message: `LLM judge ${parsed.concurs ? "concurs" : "dissents"}: ${String(parsed.reasoning ?? "")}`,
+    });
+  } catch (error) {
+    // fail-soft — LLM judge is supplementary, never blocks the run
+    interaction.setProperty(
+      "llm_judge_error",
+      error instanceof Error ? error.message.slice(0, 200) : "unknown",
+    );
+  }
 }
 
 function latestByHypothesis<T extends { hypothesis_id: string }>(items: T[]) {
