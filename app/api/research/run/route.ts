@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runResearch } from "@/lib/research/run";
 
-// All-reasoning research runs are slow (multi-turn reasoning per task). Hold the
-// serverless function open as long as the platform allows. 800 is Vercel's fluid-
-// compute ceiling; plans without it are clamped down automatically. A run that needs
-// longer than the platform allows is the durable Function.spawn+poll case (deferred).
-export const maxDuration = 800;
+// Hold the serverless function open as long as the plan allows. Vercel REJECTS the
+// deploy if this exceeds the plan's ceiling (800 failed → the plan caps lower), so we
+// use 60s — the proven-good value the intake route already deploys with. The Modal
+// worker itself runs up to 600s (not subject to Vercel limits); a live run that needs
+// longer than the Vercel route allows is the durable Function.spawn+poll case (deferred).
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {

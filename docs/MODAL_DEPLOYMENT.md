@@ -48,9 +48,10 @@ Production + Preview; or your local `.env.local`). Redeploy / restart after sett
 All-reasoning runs are slow. The pieces are tuned to match:
 - Modal function `timeout` = 600s (per task / per container).
 - Node fetch request timeout = 600s (`researchPool.ts`).
-- Research API route `maxDuration` = 800s (Vercel fluid-compute ceiling; clamped on lesser
-  plans). A run that needs longer than the platform allows is the durable
-  `Function.spawn` + poll case — deferred (see `2026-05-30-live-agent-sdk-modal-runtime.md`).
+- Research API route `maxDuration` = 60s (Vercel rejects the deploy if this exceeds the
+  plan ceiling; the Modal worker's 600s is not subject to Vercel limits). A live run that
+  needs longer than the Vercel route allows is the durable `Function.spawn` + poll case —
+  deferred (see `2026-05-30-live-agent-sdk-modal-runtime.md`).
 
 ## Smoke check (live)
 
