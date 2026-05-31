@@ -44,35 +44,48 @@ runResearch()
 ```
 
 - `src/lib/research/modal/worker.py` — Modal app `permitpilot-research`.
-  For each task it creates an ephemeral `modal.Sandbox`, runs an `echo` to
-  prove sandbox isolation, then returns an `EvidenceBundle`-shaped dict
-  mirrored from `src/lib/research/fixtures/sources.ts`. The final stdout line
-  is marked `PERMITPILOT_BUNDLE_JSON ...` so the TS bridge can grep it.
+  For each task it fetches the allowlisted official `.gov` source
+  (`SOURCE_POINTERS` in `worker_core.py`), parses PDF (`pypdf`) or HTML
+  (`beautifulsoup4`), and asks `gpt-4o-mini` to extract the triggering clause +
+  a **verbatim quote** + threshold. The quote is grounding-checked (must be a
+  substring of the fetched text); any fetch/parse/extract failure or missing
+  quote degrades to a `needs_review` bundle. The final stdout line is marked
+  `PERMITPILOT_BUNDLE_JSON ...` so the TS bridge can grep it.
+- `src/lib/research/modal/worker_core.py` — pure registry + `assemble_evidence`,
+  unit-tested via `python3 src/lib/research/modal/worker_core_test.py` (no Modal needed).
 - `src/lib/research/modal/runModalPool.ts` — Node-side bridge.
   Per task: `child_process.spawn("modal", ["run", worker, "--task-json", ...])`,
-  parses the marked JSON line, returns `EvidenceBundle[]`. 30 s per-task
+  parses the marked JSON line, returns `EvidenceBundle[]`. 90 s per-task
   timeout, per-task failures degrade to `needs_review` bundles so the
   verifier/repair loop keeps running.
 
-## HMBP repair must still trigger in Modal mode
+## Prerequisites for real research
 
-The `H-HAZMAT-HMBP` hypothesis seeds an intentionally overbroad claim via the
-`hmbp_threshold_bad` fixture. The Python worker mirrors this fixture
-faithfully, so when the verifier inspects the Modal-produced bundle it still
-fails grounding (`Quote mentions threshold quantities, but extracted claim says
-all hazardous material storage.`), opens a repair ticket
-(`R-HAZMAT-HMBP-001`), and the second pass through `repairEvidence()` returns
-the corrected `hmbp_threshold_repaired` fixture with the 55-gallon threshold.
+```bash
+modal setup                                            # Modal account + free credits
+modal secret create permitpilot-openai OPENAI_API_KEY=sk-...
+USE_MODAL=1 pnpm eval                                  # exercises the real worker
+```
 
-Verification:
+Without these, leave `USE_MODAL` unset — the in-process fixture pool runs (and is
+what the Vercel deployment uses; the `modal` CLI cannot run there).
+
+## The demo beat is now emergent, not scripted
+
+Real research dropped the seeded fixtures, so the HMBP fail→repair moment is no
+longer guaranteed. The verifier checks grounding against whatever `gpt-4o-mini`
+actually extracts from the live `.gov` page: if the extracted verbatim quote
+supports the claim the row verifies directly; if it doesn't (or no quote is
+found) the row goes `needs_review`. The bounded repair loop still exists, but
+whether it fires depends on the live source + extraction — it is not a
+hard-coded demo step anymore.
+
+Verification (after the prerequisites above):
 
 ```bash
 USE_MODAL=1 pnpm eval
-# expected: PASS complex-facility: tasks=9 repairs=1 needsReview=true
+# a run completes with real sources/quotes; row outcomes are emergent.
 ```
-
-If `repairs=1` appears in the output, the HMBP demo moment fires identically
-under Modal.
 
 ## Cost
 
@@ -91,7 +104,10 @@ The free $30 credit covers thousands of full eval runs.
 - `modal_proto.api_pb2 ... Unauthenticated` — run `modal setup` to create
   `~/.modal.toml`.
 - Per-task timeout error from `runModalPool` — bump `DEFAULT_TIMEOUT_MS` in
-  `src/lib/research/modal/runModalPool.ts` (currently 30 s).
+  `src/lib/research/modal/runModalPool.ts` (currently 90 s).
+- `permitpilot-openai` secret missing / `OPENAI_API_KEY` not set — the worker's
+  extraction step raises and the task degrades to `needs_review`; create the
+  secret with `modal secret create permitpilot-openai OPENAI_API_KEY=sk-...`.
 - `PERMITPILOT_BUNDLE_JSON` not found in stdout — usually means the worker
   raised before reaching its final print. Re-run the worker directly to see
   the traceback:
