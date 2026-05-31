@@ -1,260 +1,165 @@
-"""Modal Sandbox worker for PermitPilot research tasks.
+"""Modal worker — real research: fetch the allowlisted source, LLM-extract the
+triggering clause/quote/threshold, return an EvidenceBundle.
 
-For each ResearchTask, this worker spins up an ephemeral Modal Sandbox,
-runs a trivial isolation-proof command inside it, and returns a
-deterministic EvidenceBundle dict (mirrors src/lib/research/fixtures/sources.ts).
-
-Modeled after modal-labs/openai-agents-python-example: one sandbox per
-subagent / per research task.
+Pure registry + assembly live in worker_core.py (unit-tested without modal).
 
 Invocation:
-    modal run src/lib/research/modal/worker.py --task-json '{"task_id":"T-1","hypothesis_id":"H-AIR-201"}'
-"""
+    modal run src/lib/research/modal/worker.py \
+      --task-json '{"task_id":"T-1","hypothesis_id":"H-AIR-201","question":"Does the coating booth need an SCAQMD permit?"}'
 
+Prereqs: `modal setup`; a Modal secret `permitpilot-openai` holding OPENAI_API_KEY.
+"""
 from __future__ import annotations
 
+import hashlib
+import io
 import json
+import os
 import sys
-import urllib.error
-import urllib.request
+from datetime import datetime, timezone
 
 import modal
 
+from worker_core import (
+    EXTRACTION_HINTS,
+    SOURCE_POINTERS,
+    assemble_evidence,
+    failed_bundle,
+    host_allowed,
+)
+
 app = modal.App("permitpilot-research")
 
-# Slim image — sandbox payload is just `echo`, no deps needed.
-sandbox_image = modal.Image.debian_slim()
+# worker_core is a local module the function needs at runtime.
+image = (
+    modal.Image.debian_slim()
+    .pip_install("httpx", "pypdf", "beautifulsoup4", "openai")
+    .add_local_python_source("worker_core")
+)
+
+MAX_BYTES = 5_000_000
+MAX_TEXT_CHARS = 24_000
+HTTP_TIMEOUT_S = 15.0
+
+EXTRACT_SYSTEM = (
+    "You are an EHS regulatory research assistant. You are given the text of an "
+    "official regulatory source and a research question. Extract ONLY what the "
+    "text actually says. The verbatim_quote MUST be copied exactly from the source "
+    "text. If the text does not support a finding, set applies to needs_review and "
+    "leave verbatim_quote empty. Never invent thresholds or quotes."
+)
 
 
-def _live_head_check(url: str) -> dict:
-    """Real outbound HTTP HEAD to verify the source URL is reachable from the
-    Modal cloud worker. Fail-soft — never raises. Printed to stdout so the
-    network proof is visible in the Modal dashboard for each task."""
-    req = urllib.request.Request(
-        url,
-        method="HEAD",
-        headers={"User-Agent": "PermitPilot/0.1 (+modal-sandbox)"},
+def _extract_tool(field: str) -> dict:
+    return {
+        "type": "function",
+        "function": {
+            "name": "extract_finding",
+            "description": "Return the grounded finding for the research question.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "field": {"type": "string", "enum": [field]},
+                    "threshold_value": {"type": ["number", "null"]},
+                    "triggering_clause": {"type": "string"},
+                    "verbatim_quote": {"type": "string"},
+                    "applies": {"type": "string", "enum": ["applies", "does_not_apply", "needs_review"]},
+                    "confidence": {"type": "number"},
+                },
+                "required": ["field", "verbatim_quote", "applies", "confidence"],
+            },
+        },
+    }
+
+
+def _fetch_and_parse(url: str) -> tuple[str, str]:
+    import httpx
+
+    with httpx.Client(follow_redirects=True, timeout=HTTP_TIMEOUT_S) as client:
+        resp = client.get(url, headers={"User-Agent": "PermitPilot/0.1 (research)"})
+        resp.raise_for_status()
+        ctype = resp.headers.get("content-type", "").lower()
+        data = resp.content[:MAX_BYTES]
+
+    content_hash = "sha256:" + hashlib.sha256(data).hexdigest()
+
+    if "pdf" in ctype or url.lower().endswith(".pdf"):
+        from pypdf import PdfReader
+
+        reader = PdfReader(io.BytesIO(data))
+        text = "\n".join((page.extract_text() or "") for page in reader.pages)
+    else:
+        from bs4 import BeautifulSoup
+
+        text = BeautifulSoup(data, "html.parser").get_text(" ", strip=True)
+
+    return content_hash, text[:MAX_TEXT_CHARS]
+
+
+def _extract(text: str, question: str, hint: dict) -> dict:
+    from openai import OpenAI
+
+    client = OpenAI()  # OPENAI_API_KEY from the Modal secret env
+    field = hint.get("field", "source_claim")
+    ask = hint.get("ask", "the clause that determines whether this requirement applies")
+    model = os.environ.get("OPENAI_INTAKE_MODEL", "gpt-4o-mini")
+
+    completion = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": EXTRACT_SYSTEM},
+            {"role": "user", "content": f"Research question: {question}\nExtract {ask}.\n\nSOURCE TEXT:\n{text}"},
+        ],
+        tools=[_extract_tool(field)],
+        tool_choice={"type": "function", "function": {"name": "extract_finding"}},
+        max_tokens=600,
     )
-    try:
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            return {"checked": True, "status_code": int(resp.status), "url": url}
-    except urllib.error.HTTPError as exc:
-        return {"checked": True, "status_code": int(exc.code), "url": url}
-    except Exception as exc:  # noqa: BLE001 — fail-soft observability
-        return {"checked": False, "error": str(exc)[:200], "url": url}
+
+    tool_calls = completion.choices[0].message.tool_calls or []
+    if not tool_calls:
+        return {"field": field, "verbatim_quote": "", "applies": "needs_review", "confidence": 0.3}
+
+    out = json.loads(tool_calls[0].function.arguments or "{}")
+    # Grounding guard: the quote must literally appear in the fetched text.
+    quote = (out.get("verbatim_quote") or "").strip()
+    if quote and quote not in text:
+        out["verbatim_quote"] = ""
+        out["applies"] = "needs_review"
+    out.setdefault("field", field)
+    return out
 
 
-# Mirror of src/lib/research/fixtures/sources.ts. Kept in sync by hand
-# because the hackathon stage doesn't need a build-time pipeline. If you
-# add a fixture in sources.ts, mirror it here.
-SOURCE_FIXTURES: dict[str, dict] = {
-    "scaqmd_rule_201": {
-        "source_name": "SCAQMD Rule 201",
-        "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-scaqmd-rule-201",
-        "effective_date": None,
-        "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
-        "extracted": {"permit_trigger": "new or altered equipment that may emit air contaminants"},
-    },
-    "scaqmd_rule_219": {
-        "source_name": "SCAQMD Rule 219",
-        "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-219.pdf",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-scaqmd-rule-219",
-        "effective_date": None,
-        "quote": "Equipment listed in this rule may be exempt from written permit requirements when the listed conditions are satisfied.",
-        "extracted": {"exemption_check_required": True},
-    },
-    "scaqmd_rule_222": {
-        "source_name": "SCAQMD Rule 222",
-        "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-222.pdf",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-scaqmd-rule-222",
-        "effective_date": None,
-        "quote": "Owners or operators of specified equipment shall file registration information when the rule applies to that equipment category.",
-        "extracted": {"registration_possible": True},
-    },
-    "industrial_general_permit": {
-        "source_name": "California Industrial General Permit",
-        "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-ca-igp",
-        "effective_date": None,
-        "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
-        "extracted": {"regulated_sic": "3471"},
-    },
-    "construction_general_permit": {
-        "source_name": "California Construction General Permit",
-        "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-ca-cgp",
-        "effective_date": None,
-        "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
-        "extracted": {"acreage_threshold": 1},
-    },
-    "hmbp_threshold_bad": {
-        "source_name": "California HMBP Threshold Summary",
-        "url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-hmbp-bad",
-        "effective_date": None,
-        "quote": "Businesses must submit information for hazardous materials at or above threshold quantities.",
-        "extracted": {"overbroad_claim": "HMBP applies to all hazardous material storage"},
-    },
-    "hazardous_waste_generator": {
-        "source_name": "EPA Hazardous Waste Generator Categories",
-        "url": "https://www.epa.gov/hwgenerators/categories-hazardous-waste-generators",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-epa-generator",
-        "effective_date": None,
-        "quote": "Generator category depends on the amount of hazardous waste generated in a calendar month.",
-        "extracted": {"generator_quantity_required": True},
-    },
-    "wastewater_pretreatment": {
-        "source_name": "EPA Pretreatment Program Overview",
-        "url": "https://www.epa.gov/npdes/national-pretreatment-program",
-        "authority_rank": 1,
-        "fetched_at": "2026-05-30T00:00:00Z",
-        "content_hash": "sha256:demo-epa-pretreatment",
-        "effective_date": None,
-        "quote": "Industrial users that discharge process wastewater to publicly owned treatment works may be subject to pretreatment requirements.",
-        "extracted": {"process_discharge_required": True},
-    },
-}
-
-
-# Mirror of fixtureForHypothesis() in workers.ts.
-HYPOTHESIS_TO_FIXTURE: dict[str, str] = {
-    "H-AIR-201": "scaqmd_rule_201",
-    "H-AIR-VOC": "scaqmd_rule_201",
-    "H-AIR-219": "scaqmd_rule_219",
-    "H-AIR-222": "scaqmd_rule_222",
-    "H-STORM-IGP": "industrial_general_permit",
-    "H-STORM-CGP": "construction_general_permit",
-    "H-HAZMAT-HMBP": "hmbp_threshold_bad",
-    "H-WASTE-GENERATOR": "hazardous_waste_generator",
-    "H-WASTEWATER-PRETREATMENT": "wastewater_pretreatment",
-}
-
-
-def _failed_bundle(hypothesis_id: str, reason: str) -> dict:
-    return {
-        "hypothesis_id": hypothesis_id,
-        "sources": [],
-        "extracted_claims": [],
-        "researcher_conclusion": "needs_review",
-        "uncertainties": [reason],
-    }
-
-
-def _preliminary_conclusion(hypothesis_id: str) -> str:
-    if hypothesis_id in ("H-WASTE-GENERATOR", "H-WASTEWATER-PRETREATMENT"):
-        return "needs_review"
-    return "applies"
-
-
-def _build_evidence_bundle(hypothesis_id: str) -> dict:
-    fixture_id = HYPOTHESIS_TO_FIXTURE.get(hypothesis_id, "")
-    fixture = SOURCE_FIXTURES.get(fixture_id)
-    if fixture is None:
-        return _failed_bundle(hypothesis_id, f"No source fixture found for {hypothesis_id}")
-
-    extracted = fixture["extracted"]
-    first_field = next(iter(extracted.keys()), "source_claim")
-    first_value = next(iter(extracted.values()), hypothesis_id)
-
-    return {
-        "hypothesis_id": hypothesis_id,
-        "sources": [
-            {
-                "url": fixture["url"],
-                "source_name": fixture["source_name"],
-                "authority_rank": fixture["authority_rank"],
-                "fetched_at": fixture["fetched_at"],
-                "content_hash": fixture["content_hash"],
-                "effective_date": fixture["effective_date"],
-                "quote": fixture["quote"],
-            }
-        ],
-        "extracted_claims": [
-            {
-                "field": first_field,
-                "value": str(first_value),
-                "source_url": fixture["url"],
-                "quote": fixture["quote"],
-                "confidence": 0.82,
-            }
-        ],
-        "researcher_conclusion": _preliminary_conclusion(hypothesis_id),
-        "uncertainties": (
-            ["Monthly hazardous waste quantity is missing."]
-            if hypothesis_id == "H-WASTE-GENERATOR"
-            else []
-        ),
-    }
-
-
-@app.function(image=sandbox_image, timeout=120)
+@app.function(image=image, secrets=[modal.Secret.from_name("permitpilot-openai")], timeout=120)
 def research_task(task_spec: dict) -> dict:
-    """Run one research task: spin up a Modal Sandbox, prove isolation, return evidence.
-
-    The sandbox is currently a stand-in for the real fetcher/extractor pipeline.
-    It runs `echo` to prove sandbox-per-task isolation works end-to-end; the
-    deterministic fixture lookup happens in the caller process so we don't
-    waste sandbox-cold-start time on a pure dict lookup.
-    """
     hypothesis_id = task_spec.get("hypothesis_id", "")
-    task_id = task_spec.get("task_id", "unknown-task")
+    question = task_spec.get("question") or hypothesis_id
+    pointer = SOURCE_POINTERS.get(hypothesis_id)
+    if pointer is None:
+        return failed_bundle(hypothesis_id, f"No source pointer for {hypothesis_id}")
+    if not host_allowed(pointer["url"]):
+        return failed_bundle(hypothesis_id, f"Refused non-allowlisted host for {pointer['url']}")
 
-    # Prove sandbox isolation: ephemeral sandbox, runs one command, exits.
-    sandbox = modal.Sandbox.create(
-        "echo",
-        f"permitpilot worker isolated run for task={task_id} hypothesis={hypothesis_id}",
-        app=app,
-        image=sandbox_image,
-        timeout=60,
-    )
     try:
-        sandbox.wait()
-    finally:
-        sandbox.terminate()
+        content_hash, text = _fetch_and_parse(pointer["url"])
+    except Exception as exc:  # noqa: BLE001 — fail closed with the reason
+        return failed_bundle(hypothesis_id, f"Fetch/parse failed: {exc}")
 
-    bundle = _build_evidence_bundle(hypothesis_id)
+    if not text.strip():
+        return failed_bundle(hypothesis_id, "Fetched source had no extractable text.")
 
-    # Real outbound HTTP HEAD to the source URL — proves the Modal worker can
-    # reach the real regulatory source. Result is attached to the bundle and
-    # logged to stdout for the Modal dashboard.
-    if bundle.get("sources"):
-        live = _live_head_check(bundle["sources"][0]["url"])
-        bundle["live_check"] = live
-        print(
-            f"PERMITPILOT_LIVE_CHECK task={task_id} hypothesis={hypothesis_id} "
-            f"checked={live.get('checked')} status={live.get('status_code')} "
-            f"url={live.get('url')}",
-            flush=True,
-        )
+    try:
+        extract = _extract(text, question, EXTRACTION_HINTS.get(hypothesis_id, {}))
+    except Exception as exc:  # noqa: BLE001
+        return failed_bundle(hypothesis_id, f"Extraction failed: {exc}")
 
-    return bundle
+    fetched_at = datetime.now(timezone.utc).isoformat()
+    return assemble_evidence(hypothesis_id, pointer, content_hash, fetched_at, extract)
 
 
 @app.local_entrypoint()
 def main(task_json: str) -> None:
-    """Entry point for `modal run`. Parses task JSON, calls research_task, prints result JSON.
-
-    The TS bridge (runModalPool.ts) extracts the last JSON line from stdout,
-    so we keep stdout disciplined: status comes from Modal itself, we only
-    print the final JSON line.
-    """
     task_spec = json.loads(task_json)
     result = research_task.remote(task_spec)
-    # Single JSON line on stdout, marked for the TS bridge to grep.
+    # Single marked JSON line on stdout for the TS bridge to grep.
     sys.stdout.write("PERMITPILOT_BUNDLE_JSON " + json.dumps(result) + "\n")
     sys.stdout.flush()
