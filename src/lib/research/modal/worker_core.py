@@ -36,6 +36,17 @@ EXTRACTION_HINTS: dict[str, dict] = {
     "H-WASTEWATER-PRETREATMENT": {"field": "process_discharge_required", "ask": "when industrial process wastewater discharge triggers pretreatment requirements"},
 }
 
+# hypothesis_id -> EHS domain skill id (src/lib/research/skills/<id>/SKILL.md).
+# Mirrors skillForHypothesis.ts on the TS side; read_skill resolves the current
+# hypothesis to its skill so the agent can orient before fetching the primary source.
+SKILL_FOR_HYPOTHESIS: dict[str, str] = {
+    "H-AIR-201": "scaqmd-air", "H-AIR-VOC": "scaqmd-air", "H-AIR-219": "scaqmd-air", "H-AIR-222": "scaqmd-air",
+    "H-STORM-IGP": "ca-stormwater", "H-STORM-CGP": "ca-stormwater",
+    "H-HAZMAT-HMBP": "ca-hmbp",
+    "H-WASTE-GENERATOR": "hazwaste-generator",
+    "H-WASTEWATER-PRETREATMENT": "industrial-pretreatment",
+}
+
 ALLOWED_HOSTS = {
     "www.aqmd.gov", "aqmd.gov",
     "www.waterboards.ca.gov", "waterboards.ca.gov",
@@ -114,18 +125,28 @@ def assemble_evidence(hypothesis_id: str, pointer: dict, content_hash: str, fetc
 
 # The research skill's done-condition (keep in sync with skillRegistry.ts `research`).
 RESEARCH_SKILL_PROMPT = (
-    "You are a permit-research subagent. Investigate ONE hypothesis. Use the provided "
-    "tools to load the official source pointer, fetch the allowlisted source, and prove "
-    "currency, then call extract_threshold with the grounded finding. The verbatim_quote "
-    "MUST be copied exactly from the fetched source text. If you cannot ground a finding, "
-    "call extract_threshold with applies=needs_review and an empty verbatim_quote. "
-    "You may only use the tools you are given."
+    "You are a permit-research subagent. Investigate ONE hypothesis. Start by calling "
+    "read_skill to orient yourself on the relevant EHS thresholds, exemptions, and which "
+    "primary source to fetch — this is orientation only, NEVER citable evidence. Then use "
+    "the provided tools to load the official source pointer, fetch the allowlisted source, "
+    "and prove currency, then call extract_threshold with the grounded finding. The "
+    "verbatim_quote MUST be copied exactly from the fetched source text. If you cannot "
+    "ground a finding, call extract_threshold with applies=needs_review and an empty "
+    "verbatim_quote. You may only use the tools you are given."
 )
 
 # OpenAI function schemas, keyed by catalog tool id. Only researcher tools we actually
 # implement appear here; everything else (get_form, build_applicability_matrix, ...) is
 # therefore never exposable, and is also hard-refused by the dispatcher.
 TOOL_SCHEMAS: dict[str, dict] = {
+    "read_skill": {
+        "type": "function",
+        "function": {
+            "name": "read_skill",
+            "description": "Read the EHS domain skill for this hypothesis (triggers, threshold ranges, exemptions, and which primary source to fetch). Orientation only — never cite the skill as evidence; you must still fetch and quote the primary source.",
+            "parameters": {"type": "object", "properties": {"skill_id": {"type": "string"}}},
+        },
+    },
     "get_source_pointers": {
         "type": "function",
         "function": {
@@ -212,7 +233,7 @@ def exposed_tool_schemas(allowed_tools: list[str]) -> list[dict]:
 
 
 def run_research_agent(task_spec: dict, *, llm_fn, fetch_fn, extract_fn, now_iso: str,
-                       source_pointers: dict | None = None) -> dict:
+                       source_pointers: dict | None = None, read_skill_fn=None) -> dict:
     """Catalog-governed agentic researcher.
 
     llm_fn(messages, tools) -> {"content": str|None, "tool_calls": [{"id","name","arguments"}]} | {"tool_calls": []}
@@ -275,6 +296,19 @@ def run_research_agent(task_spec: dict, *, llm_fn, fetch_fn, extract_fn, now_iso
                            "authority_rank": pointer["authority_rank"]}
             elif name == "get_triggers":
                 payload = EXTRACTION_HINTS.get(hid, {})
+            elif name == "read_skill":
+                requested = (args.get("skill_id") or "").strip() or SKILL_FOR_HYPOTHESIS.get(hid, "")
+                if not requested:
+                    payload = {"error": f"no skill mapped for {hid}"}
+                elif read_skill_fn is None:
+                    payload = {"error": "skill library unavailable"}
+                else:
+                    try:
+                        content = read_skill_fn(requested)
+                    except Exception:  # noqa: BLE001 — never throw out of the loop
+                        content = ""
+                    payload = ({"skill_id": requested, "content": content} if content
+                               else {"error": f"skill '{requested}' not found"})
             elif name == "fetch_source":
                 if sources_used >= max_sources:
                     payload = {"error": "max_sources budget exceeded"}

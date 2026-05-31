@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 
@@ -31,6 +32,7 @@ app = modal.App("permitpilot-research")
 image = (
     modal.Image.debian_slim()
     .pip_install("httpx", "pymupdf", "beautifulsoup4", "openai", "fastapi[standard]", "supabase")
+    .add_local_dir("src/lib/research/skills", remote_path="/root/skills")
     .add_local_python_source("worker_core")
 )
 
@@ -49,6 +51,24 @@ def _model() -> str:
     # All-reasoning worker: default to a reasoning-tier model; operator overrides via env
     # with a reasoning model their OpenAI account has access to.
     return os.environ.get("OPENAI_RESEARCH_MODEL", "o4-mini")
+
+
+# EHS skill files are bundled into the image at /root/skills/<id>/SKILL.md
+# (see image .add_local_dir above). Overridable for local runs via SKILLS_DIR.
+SKILLS_DIR = os.environ.get("SKILLS_DIR", "/root/skills")
+_SKILL_ID_RE = re.compile(r"^[a-z0-9-]+$")
+
+
+def _read_skill_fn(skill_id: str) -> str:
+    """Read a bundled EHS SKILL.md by id. Slug-validated to prevent path traversal."""
+    if not skill_id or not _SKILL_ID_RE.match(skill_id):
+        return ""
+    path = os.path.join(SKILLS_DIR, skill_id, "SKILL.md")
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return fh.read()
+    except OSError:
+        return ""
 
 
 def _fetch_fn(url: str) -> tuple[str, str]:
@@ -169,7 +189,8 @@ def _run(task_spec: dict) -> dict:
     now_iso = datetime.now(timezone.utc).isoformat()
     try:
         return run_research_agent(task_spec, llm_fn=_llm_fn, fetch_fn=_fetch_fn,
-                                  extract_fn=_extract_fn, now_iso=now_iso)
+                                  extract_fn=_extract_fn, now_iso=now_iso,
+                                  read_skill_fn=_read_skill_fn)
     except Exception as exc:  # noqa: BLE001 — never throw out of the worker
         return failed_bundle(hid, f"Agent failed: {exc}")
 

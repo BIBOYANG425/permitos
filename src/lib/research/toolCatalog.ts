@@ -105,6 +105,13 @@ export const harnessToolCatalog = [
     scopedTo: ["researcher"]
   },
   {
+    id: "read_skill",
+    category: "knowledge_base_read",
+    description: "Read an EHS domain skill (triggers, threshold ranges, exemptions, and which primary source to fetch) to orient research. Reference only — never citable evidence; ground every claim in a fetched primary source.",
+    writes: "none",
+    scopedTo: ["researcher"]
+  },
+  {
     id: "get_form",
     category: "knowledge_base_read",
     description: "Select a human-verified form registry row for a verified applicable permit program.",
@@ -354,6 +361,7 @@ export const subagentControlToolIds = [
 ] as const satisfies readonly HarnessToolId[];
 
 export const researcherCoreToolIds = [
+  "read_skill",
   "get_triggers",
   "get_source_pointers",
   "get_cached_source",
