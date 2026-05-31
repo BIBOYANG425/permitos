@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/ui/store";
 import { Send, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { ChatMessage, IntakeChatResponse } from "@/lib/intake/types";
 
 type Props = {
@@ -67,11 +68,23 @@ export function IntakeChat({ onStarted, onSkip }: Props) {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4 text-slate-100" style={{ background: "#05070b" }}>
-      <div className="flex h-[80vh] w-full max-w-2xl flex-col glass rounded-2xl shadow-card overflow-hidden">
+      <motion.div
+        className="flex h-[80vh] w-full max-w-2xl flex-col glass rounded-2xl shadow-card overflow-hidden"
+        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-700/40 px-5 py-3.5">
           <div>
-            <div className="brand-label mb-0.5">PermitOS</div>
+            <motion.div
+              className="brand-label mb-0.5"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+            >
+              PermitOS
+            </motion.div>
             <h1 className="text-sm font-medium text-slate-300">EHS Project Intake</h1>
           </div>
           <button
@@ -86,37 +99,63 @@ export function IntakeChat({ onStarted, onSkip }: Props) {
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-5">
-          {messages.map((message, index) => (
-            <div key={index} className={message.role === "user" ? "text-right" : "text-left"}>
-              <span
-                className={`inline-block rounded-xl px-3.5 py-2 text-sm leading-relaxed max-w-[85%] ${
-                  message.role === "user"
-                    ? "bg-cyan-800/50 text-cyan-100 border border-cyan-700/30"
-                    : "bg-slate-800/60 text-slate-200 border border-slate-700/20"
-                }`}
+          <AnimatePresence mode="popLayout">
+            {messages.map((message, index) => (
+              <motion.div
+                key={index}
+                className={message.role === "user" ? "text-right" : "text-left"}
+                initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                layout
               >
-                {message.content}
-              </span>
-            </div>
-          ))}
-          {busy && (
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              thinking…
-            </div>
-          )}
+                <span
+                  className={`inline-block rounded-xl px-3.5 py-2 text-sm leading-relaxed max-w-[85%] ${
+                    message.role === "user"
+                      ? "bg-cyan-800/50 text-cyan-100 border border-cyan-700/30"
+                      : "bg-slate-800/60 text-slate-200 border border-slate-700/20"
+                  }`}
+                >
+                  {message.content}
+                </span>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          <AnimatePresence>
+            {busy && (
+              <motion.div
+                className="flex items-center gap-2 text-xs text-slate-500"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                thinking…
+              </motion.div>
+            )}
+          </AnimatePresence>
           {error && (
-            <div className="rounded-lg bg-red-900/30 border border-red-800/30 p-3 text-xs text-red-200">
+            <motion.div
+              className="rounded-lg bg-red-900/30 border border-red-800/30 p-3 text-xs text-red-200"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
               {error}{" "}
               <button type="button" onClick={onSkip} className="underline hover:text-red-100 bg-transparent border-0 cursor-pointer text-red-200">
                 Use manual entry instead
               </button>
-            </div>
+            </motion.div>
           )}
         </div>
 
         {/* Input */}
-        <div className="flex gap-2 border-t border-slate-700/40 p-3.5">
+        <motion.div
+          className="flex gap-2 border-t border-slate-700/40 p-3.5"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
+        >
           <input
             className="flex-1 rounded-xl border border-slate-700/40 bg-slate-950/60 p-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-600/50 transition-colors"
             placeholder="Type your answer…"
@@ -135,8 +174,8 @@ export function IntakeChat({ onStarted, onSkip }: Props) {
           >
             <Send size={16} />
           </button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </main>
   );
 }

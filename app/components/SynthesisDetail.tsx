@@ -3,6 +3,16 @@ import type { FamilyReport } from "@/lib/ui/selectors";
 import type { ResearchRun } from "@/lib/research/types";
 import { getRepairHistory } from "@/lib/ui/selectors";
 import { CheckCircle2, XCircle, AlertTriangle, FileSearch, Wrench } from "lucide-react";
+import { motion } from "framer-motion";
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.06, duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
 
 export function SynthesisDetail({
   familyLabel,
@@ -19,24 +29,39 @@ export function SynthesisDetail({
   return (
     <div className="overflow-y-auto p-6 border-r border-slate-700/40">
       {/* Header */}
-      <div className="mb-6">
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="brand-label mb-2">Synthesis Report</div>
         <h2 className="text-xl font-bold text-slate-100">{familyLabel}</h2>
         <div className="flex gap-2 mt-2 text-xs">
           {verifiedCount > 0 && (
-            <span className="flex items-center gap-1 bg-teal-950/60 text-teal-400 px-2.5 py-1 rounded-full border border-teal-800/30">
+            <motion.span
+              className="flex items-center gap-1 bg-teal-950/60 text-teal-400 px-2.5 py-1 rounded-full border border-teal-800/30"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
               <CheckCircle2 size={11} />
               {verifiedCount} verified
-            </span>
+            </motion.span>
           )}
           {reviewCount > 0 && (
-            <span className="flex items-center gap-1 bg-amber-950/60 text-amber-400 px-2.5 py-1 rounded-full border border-amber-800/30">
+            <motion.span
+              className="flex items-center gap-1 bg-amber-950/60 text-amber-400 px-2.5 py-1 rounded-full border border-amber-800/30"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.25, duration: 0.3 }}
+            >
               <AlertTriangle size={11} />
               {reviewCount} needs review
-            </span>
+            </motion.span>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {report.determinations.map((det, i) => {
         const bundle = report.evidenceBundles[i];
@@ -44,10 +69,19 @@ export function SynthesisDetail({
         const hypothesisId = bundle?.hypothesis_id;
         const history = hypothesisId ? getRepairHistory(run, hypothesisId) : [];
 
+        // Count sub-cards for stagger indexing
+        let cardIdx = 0;
+
         return (
           <div key={i} className="mb-6">
             {/* 1. Determination summary */}
-            <div className="glass rounded-xl p-4 mb-3">
+            <motion.div
+              className="glass rounded-xl p-4 mb-3"
+              custom={cardIdx++}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+            >
               <div className="flex items-center gap-1.5 text-[10px] text-cyan-300/70 uppercase tracking-wider font-semibold mb-2.5">
                 <FileSearch size={11} />
                 Determination
@@ -69,11 +103,18 @@ export function SynthesisDetail({
                   Fact: <span className="text-slate-300">{det.project_fact}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* 2. Source evidence */}
             {bundle?.sources.map((source, si) => (
-              <div key={si} className="glass rounded-xl p-4 mb-3">
+              <motion.div
+                key={si}
+                className="glass rounded-xl p-4 mb-3"
+                custom={cardIdx++}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <div className="text-[10px] text-cyan-300/70 uppercase tracking-wider font-semibold mb-2.5">
                   Source Evidence
                 </div>
@@ -95,12 +136,18 @@ export function SynthesisDetail({
                   fetched {source.fetched_at.slice(0, 10)} · hash{" "}
                   {source.content_hash.slice(0, 12)}
                 </div>
-              </div>
+              </motion.div>
             ))}
 
             {/* 3. Verifier checks */}
             {verdict && (
-              <div className="glass rounded-xl p-4 mb-3">
+              <motion.div
+                className="glass rounded-xl p-4 mb-3"
+                custom={cardIdx++}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <div className="text-[10px] text-cyan-300/70 uppercase tracking-wider font-semibold mb-2.5">
                   Verifier Checks
                 </div>
@@ -120,12 +167,18 @@ export function SynthesisDetail({
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* 4. Repair history */}
             {history.length > 1 && (
-              <div className="glass rounded-xl p-4 mb-3">
+              <motion.div
+                className="glass rounded-xl p-4 mb-3"
+                custom={cardIdx++}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <div className="flex items-center gap-1.5 text-[10px] text-cyan-300/70 uppercase tracking-wider font-semibold mb-2.5">
                   <Wrench size={11} />
                   Repair History · {history.length} attempts
@@ -167,7 +220,7 @@ export function SynthesisDetail({
                     )}
                   </div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </div>
         );

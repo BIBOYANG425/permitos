@@ -3,6 +3,7 @@ import { useStore } from "@/lib/ui/store";
 import { groupDeterminationsByFamily } from "@/lib/ui/selectors";
 import type { CoverageFamily } from "@/lib/research/types";
 import { Shield, Droplets, FlaskConical, Trash2, Waves } from "lucide-react";
+import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
 const FAMILY_LABELS: Record<CoverageFamily, string> = {
@@ -38,9 +39,14 @@ export function ReportCards() {
   const familyStatusMap = new Map(run.coverage_family_statuses.map((s) => [s.family, s]));
 
   return (
-    <section className="border-t border-slate-800/60 bg-slate-900/60 backdrop-blur-sm p-4">
+    <motion.section
+      className="border-t border-slate-800/60 bg-slate-900/60 backdrop-blur-sm p-4"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="grid grid-cols-5 gap-3">
-        {FAMILY_ORDER.map((family) => {
+        {FAMILY_ORDER.map((family, i) => {
           const report = grouped.get(family);
           const status = familyStatusMap.get(family);
           const isOutOfScope = status?.status === "out_of_scope";
@@ -69,7 +75,7 @@ export function ReportCards() {
             : "";
 
           return (
-            <div
+            <motion.div
               key={family}
               role="button"
               tabIndex={isOutOfScope ? -1 : 0}
@@ -85,6 +91,11 @@ export function ReportCards() {
                   ? "opacity-30 cursor-default bg-slate-900/40"
                   : "cursor-pointer glass hover:bg-slate-800/80"
               }`}
+              initial={{ opacity: 0, y: 16, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: i * 0.08, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={isOutOfScope ? {} : { y: -2, transition: { duration: 0.2 } }}
+              whileTap={isOutOfScope ? {} : { scale: 0.98 }}
             >
               <div className="flex items-center gap-2 mb-2">
                 {Icon && (
@@ -120,10 +131,10 @@ export function ReportCards() {
                   </div>
                 </>
               )}
-            </div>
+            </motion.div>
           );
         })}
       </div>
-    </section>
+    </motion.section>
   );
 }
