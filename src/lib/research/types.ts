@@ -1,5 +1,5 @@
 import type { HarnessToolId } from "./toolCatalog";
-import type { SdsReview } from "@/lib/sds/types";
+import type { SdsHandoffRef, SdsReview } from "@/lib/sds/types";
 
 export type RunStatus =
   | "idle"
@@ -181,6 +181,7 @@ export type Determination = {
     portal_url: string;
     instructions?: string;
   };
+  sds_handoff_refs?: SdsHandoffRef[];
 };
 
 export type TraceEvent = {
