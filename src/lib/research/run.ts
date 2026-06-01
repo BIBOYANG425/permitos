@@ -1,4 +1,4 @@
-import type { EvidenceBundle, ResearchRun, ResearchRunInput, VerificationVerdict } from "./types";
+import type { Determination, EvidenceBundle, ResearchRun, ResearchRunInput, VerificationVerdict } from "./types";
 import type { SdsReview } from "@/lib/sds/types";
 import { parseScope, applySdsHandoffToScope, createRunId, projectFacts } from "./scope";
 import { planResearch } from "./planner";
@@ -6,6 +6,8 @@ import { sdsActiveFamilies } from "./sdsFamilies";
 import { runLocalResearchPool } from "./workers";
 import { repairEvidence, verifyEvidence } from "./verifier";
 import { synthesize } from "./synthesis";
+import { PROGRAM_REGISTRY, type ProgramRegistryEntry } from "./programRegistry";
+import { verifyDeterminationSet } from "./completeness";
 import { trace } from "./trace";
 import { reviewSdsInputs } from "@/lib/sds/reviewer";
 import { Raindrop } from "raindrop-ai";
@@ -85,7 +87,25 @@ export function finalizeRun(
   const latestEvidence = latestByHypothesis(evidence_bundles);
   const synthesis = synthesize(scope_pack, plan.research_graph, plan.regulatory_angles, latestEvidence, latestVerdicts, sds_reviews);
   trace_events.push(trace(run_id, "synthesis_agent", "matrix", "done", "Applicability matrix synthesized"));
-  const status = synthesis.determinations.some((row) => row.review_flag) ? "needs_review" : "done";
+
+  // Recall floor: re-derive the EXPECTED program set from the registry x scope and
+  // flag any program that was never investigated. The per-hypothesis verifier only
+  // sees the proposed set, so it is blind to a wholly-missed family; this catches it
+  // and surfaces it as a needs_review row instead of shipping the run as "complete".
+  const investigatedHypotheses = new Set(plan.research_graph.map((h) => h.id));
+  const proposedProgramIds = PROGRAM_REGISTRY.filter((program) =>
+    program.hypothesis_ids.some((hid) => investigatedHypotheses.has(hid)),
+  ).map((program) => program.id);
+  const recall = verifyDeterminationSet(scope_pack, proposedProgramIds);
+  for (const program of recall.missing) {
+    trace_events.push(
+      trace(run_id, "verifier", "recall_floor", "needs_review",
+        `Recall gap: ${program.name} is expected for this scope but was never investigated`, program.id),
+    );
+  }
+
+  const determinations = [...synthesis.determinations, ...recall.missing.map(recallGapDetermination)];
+  const status = determinations.some((row) => row.review_flag) ? "needs_review" : "done";
 
   return {
     run_id, status,
@@ -101,10 +121,28 @@ export function finalizeRun(
     verification_verdicts: latestVerdicts,
     repair_tickets,
     memory_updates: synthesis.memory_updates,
-    determinations: synthesis.determinations,
+    determinations,
     trace_events,
     report_markdown: synthesis.report_markdown,
   };
+}
+
+// A determination row for a program the registry expected for this scope but that
+// no hypothesis investigated. Honest by construction: unverified, zero confidence,
+// flagged for review — never presented as a settled "yes"/"no".
+function recallGapDetermination(program: ProgramRegistryEntry): Determination {
+  return {
+    requirement: program.name,
+    applies: "needs_review",
+    trigger: `Expected for this project scope but never investigated (${program.jurisdiction}).`,
+    project_fact: `Recall gap — ${program.family} family program was not proposed`,
+    citation: "No research performed — flagged by the recall floor",
+    quote: program.what_it_does,
+    source_url: program.authority_source_url,
+    confidence: 0,
+    verified: false,
+    review_flag: true,
+  } satisfies Determination;
 }
 
 export async function runResearch(input: ResearchRunInput): Promise<ResearchRun> {
