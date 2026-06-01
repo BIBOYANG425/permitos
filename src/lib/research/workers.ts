@@ -1,16 +1,33 @@
 import type { EvidenceBundle, ResearchHypothesis, ResearchTask } from "./types";
 import { sourceFixtures } from "./fixtures/sources";
 import type { ResearchPoolResult } from "./modal/researchPool";
+import { getResearchMode } from "./researchMode";
 
+// Routes a research run to the configured executor (see researchMode.ts):
+//   live    -> in-process agentic LLM researcher (liveWorker.ts)
+//   modal   -> deployed Modal worker pool (modal/researchPool.ts)
+//   fixture -> deterministic cached evidence (runFixturePool, demo/offline only)
+// live/modal both fall back to fixtures (with a degraded flag) if their executor is
+// unreachable, so a run always renders — honestly labeled when it is not live.
 export async function runLocalResearchPool(
   tasks: ResearchTask[],
   hypotheses: ResearchHypothesis[]
 ): Promise<ResearchPoolResult> {
-  if (process.env.USE_MODAL === "1") {
+  const mode = getResearchMode();
+
+  if (mode === "modal") {
     const { runModalResearchPool } = await import("./modal/researchPool");
     const result = await runModalResearchPool(tasks, hypotheses);
     if (result.degraded) {
-      // Honest fallback: still render the demo on fixtures, but surface the reason.
+      return { bundles: runFixturePool(tasks, hypotheses), degraded: result.degraded };
+    }
+    return { bundles: result.bundles };
+  }
+
+  if (mode === "live") {
+    const { runLiveResearchPool } = await import("./liveWorker");
+    const result = await runLiveResearchPool(tasks, hypotheses);
+    if (result.degraded) {
       return { bundles: runFixturePool(tasks, hypotheses), degraded: result.degraded };
     }
     return { bundles: result.bundles };

@@ -10,12 +10,22 @@
 //
 // This is intentionally a HOST allowlist, not a URL allowlist: an authoritative
 // agency can publish at many paths, but the host is the trust boundary.
+//
+// The list is the union of a stable base set and every authoritative host in the
+// program registry, so adding a permit program (with its .gov source) trusts its
+// host automatically — there is no second list to keep in sync.
+import { registryHosts } from "./programRegistry";
 
-export const ALLOWLISTED_HOSTS: ReadonlySet<string> = new Set<string>([
+const BASE_HOSTS = [
   "www.aqmd.gov",
   "www.waterboards.ca.gov",
   "calepa.ca.gov",
   "www.epa.gov",
+] as const;
+
+export const ALLOWLISTED_HOSTS: ReadonlySet<string> = new Set<string>([
+  ...BASE_HOSTS,
+  ...registryHosts(),
 ]);
 
 // Parses the URL and returns true only if its hostname is on the allowlist.

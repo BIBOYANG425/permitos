@@ -29,7 +29,7 @@ function scopeWith(overrides: Partial<ScopePack["project_change"]> = {}): ScopeP
 }
 
 describe("run.ts recall floor wiring", () => {
-  it("surfaces an expected-but-uninvestigated program as a needs_review determination", () => {
+  it("surfaces an expected-but-uninvestigated program as a needs_review determination", async () => {
     // equipment + chemicals -> air programs + ca-hmbp are expected for this scope.
     const scope = scopeWith();
     const plan = planResearch(scope);
@@ -41,7 +41,7 @@ describe("run.ts recall floor wiring", () => {
     };
 
     // Evidence is irrelevant to the recall floor; pass none.
-    const run = finalizeRun("recall-test", scope, gappedPlan, [], []);
+    const run = await finalizeRun("recall-test", scope, gappedPlan, [], []);
 
     const hmbpRow = run.determinations.find(
       (d) => d.requirement === "California Hazardous Materials Business Plan (HMBP)",
@@ -57,10 +57,10 @@ describe("run.ts recall floor wiring", () => {
     ).toBe(true);
   });
 
-  it("adds no recall-gap rows when the plan covers every expected program", () => {
+  it("adds no recall-gap rows when the plan covers every expected program", async () => {
     const scope = scopeWith();
     const plan = planResearch(scope);
-    const run = finalizeRun("recall-test", scope, plan, [], []);
+    const run = await finalizeRun("recall-test", scope, plan, [], []);
 
     // The real planner always proposes a superset of the registry's expected set,
     // so the recall floor is a no-op: one determination per investigated hypothesis.

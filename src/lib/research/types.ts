@@ -94,6 +94,9 @@ export type ResearchTask = {
     max_runtime_seconds: number;
     max_model_calls: number;
   };
+  // Set only on a repair re-run: a bounded instruction the orchestrator appends to
+  // the researcher's question (e.g. "constrain the quote to verbatim source text").
+  repair_instruction?: string;
 };
 
 export type SourceFixture = {

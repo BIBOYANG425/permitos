@@ -1,14 +1,17 @@
-import type { Determination, EvidenceBundle, ResearchRun, ResearchRunInput, VerificationVerdict } from "./types";
+import type { Determination, EvidenceBundle, RepairTicket, ResearchHypothesis, ResearchRun, ResearchRunInput, ResearchTask, VerificationVerdict } from "./types";
 import type { SdsReview } from "@/lib/sds/types";
 import { parseScope, applySdsHandoffToScope, createRunId, projectFacts } from "./scope";
 import { planResearch } from "./planner";
 import { sdsActiveFamilies } from "./sdsFamilies";
 import { runLocalResearchPool } from "./workers";
+import { blockedToolIdsForRole, researchWorkerToolIds } from "./toolCatalog";
 import { repairEvidence, verifyEvidence } from "./verifier";
 import { synthesize } from "./synthesis";
 import { PROGRAM_REGISTRY, type ProgramRegistryEntry } from "./programRegistry";
 import { verifyDeterminationSet } from "./completeness";
 import { trace } from "./trace";
+import { getResearchMode } from "./researchMode";
+import { runOrchestrationBriefing } from "./orchestration";
 import { reviewSdsInputs } from "@/lib/sds/reviewer";
 import { Raindrop } from "raindrop-ai";
 
@@ -52,18 +55,19 @@ export async function planRun(input: ResearchRunInput): Promise<PlannedRun> {
   return { run_id, scope_pack, plan, sds_reviews, trace_events };
 }
 
-export function finalizeRun(
+export async function finalizeRun(
   run_id: string,
   scope_pack: PlannedRun["scope_pack"],
   plan: PlannedRun["plan"],
   initialEvidence: EvidenceBundle[],
   baseTrace: ReturnType<typeof trace>[],
   sds_reviews: SdsReview[] = []
-): ResearchRun {
+): Promise<ResearchRun> {
   const trace_events = [...baseTrace];
   const evidence_bundles: EvidenceBundle[] = [...initialEvidence];
   const verification_verdicts: VerificationVerdict[] = [];
   const repair_tickets = [];
+  const hypothesisById = new Map(plan.research_graph.map((h) => [h.id, h]));
 
   for (const bundle of initialEvidence) {
     const verdict = verifyEvidence(scope_pack, bundle);
@@ -74,7 +78,7 @@ export function finalizeRun(
     for (const ticket of verdict.repair_tickets) {
       repair_tickets.push(ticket);
       trace_events.push(trace(run_id, "orchestrator", "repair_ticket", "queued", ticket.observed_problem, ticket.ticket_id));
-      const repairedEvidence = repairEvidence(scope_pack, ticket);
+      const repairedEvidence = await repairBundle(scope_pack, ticket, hypothesisById);
       evidence_bundles.push(repairedEvidence);
       const repairedVerdict = verifyEvidence(scope_pack, repairedEvidence);
       verification_verdicts.push(repairedVerdict);
@@ -127,6 +131,37 @@ export function finalizeRun(
   };
 }
 
+// Production repair: re-run the real research agent for the failed hypothesis with a
+// bounded, quote-constraining instruction (live/modal modes). In fixture mode there is
+// no agent to re-run, so the canned demo repair stands in. One bounded attempt — the
+// re-verify decides pass vs. needs_review; we never loop.
+async function repairBundle(
+  scope: PlannedRun["scope_pack"],
+  ticket: RepairTicket,
+  hypothesisById: Map<string, ResearchHypothesis>,
+): Promise<EvidenceBundle> {
+  if (getResearchMode() === "fixture") {
+    return repairEvidence(scope, ticket);
+  }
+  const hypothesis = hypothesisById.get(ticket.hypothesis_id);
+  if (!hypothesis) {
+    return repairEvidence(scope, ticket);
+  }
+  const repairTask: ResearchTask = {
+    task_id: `RPT-${ticket.hypothesis_id.replace(/^H-/, "")}`,
+    hypothesis_id: ticket.hypothesis_id,
+    assigned_agent: `${hypothesis.family}_researcher`,
+    allowed_tools: researchWorkerToolIds(),
+    blocked_tools: blockedToolIdsForRole("researcher"),
+    budget: { max_sources: 2, max_runtime_seconds: 30, max_model_calls: 3 },
+    repair_instruction:
+      `${ticket.repair_action}. Constrain the verbatim_quote strictly to text present in the fetched source; ` +
+      "if you cannot ground it, return applies=needs_review with an empty verbatim_quote.",
+  };
+  const result = await runLocalResearchPool([repairTask], [hypothesis]);
+  return result.bundles[0] ?? repairEvidence(scope, ticket);
+}
+
 // A determination row for a program the registry expected for this scope but that
 // no hypothesis investigated. Honest by construction: unverified, zero confidence,
 // flagged for review — never presented as a settled "yes"/"no".
@@ -148,6 +183,22 @@ function recallGapDetermination(program: ProgramRegistryEntry): Determination {
 export async function runResearch(input: ResearchRunInput): Promise<ResearchRun> {
   const planned = await planRun(input);
   const { run_id } = planned;
+
+  // Standing orchestration tier: a real LLM reasoning pass over the decomposition,
+  // recorded in the trace. Fail-soft and additive (never changes determinations);
+  // skipped in fixture mode so demo/offline runs stay deterministic.
+  if (getResearchMode() !== "fixture") {
+    const brief = await runOrchestrationBriefing({
+      scope: planned.scope_pack,
+      coverage_family_statuses: planned.plan.coverage_family_statuses,
+      regulatory_angles: planned.plan.regulatory_angles,
+      research_graph: planned.plan.research_graph,
+    });
+    if (brief) {
+      planned.trace_events.push(trace(run_id, "orchestrator", "briefing", "done", brief.slice(0, 400)));
+    }
+  }
+
   const interaction = raindrop.begin({
     eventId: run_id,
     event: "permit_research_run",
@@ -156,7 +207,7 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
     properties: {
       project_description_chars: input.project_description.length,
       demo_documents_count: input.demo_documents?.length ?? 0,
-      use_modal: process.env.USE_MODAL === "1",
+      research_mode: getResearchMode(),
     },
   });
   const fanoutTrace = [...planned.trace_events,
@@ -170,7 +221,7 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
   } else {
     fanoutTrace.push(trace(run_id, "research_pool", "fanout", "done", "Research worker pool returned evidence bundles"));
   }
-  const result = finalizeRun(run_id, planned.scope_pack, planned.plan, poolResult.bundles, fanoutTrace, planned.sds_reviews);
+  const result = await finalizeRun(run_id, planned.scope_pack, planned.plan, poolResult.bundles, fanoutTrace, planned.sds_reviews);
   interaction.setProperties({
     status: result.status,
     hypotheses_count: planned.plan.research_graph.length,

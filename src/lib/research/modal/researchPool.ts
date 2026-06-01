@@ -53,10 +53,13 @@ async function runSingleTask(
   if (!hypothesis) {
     return { bundle: failedBundle(task.hypothesis_id, `Missing hypothesis for ${task.task_id}`), transportError: false };
   }
+  const question = task.repair_instruction
+    ? `${hypothesis.question}\n\nREPAIR INSTRUCTION: ${task.repair_instruction}`
+    : hypothesis.question;
   const task_spec = {
     task_id: task.task_id,
     hypothesis_id: hypothesis.id,
-    question: hypothesis.question,
+    question,
     allowed_tools: task.allowed_tools,
     blocked_tools: task.blocked_tools,
     budget: task.budget,

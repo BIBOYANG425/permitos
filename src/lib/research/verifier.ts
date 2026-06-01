@@ -9,6 +9,10 @@ export function verifyEvidence(scope: ScopePack, bundle: EvidenceBundle): Verifi
     return needsReview(bundle.hypothesis_id, "source_failed", "No source was returned by the worker.");
   }
 
+  // Demo-only branch: gated on the fixture content hash `sha256:demo-hmbp-bad`, which
+  // only the cached HMBP fixture produces. Live evidence carries a real sha256 of the
+  // fetched bytes, so this never fires in production — it scripts the fail->repair
+  // "whoa" moment in fixture mode. Live runs reach the generalized grounding path below.
   if (bundle.hypothesis_id === "H-HAZMAT-HMBP" && source.content_hash === "sha256:demo-hmbp-bad") {
     const checks = {
       currency: { pass: true, reason: "source fetched from seeded cache for this run" },
@@ -158,6 +162,11 @@ function normWs(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+// Fixture/demo repair: returns the cached "repaired" HMBP source so the demo's
+// fail->repair->verified arc resolves offline. The PRODUCTION repair path does not
+// use this — run.ts re-runs the real research agent for the failed hypothesis with a
+// quote-constraining repair instruction (see repairBundle); this canned path is only
+// reached in fixture mode.
 export function repairEvidence(scope: ScopePack, ticket: RepairTicket): EvidenceBundle {
   if (ticket.hypothesis_id !== "H-HAZMAT-HMBP") {
     return {

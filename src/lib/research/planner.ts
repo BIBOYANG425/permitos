@@ -8,7 +8,7 @@ import type {
 } from "./types";
 import { blockedToolIdsForRole, researchWorkerToolIds } from "./toolCatalog";
 
-const coverageFamilies: CoverageFamily[] = ["air", "stormwater", "hazmat", "waste", "wastewater"];
+const coverageFamilies: CoverageFamily[] = ["air", "stormwater", "hazmat", "waste", "wastewater", "osha"];
 
 export function planResearch(scope: ScopePack, sdsActiveFamilies: ReadonlySet<CoverageFamily> = new Set()) {
   const coverage_family_statuses = coverageFamilies.map((family) =>
@@ -100,6 +100,22 @@ function coverageStatusFor(family: CoverageFamily, scope: ScopePack, sdsFlagged:
     };
   }
 
+  if (family === "osha") {
+    // OSHA Process Safety Management is a worker-safety regime: a candidate whenever
+    // hazardous chemicals are stored, since applicability turns on whether a listed
+    // highly hazardous chemical sits at or above its threshold quantity (researched).
+    return {
+      id: "CF-OSHA",
+      family,
+      status: hasChemicals ? "active" : "out_of_scope",
+      reason: hasChemicals
+        ? "Stored chemicals may include a highly hazardous chemical at or above an OSHA PSM threshold quantity."
+        : "No chemicals indicated; OSHA Process Safety Management is out of scope.",
+      project_facts_considered: scope.project_change.chemicals.map((chemical) => `${chemical.name}:${chemical.quantity ?? "missing"} ${chemical.unit ?? ""}`),
+      missing_facts: []
+    };
+  }
+
   const wastewaterStatus =
     scope.project_change.process_discharge === null
       ? sdsFlagged
@@ -149,6 +165,14 @@ function anglesFor(status: CoverageFamilyStatus, scope: ScopePack): RegulatoryAn
         reason: "SCAQMD rules may route some equipment to exemption or registration instead of a permit.",
         triggering_facts: status.project_facts_considered,
         status: status.status
+      },
+      {
+        id: "A-AIR-FEDERAL-OPERATING",
+        family: "air",
+        label: "Federal Clean Air Act operating permit",
+        reason: "A facility whose potential-to-emit reaches major-source levels may need a federal Title V operating permit on top of the district permit.",
+        triggering_facts: status.project_facts_considered,
+        status: status.status
       }
     ];
   }
@@ -181,6 +205,27 @@ function anglesFor(status: CoverageFamilyStatus, scope: ScopePack): RegulatoryAn
         family: "hazmat",
         label: "Hazardous material business plan threshold",
         reason: "Hazardous material quantities must be compared to reporting thresholds.",
+        triggering_facts: status.project_facts_considered,
+        status: status.status
+      },
+      {
+        id: "A-HAZMAT-EPCRA",
+        family: "hazmat",
+        label: "EPCRA community right-to-know reporting",
+        reason: "Federal EPCRA Tier II / §311-312 reporting may apply when hazardous chemicals exceed reporting thresholds, independent of the state HMBP.",
+        triggering_facts: status.project_facts_considered,
+        status: status.status
+      }
+    ];
+  }
+
+  if (status.family === "osha") {
+    return [
+      {
+        id: "A-OSHA-PSM",
+        family: "osha",
+        label: "OSHA Process Safety Management",
+        reason: "Storing a listed highly hazardous chemical at or above its threshold quantity triggers the OSHA PSM standard (29 CFR 1910.119).",
         triggering_facts: status.project_facts_considered,
         status: status.status
       }
@@ -227,6 +272,10 @@ function hypothesesFor(angle: RegulatoryAngle, scope: ScopePack): ResearchHypoth
     ];
   }
 
+  if (angle.id === "A-AIR-FEDERAL-OPERATING") {
+    return [hypothesis("H-AIR-TITLEV", angle, "Does the facility's potential-to-emit require a federal Title V operating permit?", "Major-source potential-to-emit may require a Clean Air Act Title V operating permit.")];
+  }
+
   if (angle.id === "A-STORMWATER-INDUSTRIAL") {
     return [hypothesis("H-STORM-IGP", angle, "Does SIC/NAICS trigger Industrial General Permit coverage?", "SIC/NAICS may trigger California Industrial General Permit coverage.")];
   }
@@ -237,6 +286,14 @@ function hypothesesFor(angle: RegulatoryAngle, scope: ScopePack): ResearchHypoth
 
   if (angle.id === "A-HAZMAT-HMBP") {
     return [hypothesis("H-HAZMAT-HMBP", angle, "Does hazardous material quantity exceed HMBP thresholds?", "HMBP applies to all hazardous material storage.")];
+  }
+
+  if (angle.id === "A-HAZMAT-EPCRA") {
+    return [hypothesis("H-HAZMAT-EPCRA", angle, "Do stored hazardous chemicals exceed EPCRA Tier II reporting thresholds?", "EPCRA §311-312 Tier II reporting may apply when a hazardous chemical exceeds its reporting threshold.")];
+  }
+
+  if (angle.id === "A-OSHA-PSM") {
+    return [hypothesis("H-OSHA-PSM", angle, "Does a stored highly hazardous chemical meet the OSHA PSM threshold quantity?", "OSHA Process Safety Management applies when a listed highly hazardous chemical is at or above its threshold quantity.")];
   }
 
   if (angle.id === "A-WASTE-GENERATOR-STATUS") {

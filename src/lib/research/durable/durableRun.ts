@@ -4,7 +4,7 @@ import * as store from "../store/supabaseStore";
 
 export type DurableDeps = {
   planRun: (input: ResearchRunInput) => Promise<PlannedRun>;
-  finalizeRun: (run_id: string, scope_pack: PlannedRun["scope_pack"], plan: PlannedRun["plan"], evidence: EvidenceBundle[], baseTrace: PlannedRun["trace_events"]) => ResearchRun;
+  finalizeRun: (run_id: string, scope_pack: PlannedRun["scope_pack"], plan: PlannedRun["plan"], evidence: EvidenceBundle[], baseTrace: PlannedRun["trace_events"]) => Promise<ResearchRun>;
   startModalRun: (run_id: string, task_specs: unknown[]) => Promise<void>;
   store: Pick<typeof store, "createRun" | "getRun" | "listEvidence" | "updateStatus" | "finalizeRun">;
 };
@@ -36,17 +36,18 @@ export async function getDurableRun(run_id: string, deps: DurableDeps = realDeps
   const evidence = await deps.store.listEvidence(run_id);
   const complete = run.status !== "done" && evidence.length >= run.task_count;
   if (complete) {
-    // Two concurrent polls can both finalize here. That is safe: finalizeRun is pure and
-    // deterministic over the same stored bundles, and store.finalizeRun writes the same
-    // idempotent payload — the loser is redundant work, not a wrong result.
+    // Two concurrent polls can both finalize here. That is safe: finalizeRun is
+    // deterministic over the same stored bundles (any live/modal repair re-run is itself
+    // idempotent for grounding), and store.finalizeRun writes the same payload — the
+    // loser is redundant work, not a wrong result.
     const bundles = evidence.map((e) => e.bundle as EvidenceBundle);
-    const result = deps.finalizeRun(run_id, run.scope_pack as PlannedRun["scope_pack"], run.plan as PlannedRun["plan"], bundles, (run.trace_events as PlannedRun["trace_events"]) ?? []);
+    const result = await deps.finalizeRun(run_id, run.scope_pack as PlannedRun["scope_pack"], run.plan as PlannedRun["plan"], bundles, (run.trace_events as PlannedRun["trace_events"]) ?? []);
     await deps.store.finalizeRun(run_id, { determinations: result.determinations, report_markdown: result.report_markdown, trace_events: result.trace_events });
     return result;
   }
   if (run.status === "done") {
     const bundles = evidence.map((e) => e.bundle as EvidenceBundle);
-    return deps.finalizeRun(run_id, run.scope_pack as PlannedRun["scope_pack"], run.plan as PlannedRun["plan"], bundles, (run.trace_events as PlannedRun["trace_events"]) ?? []);
+    return await deps.finalizeRun(run_id, run.scope_pack as PlannedRun["scope_pack"], run.plan as PlannedRun["plan"], bundles, (run.trace_events as PlannedRun["trace_events"]) ?? []);
   }
   return { run_id, status: run.status, task_count: run.task_count, bundles_count: evidence.length, trace_events: (run.trace_events as unknown[]) ?? [] };
 }
