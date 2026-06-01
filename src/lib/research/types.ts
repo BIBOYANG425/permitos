@@ -1,4 +1,5 @@
 import type { HarnessToolId } from "./toolCatalog";
+import type { SdsReview } from "@/lib/sds/types";
 
 export type RunStatus =
   | "idle"
@@ -221,6 +222,7 @@ export type ResearchRun = {
   determinations: Determination[];
   trace_events: TraceEvent[];
   report_markdown: string;
+  sds_reviews?: SdsReview[];
 };
 
 export type ResearchRunInput = {
