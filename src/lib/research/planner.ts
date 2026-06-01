@@ -10,8 +10,10 @@ import { blockedToolIdsForRole, researchWorkerToolIds } from "./toolCatalog";
 
 const coverageFamilies: CoverageFamily[] = ["air", "stormwater", "hazmat", "waste", "wastewater"];
 
-export function planResearch(scope: ScopePack) {
-  const coverage_family_statuses = coverageFamilies.map((family) => coverageStatusFor(family, scope));
+export function planResearch(scope: ScopePack, sdsActiveFamilies: ReadonlySet<CoverageFamily> = new Set()) {
+  const coverage_family_statuses = coverageFamilies.map((family) =>
+    coverageStatusFor(family, scope, sdsActiveFamilies.has(family))
+  );
   const regulatory_angles = coverage_family_statuses.flatMap((status) => anglesFor(status, scope));
   const research_graph = regulatory_angles.flatMap((angle) => hypothesesFor(angle, scope));
   const research_tasks = research_graph.map(taskForHypothesis);
@@ -19,22 +21,26 @@ export function planResearch(scope: ScopePack) {
   return { coverage_family_statuses, regulatory_angles, research_graph, research_tasks };
 }
 
-function coverageStatusFor(family: CoverageFamily, scope: ScopePack): CoverageFamilyStatus {
+function coverageStatusFor(family: CoverageFamily, scope: ScopePack, sdsFlagged: boolean): CoverageFamilyStatus {
   const equipmentKinds = scope.project_change.equipment.map((item) => item.kind);
   const hasChemicals = scope.project_change.chemicals.length > 0;
   const hasWaste = scope.project_change.waste_streams.length > 0;
   const disturbance = scope.project_change.disturbance_acres;
 
   if (family === "air") {
-    const active = equipmentKinds.length > 0;
+    const equipmentActive = scope.project_change.equipment.length > 0;
+    const active = equipmentActive || sdsFlagged;
+    const reason = equipmentActive
+      ? "Project adds equipment that may emit air contaminants."
+      : sdsFlagged
+        ? "SDS review flagged VOC or air-emissions relevance; air permit applicability requires review."
+        : "No equipment added that could emit air contaminants.";
     return {
       id: "CF-AIR",
       family,
       status: active ? "active" : "out_of_scope",
-      reason: active
-        ? "Project adds equipment that may emit air contaminants."
-        : "No equipment added that could emit air contaminants.",
-      project_facts_considered: equipmentKinds,
+      reason,
+      project_facts_considered: sdsFlagged ? [...equipmentKinds, "sds:voc_air_emissions_review"] : equipmentKinds,
       missing_facts: []
     };
   }
@@ -55,24 +61,38 @@ function coverageStatusFor(family: CoverageFamily, scope: ScopePack): CoverageFa
 
   if (family === "hazmat") {
     const missingQuantity = hasChemicals && scope.project_change.chemicals.some((chemical) => chemical.quantity === null);
+    const status = !hasChemicals
+      ? sdsFlagged
+        ? "active"
+        : "out_of_scope"
+      : missingQuantity
+        ? "blocked_missing_fact"
+        : "active";
     return {
       id: "CF-HAZMAT",
       family,
-      status: !hasChemicals ? "out_of_scope" : missingQuantity ? "blocked_missing_fact" : "active",
+      status,
       reason: hasChemicals
         ? "Project includes hazardous material storage."
-        : "No hazardous materials indicated in intake.",
+        : sdsFlagged
+          ? "SDS review flagged hazardous material content; HMBP applicability requires review."
+          : "No hazardous materials indicated in intake.",
       project_facts_considered: scope.project_change.chemicals.map((chemical) => `${chemical.name}:${chemical.quantity ?? "missing"} ${chemical.unit ?? ""}`),
       missing_facts: missingQuantity ? ["chemicals.quantity", "chemicals.unit"] : []
     };
   }
 
   if (family === "waste") {
+    const status = hasWaste || sdsFlagged ? "active" : "out_of_scope";
     return {
       id: "CF-WASTE",
       family,
-      status: hasWaste ? "active" : "out_of_scope",
-      reason: hasWaste ? "Project identifies waste streams that need generator-status review." : "No waste stream indicated.",
+      status,
+      reason: hasWaste
+        ? "Project identifies waste streams that need generator-status review."
+        : sdsFlagged
+          ? "SDS review flagged hazardous waste relevance; generator-status review required."
+          : "No waste stream indicated.",
       project_facts_considered: scope.project_change.waste_streams.map((stream) => `${stream.description}:${stream.kg_per_month ?? "missing"} kg/month`),
       missing_facts: scope.project_change.waste_streams.some((stream) => stream.kg_per_month === null)
         ? ["waste_streams.kg_per_month"]
@@ -80,13 +100,25 @@ function coverageStatusFor(family: CoverageFamily, scope: ScopePack): CoverageFa
     };
   }
 
+  const wastewaterStatus =
+    scope.project_change.process_discharge === null
+      ? sdsFlagged
+        ? "active"
+        : "blocked_missing_fact"
+      : scope.project_change.process_discharge
+        ? "active"
+        : sdsFlagged
+          ? "active"
+          : "out_of_scope";
   return {
     id: "CF-WASTEWATER",
     family,
-    status: scope.project_change.process_discharge === null ? "blocked_missing_fact" : scope.project_change.process_discharge ? "active" : "out_of_scope",
+    status: wastewaterStatus,
     reason:
       scope.project_change.process_discharge === null
-        ? "Process discharge status is missing."
+        ? sdsFlagged
+          ? "SDS review flagged spill/stormwater containment relevance; pretreatment review required."
+          : "Process discharge status is missing."
         : scope.project_change.process_discharge
           ? "Project may discharge process wastewater."
           : "No process wastewater discharge indicated.",

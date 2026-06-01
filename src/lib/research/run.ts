@@ -1,10 +1,13 @@
 import type { EvidenceBundle, ResearchRun, ResearchRunInput, VerificationVerdict } from "./types";
-import { parseScope, createRunId, projectFacts } from "./scope";
+import type { SdsReview } from "@/lib/sds/types";
+import { parseScope, applySdsHandoffToScope, createRunId, projectFacts } from "./scope";
 import { planResearch } from "./planner";
+import { sdsActiveFamilies } from "./sdsFamilies";
 import { runLocalResearchPool } from "./workers";
 import { repairEvidence, verifyEvidence } from "./verifier";
 import { synthesize } from "./synthesis";
 import { trace } from "./trace";
+import { reviewSdsInputs } from "@/lib/sds/reviewer";
 import { Raindrop } from "raindrop-ai";
 
 const raindrop = new Raindrop({
@@ -15,22 +18,36 @@ export type PlannedRun = {
   run_id: string;
   scope_pack: Awaited<ReturnType<typeof parseScope>>;
   plan: ReturnType<typeof planResearch>;
+  sds_reviews: SdsReview[];
   trace_events: ReturnType<typeof trace>[];
 };
 
 export async function planRun(input: ResearchRunInput): Promise<PlannedRun> {
   const run_id = createRunId();
+  const sds_reviews = reviewSdsInputs(input.demo_documents ?? [], run_id, { asOfDate: new Date() });
   const trace_events = [trace(run_id, "scope_agent", "scope", "running", "Parsing intake into ScopePack")];
-  const scope_pack = await parseScope(input, run_id);
+  const base_scope_pack = await parseScope(input, run_id);
   trace_events.push(trace(run_id, "scope_agent", "scope", "done", "ScopePack created", run_id));
-  const plan = planResearch(scope_pack);
+
+  for (const review of sds_reviews) {
+    trace_events.push(
+      trace(run_id, "sds_reviewer", "sds_review",
+        review.overall_status === "unreadable" ? "needs_review" : "done",
+        `Reviewed SDS ${review.document.name}: ${review.overall_status}`, review.document.id)
+    );
+  }
+
+  // Fold SDS handoff facts into scope and let the planner open the coverage
+  // families those facts flag (e.g. a VOC SDS opens air even with no equipment).
+  const scope_pack = applySdsHandoffToScope(base_scope_pack, sds_reviews);
+  const plan = planResearch(scope_pack, sdsActiveFamilies(sds_reviews));
   trace_events.push(
     trace(run_id, "orchestrator", "coverage", "done",
       `Inspected ${plan.coverage_family_statuses.length} coverage families and created ${plan.regulatory_angles.length} regulatory angles`),
     trace(run_id, "orchestrator", "task_graph", "done",
       `Created ${plan.research_graph.length} hypotheses and ${plan.research_tasks.length} source tasks`)
   );
-  return { run_id, scope_pack, plan, trace_events };
+  return { run_id, scope_pack, plan, sds_reviews, trace_events };
 }
 
 export function finalizeRun(
@@ -38,7 +55,8 @@ export function finalizeRun(
   scope_pack: PlannedRun["scope_pack"],
   plan: PlannedRun["plan"],
   initialEvidence: EvidenceBundle[],
-  baseTrace: ReturnType<typeof trace>[]
+  baseTrace: ReturnType<typeof trace>[],
+  sds_reviews: SdsReview[] = []
 ): ResearchRun {
   const trace_events = [...baseTrace];
   const evidence_bundles: EvidenceBundle[] = [...initialEvidence];
@@ -65,7 +83,7 @@ export function finalizeRun(
 
   const latestVerdicts = latestByHypothesis(verification_verdicts);
   const latestEvidence = latestByHypothesis(evidence_bundles);
-  const synthesis = synthesize(scope_pack, plan.research_graph, plan.regulatory_angles, latestEvidence, latestVerdicts);
+  const synthesis = synthesize(scope_pack, plan.research_graph, plan.regulatory_angles, latestEvidence, latestVerdicts, sds_reviews);
   trace_events.push(trace(run_id, "synthesis_agent", "matrix", "done", "Applicability matrix synthesized"));
   const status = synthesis.determinations.some((row) => row.review_flag) ? "needs_review" : "done";
 
@@ -74,6 +92,7 @@ export function finalizeRun(
     project_facts: projectFacts(scope_pack),
     jurisdiction_stack: scope_pack.facility.jurisdiction_stack,
     scope_pack,
+    sds_reviews,
     coverage_family_statuses: plan.coverage_family_statuses,
     regulatory_angles: plan.regulatory_angles,
     research_graph: plan.research_graph,
@@ -113,7 +132,7 @@ export async function runResearch(input: ResearchRunInput): Promise<ResearchRun>
   } else {
     fanoutTrace.push(trace(run_id, "research_pool", "fanout", "done", "Research worker pool returned evidence bundles"));
   }
-  const result = finalizeRun(run_id, planned.scope_pack, planned.plan, poolResult.bundles, fanoutTrace);
+  const result = finalizeRun(run_id, planned.scope_pack, planned.plan, poolResult.bundles, fanoutTrace, planned.sds_reviews);
   interaction.setProperties({
     status: result.status,
     hypotheses_count: planned.plan.research_graph.length,

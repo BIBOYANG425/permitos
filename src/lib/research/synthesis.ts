@@ -7,23 +7,40 @@ import type {
   ScopePack,
   VerificationVerdict
 } from "./types";
+import type { SdsHandoffRef, SdsReview } from "@/lib/sds/types";
 
 export function synthesize(
   scope: ScopePack,
   hypotheses: ResearchHypothesis[],
   angles: RegulatoryAngle[],
   evidenceBundles: EvidenceBundle[],
-  verdicts: VerificationVerdict[]
+  verdicts: VerificationVerdict[],
+  sdsReviews: SdsReview[] = []
 ) {
   const evidenceByHypothesis = new Map(evidenceBundles.map((bundle) => [bundle.hypothesis_id, bundle]));
   const verdictByHypothesis = new Map(verdicts.map((verdict) => [verdict.hypothesis_id, verdict]));
   const angleById = new Map(angles.map((angle) => [angle.id, angle]));
+  const sdsHandoffFacts = sdsReviews.flatMap((review) =>
+    review.permit_handoff_facts
+      .filter((fact) => fact.review_flag && fact.value === true)
+      .map((fact) => ({
+        ...fact,
+        document_id: review.document.id,
+        document_name: review.document.name
+      }))
+  );
 
   const determinations = hypotheses.map((hypothesis) => {
     const evidence = evidenceByHypothesis.get(hypothesis.id);
     const verdict = verdictByHypothesis.get(hypothesis.id);
     const angle = angleById.get(hypothesis.angle_id);
-    return determinationFor(scope, hypothesis, angle?.label ?? hypothesis.family, evidence, verdict);
+    const determination = determinationFor(scope, hypothesis, angle?.label ?? hypothesis.family, evidence, verdict);
+    const sds_handoff_refs = matchingSdsHandoffFacts(hypothesis, sdsHandoffFacts);
+
+    return {
+      ...determination,
+      ...(sds_handoff_refs.length > 0 ? { sds_handoff_refs } : {})
+    };
   });
 
   const memory_updates = determinations
@@ -42,6 +59,26 @@ export function synthesize(
   const report_markdown = renderReport(scope, determinations);
 
   return { determinations, memory_updates, report_markdown };
+}
+
+// Attach SDS handoff facts to the determination whose hypothesis they support.
+// A fact only annotates a determination; it is never citable evidence and never
+// flips verification (the boundary between SDS refs and regulatory proof).
+function matchingSdsHandoffFacts(hypothesis: ResearchHypothesis, facts: SdsHandoffRef[]) {
+  if (facts.length === 0) {
+    return [];
+  }
+  const fieldMatches = fieldsForHypothesis(hypothesis.id);
+  return facts.filter((fact) => fieldMatches.has(fact.field));
+}
+
+function fieldsForHypothesis(hypothesisId: string) {
+  const map: Record<string, string[]> = {
+    "H-AIR-VOC": ["voc_air_emissions_review"],
+    "H-HAZMAT-HMBP": ["hazardous_material_inventory_review", "flammable_liquid_storage_review"],
+    "H-WASTE-GENERATOR": ["hazardous_waste_review"]
+  };
+  return new Set(map[hypothesisId] ?? []);
 }
 
 function determinationFor(
