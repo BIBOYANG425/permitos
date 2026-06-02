@@ -14,7 +14,9 @@ from typing import Literal, Optional, TypedDict
 # HarnessToolId — concrete union lives in tool_catalog.py (to be ported).
 # For now alias to str so allowed_tools / blocked_tools remain faithful.
 # ---------------------------------------------------------------------------
-HarnessToolId = str  # tool_catalog.py will replace this with the concrete Literal union
+HarnessToolId = (
+    str  # Both HarnessToolId and ToolCatalog use str; concrete values live in tool_catalog.py
+)
 
 # ---------------------------------------------------------------------------
 # Scalar union aliases

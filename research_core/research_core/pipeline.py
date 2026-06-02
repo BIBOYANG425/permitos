@@ -27,6 +27,29 @@ def _latest_by_hypothesis(items: list[dict]) -> list[dict]:
     return list(seen.values())
 
 
+def _verify_and_repair(scope: dict, evidence: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Run one verify→repair→re-verify pass over *evidence*.
+
+    Returns (verification_verdicts, evidence_bundles) as raw, pre-dedup lists.
+    Each caller then applies _latest_by_hypothesis to get the final sets.
+
+    Extracted to avoid duplicating this logic between run_verification and
+    finalize_run (both had identical loop bodies before this helper).
+    """
+    evidence_bundles: list[dict] = list(evidence)
+    verification_verdicts: list[dict] = []
+
+    for bundle in evidence:
+        verdict = verify_evidence(scope, bundle)
+        verification_verdicts.append(verdict)
+        for ticket in verdict["repair_tickets"]:
+            repaired = repair_evidence(scope, ticket)
+            evidence_bundles.append(repaired)
+            verification_verdicts.append(verify_evidence(scope, repaired))
+
+    return verification_verdicts, evidence_bundles
+
+
 def run_verification(scope: dict, fixture_evidence: list[dict]) -> dict:
     """Mirror the verify→repair loop inside finalizeRun (fixture path).
 
@@ -35,16 +58,7 @@ def run_verification(scope: dict, fixture_evidence: list[dict]) -> dict:
       2. For each repair_ticket in verdict: repair → repaired bundle → re-verify
     Then deduplicate both lists via _latest_by_hypothesis.
     """
-    evidence_bundles = list(fixture_evidence)
-    verification_verdicts: list[dict] = []
-
-    for bundle in fixture_evidence:
-        verdict = verify_evidence(scope, bundle)
-        verification_verdicts.append(verdict)
-        for ticket in verdict["repair_tickets"]:
-            repaired = repair_evidence(scope, ticket)
-            evidence_bundles.append(repaired)
-            verification_verdicts.append(verify_evidence(scope, repaired))
+    verification_verdicts, evidence_bundles = _verify_and_repair(scope, fixture_evidence)
 
     return {
         "verification_verdicts": _latest_by_hypothesis(verification_verdicts),
@@ -139,19 +153,14 @@ def finalize_run(
     from research_core.program_registry import PROGRAM_REGISTRY
 
     trace_events: list[dict] = list(base_trace)
-    evidence_bundles: list[dict] = list(evidence)
-    verification_verdicts: list[dict] = []
-    repair_tickets: list[dict] = []
 
     # Verify/repair loop (fixture path — synchronous)
-    for bundle in evidence:
-        verdict = verify_evidence(scope, bundle)
-        verification_verdicts.append(verdict)
-        for ticket in verdict["repair_tickets"]:
-            repair_tickets.append(ticket)
-            repaired = repair_evidence(scope, ticket)
-            evidence_bundles.append(repaired)
-            verification_verdicts.append(verify_evidence(scope, repaired))
+    verification_verdicts, evidence_bundles = _verify_and_repair(scope, evidence)
+
+    # Collect repair tickets from all verdicts so finalize_run can surface them.
+    repair_tickets: list[dict] = [
+        ticket for verdict in verification_verdicts for ticket in verdict.get("repair_tickets", [])
+    ]
 
     latest_verdicts = _latest_by_hypothesis(verification_verdicts)
     latest_evidence = _latest_by_hypothesis(evidence_bundles)

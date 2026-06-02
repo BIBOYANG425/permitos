@@ -2,8 +2,10 @@
 Faithful Python port of src/lib/research/programRegistry.ts.
 
 Single source of truth for permit programs.  The verifier owns this list;
-completeness.py re-derives the expected set from it.  Family skills are
-projections of it (see test_registry_skills_parity.py).
+completeness.py re-derives the expected set from it.  The TS-side registry ↔
+skills parity guard lives in src/lib/research/__tests__/registrySkillsParity.test.ts;
+test_program_registry.py covers the Python port (hypothesis coverage is 100%
+now that the planner is fully ported).
 """
 
 from __future__ import annotations

@@ -2,8 +2,8 @@
 Faithful Python port of src/lib/research/__tests__/programRegistry.test.ts.
 
 Every `it(...)` case from the TS suite is ported to a pytest `def test_...`.
-The planner-dependent case is skipped until research_core.planner is ported
-(Task 8), exactly mirroring the pattern in test_parity.py.
+All cases run without skipping; the planner is fully ported and hypothesis
+coverage is 100%.
 """
 
 from __future__ import annotations

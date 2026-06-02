@@ -11,6 +11,8 @@ Two principles:
 
 from __future__ import annotations
 
+from research_core._format import js_round
+
 # Ceiling a failed check imposes, ordered by how fatal the failure is.
 FAIL_CAP: dict[str, float] = {
     "currency": 0.3,
@@ -32,7 +34,8 @@ def _clamp(value: float, lo: float, hi: float) -> float:
 
 
 def _round2(value: float) -> float:
-    return round(value * 100) / 100
+    """Replicate Math.round(x * 100) / 100 from confidence.ts (half-up rounding)."""
+    return js_round(value * 100) / 100
 
 
 def compute_confidence(checks: dict, consistency: dict | None = None) -> float:

@@ -8,6 +8,8 @@ All data is plain dicts (NOT dataclasses).
 
 from __future__ import annotations
 
+from research_core._format import js_round
+
 # ---------------------------------------------------------------------------
 # Public entry-point
 # ---------------------------------------------------------------------------
@@ -252,7 +254,7 @@ def _render_report(scope: dict, determinations: list[dict]) -> str:
     jurisdiction_stack = facility.get("jurisdiction_stack", [])
 
     rows = "\n".join(
-        f"| {row['requirement']} | {row['applies']} | {'verified' if row['verified'] else 'needs review'} | {round(row['confidence'] * 100)}% |"
+        f"| {row['requirement']} | {row['applies']} | {'verified' if row['verified'] else 'needs review'} | {js_round(row['confidence'] * 100):.0f}% |"
         for row in determinations
     )
 

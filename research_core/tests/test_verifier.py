@@ -128,3 +128,69 @@ def test_needs_review_when_low_authority():
     v = verify_evidence(_SCOPE, low_auth)
     assert v["verdict"] == "needs_review"
     assert v["checks"]["authority"]["pass"] is False
+
+
+# ---------------------------------------------------------------------------
+# Regression: Fix 1 — operator-precedence crash when claim.quote is None/absent
+# ---------------------------------------------------------------------------
+
+
+def test_no_crash_when_claim_quote_is_none():
+    """Regression: verify_evidence must not crash when extracted_claims[0]['quote'] is None.
+
+    Before Fix 1, the expression `(claim.get("quote") if claim else "" or "")` had
+    wrong operator precedence: the `or ""` bound to the *else* branch, not the whole
+    conditional.  When claim was a non-empty dict whose "quote" was None, Python
+    evaluated `None.strip()` → AttributeError.
+
+    The TS original is `(claim?.quote ?? "").trim()`, i.e. coalesce the *quote*,
+    not the else-branch.  The fix adds an extra pair of parentheses so the `or ""`
+    coalesces the result of the entire conditional:
+        ((claim.get("quote") if claim else "") or "").strip()
+
+    This test uses the generalized grounding path (H-AIR-201 with a claim dict
+    whose "quote" key is explicitly None).  The call must return a verdict dict
+    (we accept "fail" or "needs_review" because an empty claim quote cannot be
+    grounded) WITHOUT raising any exception.
+    """
+    bundle_null_quote = _bundle(
+        {
+            "extracted_claims": [
+                {
+                    "field": "permit_trigger",
+                    "value": "permit required",
+                    "source_url": "https://www.aqmd.gov/x",
+                    "quote": None,  # explicitly None — triggers the crash before Fix 1
+                    "confidence": 0.9,
+                }
+            ]
+        }
+    )
+    # Must not raise AttributeError (or any other exception).
+    verdict = verify_evidence(_SCOPE, bundle_null_quote)
+    assert verdict["verdict"] in {"fail", "needs_review"}
+    # Grounding must have failed (empty claim quote cannot be grounded)
+    assert verdict["checks"]["grounding"]["pass"] is False
+    # A repair ticket should be present because grounding failed
+    assert len(verdict["repair_tickets"]) >= 1
+
+
+def test_no_crash_when_claim_quote_absent():
+    """Same regression with 'quote' key missing entirely from the claim dict."""
+    bundle_no_quote_key = _bundle(
+        {
+            "extracted_claims": [
+                {
+                    "field": "permit_trigger",
+                    "value": "permit required",
+                    "source_url": "https://www.aqmd.gov/x",
+                    # 'quote' key is absent
+                    "confidence": 0.9,
+                }
+            ]
+        }
+    )
+    verdict = verify_evidence(_SCOPE, bundle_no_quote_key)
+    assert verdict["verdict"] in {"fail", "needs_review"}
+    assert verdict["checks"]["grounding"]["pass"] is False
+    assert len(verdict["repair_tickets"]) >= 1

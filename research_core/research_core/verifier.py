@@ -203,7 +203,7 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
     claim = extracted_claims[0] if extracted_claims else None
 
     source_quote = _norm_ws((source.get("quote") or "").strip())
-    claim_quote = _norm_ws((claim.get("quote") if claim else "" or "").strip())
+    claim_quote = _norm_ws(((claim.get("quote") if claim else "") or "").strip())
 
     grounded = len(source_quote) > 0 and len(claim_quote) > 0 and claim_quote in source_quote
 

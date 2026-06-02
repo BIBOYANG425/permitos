@@ -5,9 +5,21 @@ Mirrors how TypeScript template literals serialize None/bool:
   True  → "true"
   False → "false"
   other → str(value)
+
+Also provides js_round(), which replicates Math.round for the non-negative
+domain used in this project.  Python's built-in round() is banker's rounding
+(half-to-even); JS Math.round is always half-up.  Example: round(0.5) → 0 in
+Python but Math.round(0.5) → 1 in JS.
 """
 
 from __future__ import annotations
+
+import math
+
+
+def js_round(value: float) -> float:
+    """Replicate Math.round for non-negative values: floor(x + 0.5)."""
+    return math.floor(value + 0.5)
 
 
 def js_str(value) -> str:
