@@ -42,9 +42,32 @@ A faithful, parity-validated Python port of the deterministic EHS research core 
 | `test_scope_extraction.py` | Regime 2 opt-in test (requires `OPENAI_API_KEY`; skips without it) |
 | `fixtures/` | Seeded evidence fixture data for integration tests |
 
+## Testing philosophy
+
+### Production gate (`uv run pytest -m "not migration"`)
+
+The mechanical-guardrail unit tests: verifier grounding/threshold math, recall floor, program registry, confidence scoring, and `scope_pack_from_facts`. These cover deterministic backstops that must be reproducible regardless of which orchestration path calls them — determinism here is correct and expected. This is the CI gate for the production system.
+
+Tests that use sample or fixture *inputs* to exercise unit behavior (e.g. the verifier fail→repair arc in `test_run_repair.py`) are legitimate guardrail tests and belong in this tier — only the *whole-pipeline golden byte-parity* in `test_parity.py` is migration-only.
+
+### Migration regression (`uv run pytest -m migration`, plus `pnpm check:goldens`)
+
+The whole-pipeline golden byte-parity suite on the 3 demo fixtures (`complex`, `construction`, `missing_facts`). It proved that the TS→Python port was behaviorally equivalent to the TypeScript original. It is **not a production gate**: sub-project B makes orchestration agentic and model-driven, which is non-deterministic by design — byte-matching against a deterministic demo-fixture snapshot would both fail spuriously and give false confidence about the live system. This suite will be retired or loosened once sub-project B lands.
+
+### Production correctness for the agentic system (sub-projects B/C)
+
+Invariants that hold on any execution path, regardless of non-determinism:
+
+- Every shipped determination is grounded by a verbatim quote present in the fetched source.
+- Nothing is marked `verified` without a passing verifier check.
+- The recall floor surfaces every family the registry expects but that was never investigated.
+- The system fails closed on missing facts (no silent omissions).
+
+These are tested via an **AIQ eval harness** (sub-project C) that scores runs on determination accuracy, quote-grounding faithfulness, expected-program recall, and cost/latency. The eval harness tolerates non-determinism — it scores outcomes, not exact byte matches.
+
 ## The parity gate
 
-The golden files in `tests/goldens/` are exported from the TypeScript implementation via the `pnpm export:goldens` script at the repo root. They capture the complete deterministic output for 12 representative scope inputs.
+The golden files in `tests/goldens/` are exported from the TypeScript implementation via the `pnpm export:goldens` script at the repo root. They capture the complete deterministic output for 3 representative scope inputs.
 
 `test_parity.py` reads each golden, re-derives the same output in Python (calling `plan_research`, `finalize_run`, etc.), and asserts canonical equality. The canonicalizer:
 
@@ -52,7 +75,7 @@ The golden files in `tests/goldens/` are exported from the TypeScript implementa
 - Excludes `trace_events` from comparison (wall-clock timestamps make them non-deterministic).
 - Checks `report_markdown` structurally: verifies required section headers and determination entries are present, without byte-matching prose.
 
-A passing parity gate proves the Python port is behaviorally equivalent to the TypeScript original across all 12 golden cases.
+A passing parity gate proved the Python port is behaviorally equivalent to the TypeScript original across all 3 golden cases. See the testing philosophy section above for the role this suite plays going forward.
 
 ## Running it
 

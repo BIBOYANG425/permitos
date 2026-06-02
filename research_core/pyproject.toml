@@ -22,3 +22,6 @@ target-version = "py311"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "migration: TS->Python migration/regression oracle (golden byte-parity on demo fixtures); NOT a production gate",
+]

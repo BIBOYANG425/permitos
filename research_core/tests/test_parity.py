@@ -1,14 +1,37 @@
 # research_core/tests/test_parity.py
-"""THE offline gate. Re-derive each pipeline artifact in Python from the golden
-inputs (seeded ScopePack + fixture evidence) and assert canonical equality with
-the committed golden. trace_events are excluded (timestamps); report_markdown is
-checked structurally, not byte-exact."""
+"""TS→Python migration / regression oracle.
+
+This suite is a **one-time migration artifact**, NOT a production correctness gate.
+
+It re-derives each pipeline artifact in Python from the golden inputs (seeded
+ScopePack + fixture evidence) and asserts canonical (byte-parity) equality with
+the committed golden outputs that were exported from the TypeScript implementation.
+
+Why this exists:
+  Proved that the Python port is behaviorally equivalent to the TypeScript original
+  across the 3 demo fixtures (complex, construction, missing_facts).
+
+Why it must NOT gate production:
+  Sub-project B makes orchestration agentic and non-deterministic — a model-driven
+  path cannot and must not be byte-matched against a deterministic demo-fixture
+  snapshot. Locking production CI to these goldens would calcify the dead
+  deterministic path and give false confidence about the live agentic system.
+
+Retirement plan:
+  This suite will be retired or loosened once sub-project B lands and the AIQ eval
+  harness (sub-project C) becomes the correctness signal for the production path.
+
+trace_events are excluded from all comparisons (wall-clock timestamps).
+report_markdown is checked structurally, not byte-exact.
+"""
 
 from __future__ import annotations
 import json
 from pathlib import Path
 import pytest
 from tests.canonicalize import canonical
+
+pytestmark = pytest.mark.migration
 
 GOLDEN_DIR = Path(__file__).parent / "goldens"
 CASES = ["complex", "construction", "missing_facts"]
