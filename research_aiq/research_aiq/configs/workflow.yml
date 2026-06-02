@@ -5,20 +5,14 @@ general:
         _type: file
         output_path: ./.tmp/research_aiq_traces.jsonl
         project: research_aiq
-      # Raindrop ingests OTLP natively: its local Workshop debugger answers
-      # `{RAINDROP_LOCAL_DEBUGGER}traces` (= http://localhost:5899/v1/traces) and
-      # returns {"ok":true,"spansIngested":N} for an OTLP/HTTP span export.
-      # nat's `otelcollector` exporter (nvidia-nat-opentelemetry) ships spans there
-      # via OTLPSpanAdapterExporter. This makes the agent's per-step spans land in
-      # Raindrop alongside the run-level interaction recorded by observability.py.
-      # The default mirrors .env.local; ${VAR:-default} is interpolated by nat
-      # (nat/utils/io/yaml_tools.py). RAINDROP_LOCAL_DEBUGGER already ends in `/v1/`,
-      # so appending `traces` yields the OTLP path. Like all telemetry this is
-      # additive and best-effort — if the debugger is down, span export just drops.
-      raindrop_otlp:
-        _type: otelcollector
-        endpoint: ${RAINDROP_LOCAL_DEBUGGER:-http://localhost:5899/v1/}traces
-        project: research_aiq
+      # NOTE: per-step OTLP span export to Raindrop is a follow-up, not wired here.
+      # nat's OTLP/HTTP exporter posts a protobuf body that Raindrop's local Workshop
+      # debugger rejects with 400 "Failed to decode protobuf OTLP body" (verified live
+      # 2026-06-02), so the raindrop_otlp exporter was removed — it delivered no spans
+      # and logged an error on every run. Run-level Raindrop observability instead goes
+      # through observability.record_run (a track_partial POST from orchestrate's
+      # epilogue), which is validated and working. Re-add an OTLP span exporter only
+      # once Raindrop's OTLP-decode requirements (encoding / content-type) are confirmed.
 llms:
   openai_llm:
     _type: openai

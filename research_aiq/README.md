@@ -157,18 +157,22 @@ run. Observability failures (Raindrop down, debugger off) degrade to a single
 
 ## Raindrop wiring (fail-soft)
 
-Two best-effort channels into the local Workshop debugger (`http://localhost:5899/v1/`):
+- **Run-level interaction (working, validated)** — `observability.record_run` POSTs one
+  terminal event per run (status, #determinations, #verified/#needs_review/#investigated,
+  invariant violations, model) to `{RAINDROP_LOCAL_DEBUGGER}events/track_partial`,
+  replicating the Node SDK's wire shape (there is no Python Raindrop SDK). Verified live
+  (2026-06-02): a real gpt-5.2 run's metrics land in the Workshop and the always-on
+  invariants report 0 violations.
+- **Local span trace** — `workflow.yml` keeps nat's `file` tracer, writing per-step spans
+  to `.tmp/research_aiq_traces.jsonl` for local debugging.
+- **Per-step OTLP spans → Raindrop (follow-up, not wired)** — nat's OTLP/HTTP exporter
+  posts a protobuf body that Raindrop's local debugger rejects with `400 "Failed to decode
+  protobuf OTLP body"`, so the OTLP-to-Raindrop exporter was removed (it delivered no spans
+  and logged an error every run). Re-add it once Raindrop's OTLP-decode requirements are
+  confirmed.
 
-- **Run-level interaction** — `observability.record_run` POSTs one terminal event
-  per run (status, #determinations, #verified/#needs_review/#investigated, invariant
-  violations, model) to `{RAINDROP_LOCAL_DEBUGGER}events/track_partial`, replicating
-  the Node SDK's wire shape (there is no Python Raindrop SDK).
-- **Per-step OTLP spans** — `workflow.yml` configures nat's `otelcollector` exporter
-  to ship the agent's per-step spans to `{RAINDROP_LOCAL_DEBUGGER}traces` (Raindrop
-  ingests OTLP natively), alongside a local `file` tracer for `.tmp/`.
-
-Both are additive: if the debugger is down, export simply drops — a run is never
-blocked or slowed.
+The run-level channel is additive/fail-soft: if the debugger is down, export simply drops —
+a run is never blocked or slowed.
 
 ## research_core backstop
 
