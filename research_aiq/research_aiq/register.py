@@ -2,3 +2,4 @@
 
 from research_aiq.functions import _spike  # noqa: F401
 from research_aiq.functions import plan_candidates  # noqa: F401
+from research_aiq.functions import spawn_researchers  # noqa: F401
