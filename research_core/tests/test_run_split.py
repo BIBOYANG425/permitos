@@ -13,7 +13,6 @@ Python "split" is:
 from __future__ import annotations
 import json
 from pathlib import Path
-import pytest
 
 GOLDEN_DIR = Path(__file__).parent / "goldens"
 
@@ -26,6 +25,7 @@ def _load_golden(name: str) -> dict:
 # Helper: load a golden's fixture_evidence (the fixture-path evidence bundles)
 # ---------------------------------------------------------------------------
 
+
 def _fixture_evidence(golden: dict) -> list[dict]:
     return golden["fixture_evidence"]
 
@@ -33,6 +33,7 @@ def _fixture_evidence(golden: dict) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestRunSplit:
     """Mirror 'run.ts split' describe block from run.split.test.ts."""
@@ -131,6 +132,7 @@ class TestRunSplit:
         # Determinations sourced from the graph should appear before any recall-gap rows
         # (recall-gap rows have no corresponding hypothesis in the graph by definition)
         from research_core.synthesis import _requirement_for
+
         graph_requirements = [_requirement_for(hid) for hid in graph_ids]
 
         for req in graph_requirements:

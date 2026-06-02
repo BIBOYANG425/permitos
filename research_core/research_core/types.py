@@ -23,18 +23,24 @@ HarnessToolId = str  # tool_catalog.py will replace this with the concrete Liter
 RunStatus = Literal["idle", "queued", "running", "partial", "needs_review", "done", "failed"]
 
 CoverageFamily = Literal[
-    "air", "stormwater", "hazmat", "waste", "wastewater",
-    "land_use", "fire_code", "ceqa", "osha",
+    "air",
+    "stormwater",
+    "hazmat",
+    "waste",
+    "wastewater",
+    "land_use",
+    "fire_code",
+    "ceqa",
+    "osha",
 ]
 
-CoverageStatus = Literal[
-    "active", "blocked_missing_fact", "out_of_scope", "discovery_candidate"
-]
+CoverageStatus = Literal["active", "blocked_missing_fact", "out_of_scope", "discovery_candidate"]
 
 
 # ---------------------------------------------------------------------------
 # ProjectFact
 # ---------------------------------------------------------------------------
+
 
 class ProjectFact(TypedDict):
     field: str
@@ -45,6 +51,7 @@ class ProjectFact(TypedDict):
 # ---------------------------------------------------------------------------
 # ScopePack — nested inline shapes
 # ---------------------------------------------------------------------------
+
 
 class _ScopePackEquipmentItem(TypedDict):
     kind: str
@@ -114,6 +121,7 @@ class ScopePack(TypedDict):
 # CoverageFamilyStatus
 # ---------------------------------------------------------------------------
 
+
 class CoverageFamilyStatus(TypedDict):
     id: str
     family: CoverageFamily
@@ -127,6 +135,7 @@ class CoverageFamilyStatus(TypedDict):
 # RegulatoryAngle
 # ---------------------------------------------------------------------------
 
+
 class RegulatoryAngle(TypedDict):
     id: str
     family: CoverageFamily
@@ -139,6 +148,7 @@ class RegulatoryAngle(TypedDict):
 # ---------------------------------------------------------------------------
 # ResearchHypothesis
 # ---------------------------------------------------------------------------
+
 
 class _ResearchHypothesisRequired(TypedDict):
     id: str
@@ -160,6 +170,7 @@ class ResearchHypothesis(_ResearchHypothesisRequired, total=False):
 # ---------------------------------------------------------------------------
 # ResearchTask
 # ---------------------------------------------------------------------------
+
 
 class _ResearchTaskBudget(TypedDict):
     max_sources: int
@@ -183,6 +194,7 @@ class ResearchTask(_ResearchTaskRequired, total=False):
 # ---------------------------------------------------------------------------
 # SourceFixture
 # ---------------------------------------------------------------------------
+
 
 class _PermitFiling(TypedDict, total=False):
     form_name: str
@@ -224,6 +236,7 @@ class SourceFixture(_SourceFixtureRequired, total=False):
 # EvidenceBundle
 # ---------------------------------------------------------------------------
 
+
 class _EvidenceBundleSource(TypedDict):
     url: str
     source_name: str
@@ -257,6 +270,7 @@ class EvidenceBundle(_EvidenceBundleRequired, total=False):
 # ---------------------------------------------------------------------------
 # RepairTicket (defined before VerificationVerdict which references it)
 # ---------------------------------------------------------------------------
+
 
 class RepairTicket(TypedDict):
     ticket_id: str
@@ -294,6 +308,7 @@ class VerificationVerdict(TypedDict):
 # Determination
 # ---------------------------------------------------------------------------
 
+
 class _DeterminationRequired(TypedDict):
     requirement: str
     applies: Literal["yes", "no", "needs_review"]
@@ -317,6 +332,7 @@ class Determination(_DeterminationRequired, total=False):
 # TraceEvent
 # ---------------------------------------------------------------------------
 
+
 class _TraceEventRequired(TypedDict):
     id: str
     run_id: str
@@ -335,6 +351,7 @@ class TraceEvent(_TraceEventRequired, total=False):
 # MemoryUpdate
 # ---------------------------------------------------------------------------
 
+
 class MemoryUpdate(TypedDict):
     memory_type: Literal["verified_source_fact", "failed_hypothesis", "run_metric"]
     fact: str
@@ -349,6 +366,7 @@ class MemoryUpdate(TypedDict):
 # ---------------------------------------------------------------------------
 # ResearchRun
 # ---------------------------------------------------------------------------
+
 
 class _ResearchRunRequired(TypedDict):
     run_id: str
@@ -377,6 +395,7 @@ class ResearchRun(_ResearchRunRequired, total=False):
 # ---------------------------------------------------------------------------
 # ResearchRunInput
 # ---------------------------------------------------------------------------
+
 
 class _ResearchRunInputDocument(TypedDict):
     name: str

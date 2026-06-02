@@ -10,7 +10,6 @@ finalize_run mirrors the full finalizeRun: verify/repair + synthesis + recall fl
 """
 
 from __future__ import annotations
-import math
 import random
 
 from research_core.verifier import repair_evidence, verify_evidence
@@ -57,6 +56,7 @@ def run_verification(scope: dict, fixture_evidence: list[dict]) -> dict:
 # Trace helper — mirrors trace() from trace.ts
 # ---------------------------------------------------------------------------
 
+
 def _trace(
     run_id: str,
     actor: str,
@@ -69,6 +69,7 @@ def _trace(
     rand_suffix = "".join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=8))
     id_suffix = artifact_id if artifact_id is not None else rand_suffix
     from datetime import datetime, timezone
+
     return {
         "id": f"trace_{actor}_{phase}_{id_suffix}",
         "run_id": run_id,
@@ -84,6 +85,7 @@ def _trace(
 # ---------------------------------------------------------------------------
 # Recall gap determination — mirrors recallGapDetermination() from run.ts
 # ---------------------------------------------------------------------------
+
 
 def _recall_gap_determination(program: dict) -> dict:
     """Mirror recallGapDetermination(program) from run.ts.
@@ -109,6 +111,7 @@ def _recall_gap_determination(program: dict) -> dict:
 # ---------------------------------------------------------------------------
 # finalize_run — mirrors finalizeRun() from run.ts
 # ---------------------------------------------------------------------------
+
 
 def finalize_run(
     run_id: str,

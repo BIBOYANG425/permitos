@@ -8,24 +8,10 @@ Returns a plain dict with keys:
 
 from __future__ import annotations
 
+from research_core._format import js_str
 from research_core.tool_catalog import blocked_tool_ids_for_role, research_worker_tool_ids
 
 COVERAGE_FAMILIES = ["air", "stormwater", "hazmat", "waste", "wastewater", "osha"]
-
-
-def _js(value) -> str:
-    """Render a Python value as its JS/JSON string equivalent.
-
-    None → "null", True → "true", False → "false", numbers/strings pass through.
-    This mirrors how TS template literals serialize null/boolean values.
-    """
-    if value is None:
-        return "null"
-    if value is True:
-        return "true"
-    if value is False:
-        return "false"
-    return str(value)
 
 
 def plan_research(scope: dict, sds_active_families=()) -> dict:
@@ -39,15 +25,9 @@ def plan_research(scope: dict, sds_active_families=()) -> dict:
         for family in COVERAGE_FAMILIES
     ]
     regulatory_angles = [
-        angle
-        for status in coverage_family_statuses
-        for angle in _angles_for(status, scope)
+        angle for status in coverage_family_statuses for angle in _angles_for(status, scope)
     ]
-    research_graph = [
-        hyp
-        for angle in regulatory_angles
-        for hyp in _hypotheses_for(angle, scope)
-    ]
+    research_graph = [hyp for angle in regulatory_angles for hyp in _hypotheses_for(angle, scope)]
     research_tasks = [_task_for_hypothesis(hyp) for hyp in research_graph]
 
     return {
@@ -61,6 +41,7 @@ def plan_research(scope: dict, sds_active_families=()) -> dict:
 # ---------------------------------------------------------------------------
 # coverageStatusFor
 # ---------------------------------------------------------------------------
+
 
 def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
     equipment_kinds = [item["kind"] for item in scope["project_change"]["equipment"]]
@@ -78,7 +59,9 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
         else:
             reason = "No equipment added that could emit air contaminants."
         project_facts_considered = (
-            [*equipment_kinds, "sds:voc_air_emissions_review"] if sds_flagged else list(equipment_kinds)
+            [*equipment_kinds, "sds:voc_air_emissions_review"]
+            if sds_flagged
+            else list(equipment_kinds)
         )
         return {
             "id": "CF-AIR",
@@ -91,9 +74,7 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
 
     if family == "stormwater":
         missing_code = (
-            not scope["facility"]["sic"]
-            and not scope["facility"]["naics"]
-            and disturbance is None
+            not scope["facility"]["sic"] and not scope["facility"]["naics"] and disturbance is None
         )
         return {
             "id": "CF-STORMWATER",
@@ -105,12 +86,14 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
                 else "Industrial activity codes or construction acreage require stormwater review."
             ),
             "project_facts_considered": [
-                f"sic={_js(scope['facility']['sic'])}",
-                f"naics={_js(scope['facility']['naics'])}",
-                f"acres={_js(disturbance)}",
+                f"sic={js_str(scope['facility']['sic'])}",
+                f"naics={js_str(scope['facility']['naics'])}",
+                f"acres={js_str(disturbance)}",
             ],
             "missing_facts": (
-                ["facility.naics_or_sic", "project_change.disturbance_acres"] if missing_code else []
+                ["facility.naics_or_sic", "project_change.disturbance_acres"]
+                if missing_code
+                else []
             ),
         }
 
@@ -128,7 +111,9 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
         if has_chemicals:
             reason = "Project includes hazardous material storage."
         elif sds_flagged:
-            reason = "SDS review flagged hazardous material content; HMBP applicability requires review."
+            reason = (
+                "SDS review flagged hazardous material content; HMBP applicability requires review."
+            )
         else:
             reason = "No hazardous materials indicated in intake."
 
@@ -142,9 +127,7 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
             "status": status,
             "reason": reason,
             "project_facts_considered": project_facts_considered,
-            "missing_facts": (
-                ["chemicals.quantity", "chemicals.unit"] if missing_quantity else []
-            ),
+            "missing_facts": (["chemicals.quantity", "chemicals.unit"] if missing_quantity else []),
         }
 
     if family == "waste":
@@ -152,7 +135,9 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
         if has_waste:
             reason = "Project identifies waste streams that need generator-status review."
         elif sds_flagged:
-            reason = "SDS review flagged hazardous waste relevance; generator-status review required."
+            reason = (
+                "SDS review flagged hazardous waste relevance; generator-status review required."
+            )
         else:
             reason = "No waste stream indicated."
         project_facts_considered = [
@@ -214,7 +199,7 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
         "family": family,
         "status": wastewater_status,
         "reason": reason,
-        "project_facts_considered": [f"process_discharge={_js(process_discharge)}"],
+        "project_facts_considered": [f"process_discharge={js_str(process_discharge)}"],
         "missing_facts": (
             ["project_change.process_discharge"] if process_discharge is None else []
         ),
@@ -224,6 +209,7 @@ def _coverage_status_for(family: str, scope: dict, sds_flagged: bool) -> dict:
 # ---------------------------------------------------------------------------
 # anglesFor
 # ---------------------------------------------------------------------------
+
 
 def _angles_for(status: dict, scope: dict) -> list[dict]:
     if status["status"] == "out_of_scope":
@@ -267,8 +253,8 @@ def _angles_for(status: dict, scope: dict) -> list[dict]:
                 "label": "Industrial stormwater coverage",
                 "reason": "SIC/NAICS may trigger California Industrial General Permit coverage.",
                 "triggering_facts": [
-                    f"sic={_js(scope['facility']['sic'])}",
-                    f"naics={_js(scope['facility']['naics'])}",
+                    f"sic={js_str(scope['facility']['sic'])}",
+                    f"naics={js_str(scope['facility']['naics'])}",
                 ],
                 "status": (
                     "active"
@@ -282,7 +268,7 @@ def _angles_for(status: dict, scope: dict) -> list[dict]:
                 "label": "Construction stormwater coverage",
                 "reason": "Construction activity disturbing one or more acres may require permit coverage.",
                 "triggering_facts": [
-                    f"disturbance_acres={_js(scope['project_change']['disturbance_acres'])}"
+                    f"disturbance_acres={js_str(scope['project_change']['disturbance_acres'])}"
                 ],
                 "status": (
                     "blocked_missing_fact"
@@ -353,59 +339,120 @@ def _angles_for(status: dict, scope: dict) -> list[dict]:
 # hypothesesFor
 # ---------------------------------------------------------------------------
 
+
 def _hypotheses_for(angle: dict, scope: dict) -> list[dict]:
     angle_id = angle["id"]
 
     if angle_id == "A-AIR-EMITTING-EQUIPMENT":
         return [
-            _hypothesis("H-AIR-201", angle, "Does the new equipment require an SCAQMD Permit to Construct?", "SCAQMD Permit to Construct may apply before installing emitting equipment."),
-            _hypothesis("H-AIR-VOC", angle, "Do solvent VOC emissions require additional review?", "Solvent use may create VOC-related review needs."),
+            _hypothesis(
+                "H-AIR-201",
+                angle,
+                "Does the new equipment require an SCAQMD Permit to Construct?",
+                "SCAQMD Permit to Construct may apply before installing emitting equipment.",
+            ),
+            _hypothesis(
+                "H-AIR-VOC",
+                angle,
+                "Do solvent VOC emissions require additional review?",
+                "Solvent use may create VOC-related review needs.",
+            ),
         ]
 
     if angle_id == "A-AIR-EXEMPTION-OR-REGISTRATION":
         return [
-            _hypothesis("H-AIR-219", angle, "Is Rule 219 exemption available?", "Rule 219 may exempt listed equipment if conditions are satisfied."),
-            _hypothesis("H-AIR-222", angle, "Does Rule 222 registration apply instead?", "Rule 222 registration may apply to specified equipment categories."),
+            _hypothesis(
+                "H-AIR-219",
+                angle,
+                "Is Rule 219 exemption available?",
+                "Rule 219 may exempt listed equipment if conditions are satisfied.",
+            ),
+            _hypothesis(
+                "H-AIR-222",
+                angle,
+                "Does Rule 222 registration apply instead?",
+                "Rule 222 registration may apply to specified equipment categories.",
+            ),
         ]
 
     if angle_id == "A-AIR-FEDERAL-OPERATING":
         return [
-            _hypothesis("H-AIR-TITLEV", angle, "Does the facility's potential-to-emit require a federal Title V operating permit?", "Major-source potential-to-emit may require a Clean Air Act Title V operating permit."),
+            _hypothesis(
+                "H-AIR-TITLEV",
+                angle,
+                "Does the facility's potential-to-emit require a federal Title V operating permit?",
+                "Major-source potential-to-emit may require a Clean Air Act Title V operating permit.",
+            ),
         ]
 
     if angle_id == "A-STORMWATER-INDUSTRIAL":
         return [
-            _hypothesis("H-STORM-IGP", angle, "Does SIC/NAICS trigger Industrial General Permit coverage?", "SIC/NAICS may trigger California Industrial General Permit coverage."),
+            _hypothesis(
+                "H-STORM-IGP",
+                angle,
+                "Does SIC/NAICS trigger Industrial General Permit coverage?",
+                "SIC/NAICS may trigger California Industrial General Permit coverage.",
+            ),
         ]
 
     if angle_id == "A-STORMWATER-CONSTRUCTION":
         return [
-            _hypothesis("H-STORM-CGP", angle, "Does construction disturb one or more acres?", "Construction disturbance at or above one acre may require construction stormwater permit coverage."),
+            _hypothesis(
+                "H-STORM-CGP",
+                angle,
+                "Does construction disturb one or more acres?",
+                "Construction disturbance at or above one acre may require construction stormwater permit coverage.",
+            ),
         ]
 
     if angle_id == "A-HAZMAT-HMBP":
         return [
-            _hypothesis("H-HAZMAT-HMBP", angle, "Does hazardous material quantity exceed HMBP thresholds?", "HMBP applies to all hazardous material storage."),
+            _hypothesis(
+                "H-HAZMAT-HMBP",
+                angle,
+                "Does hazardous material quantity exceed HMBP thresholds?",
+                "HMBP applies to all hazardous material storage.",
+            ),
         ]
 
     if angle_id == "A-HAZMAT-EPCRA":
         return [
-            _hypothesis("H-HAZMAT-EPCRA", angle, "Do stored hazardous chemicals exceed EPCRA Tier II reporting thresholds?", "EPCRA §311-312 Tier II reporting may apply when a hazardous chemical exceeds its reporting threshold."),
+            _hypothesis(
+                "H-HAZMAT-EPCRA",
+                angle,
+                "Do stored hazardous chemicals exceed EPCRA Tier II reporting thresholds?",
+                "EPCRA §311-312 Tier II reporting may apply when a hazardous chemical exceeds its reporting threshold.",
+            ),
         ]
 
     if angle_id == "A-OSHA-PSM":
         return [
-            _hypothesis("H-OSHA-PSM", angle, "Does a stored highly hazardous chemical meet the OSHA PSM threshold quantity?", "OSHA Process Safety Management applies when a listed highly hazardous chemical is at or above its threshold quantity."),
+            _hypothesis(
+                "H-OSHA-PSM",
+                angle,
+                "Does a stored highly hazardous chemical meet the OSHA PSM threshold quantity?",
+                "OSHA Process Safety Management applies when a listed highly hazardous chemical is at or above its threshold quantity.",
+            ),
         ]
 
     if angle_id == "A-WASTE-GENERATOR-STATUS":
         return [
-            _hypothesis("H-WASTE-GENERATOR", angle, "Does waste generation change hazardous waste generator status?", "Spent solvent may affect generator status."),
+            _hypothesis(
+                "H-WASTE-GENERATOR",
+                angle,
+                "Does waste generation change hazardous waste generator status?",
+                "Spent solvent may affect generator status.",
+            ),
         ]
 
     # wastewater
     return [
-        _hypothesis("H-WASTEWATER-PRETREATMENT", angle, "Does process wastewater discharge require pretreatment review?", "Industrial process wastewater may require pretreatment review."),
+        _hypothesis(
+            "H-WASTEWATER-PRETREATMENT",
+            angle,
+            "Does process wastewater discharge require pretreatment review?",
+            "Industrial process wastewater may require pretreatment review.",
+        ),
     ]
 
 
@@ -430,6 +477,7 @@ def _hypothesis(id_: str, angle: dict, question: str, claim: str) -> dict:
 # ---------------------------------------------------------------------------
 # taskForHypothesis
 # ---------------------------------------------------------------------------
+
 
 def _task_for_hypothesis(hyp: dict) -> dict:
     return {

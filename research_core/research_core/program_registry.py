@@ -49,6 +49,7 @@ class ProgramRegistryEntry(TypedDict):
 # Scope predicate helpers — mirrors the TS module-level arrow functions verbatim.
 # ---------------------------------------------------------------------------
 
+
 def _has_equipment(s: ScopePack) -> bool:
     return len(s["project_change"]["equipment"]) > 0
 

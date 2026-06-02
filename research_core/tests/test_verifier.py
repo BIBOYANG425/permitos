@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 
 from research_core.verifier import verify_evidence
 

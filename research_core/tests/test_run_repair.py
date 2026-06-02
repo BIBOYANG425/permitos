@@ -8,7 +8,6 @@ via threshold math (60 gal >= 55 gal). Hermetic — no live scope parsing.
 
 from __future__ import annotations
 
-import pytest
 
 from research_core.pipeline import run_verification
 
@@ -83,9 +82,7 @@ def test_repair_arc_rejects_overbroad_hmbp_and_repair_passes():
     # The initial verdict emitted a repair ticket for HMBP
     all_verdicts = result["verification_verdicts"]
     # The latest (post-repair) HMBP verdict passes
-    hmbp_verdict = next(
-        (v for v in all_verdicts if v["hypothesis_id"] == "H-HAZMAT-HMBP"), None
-    )
+    hmbp_verdict = next((v for v in all_verdicts if v["hypothesis_id"] == "H-HAZMAT-HMBP"), None)
     assert hmbp_verdict is not None
     assert hmbp_verdict["verdict"] == "pass", (
         f"Expected 'pass', got '{hmbp_verdict['verdict']}': {hmbp_verdict}"
@@ -108,10 +105,9 @@ def test_repair_arc_emits_repair_ticket():
 
     initial_verdict = verify_evidence(_SCOPE, _bad_hmbp_bundle())
     assert initial_verdict["verdict"] == "fail"
-    assert any(
-        t["hypothesis_id"] == "H-HAZMAT-HMBP"
-        for t in initial_verdict["repair_tickets"]
-    ), f"No HMBP repair ticket: {initial_verdict['repair_tickets']}"
+    assert any(t["hypothesis_id"] == "H-HAZMAT-HMBP" for t in initial_verdict["repair_tickets"]), (
+        f"No HMBP repair ticket: {initial_verdict['repair_tickets']}"
+    )
 
 
 def test_repair_arc_predicate_math_check_passes():

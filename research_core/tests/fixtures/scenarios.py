@@ -2,6 +2,7 @@
 Python port of src/lib/research/fixtures/scenarios.ts.
 Provides seeded ScopePack dicts for tests.
 """
+
 from __future__ import annotations
 
 
@@ -20,7 +21,14 @@ def seeded_complex_scope(run_id: str, description: str) -> dict:
                 or "Adding a coating booth and storing a new hazardous liquid at a Southern California manufacturing facility."
             ),
             "equipment": [{"kind": "coating_booth", "description": "new emitting equipment"}],
-            "chemicals": [{"name": "flammable solvent", "quantity": 60, "unit": "gallons", "hazard": "flammable"}],
+            "chemicals": [
+                {
+                    "name": "flammable solvent",
+                    "quantity": 60,
+                    "unit": "gallons",
+                    "hazard": "flammable",
+                }
+            ],
             "waste_streams": [{"description": "spent solvent", "kg_per_month": None}],
             "disturbance_acres": 0,
             "process_discharge": None,
@@ -89,7 +97,9 @@ def seeded_missing_facts_scope(run_id: str, description: str) -> dict:
                 description
                 or "Facility adds a new chemical and process but omits quantities and industry codes."
             ),
-            "equipment": [{"kind": "process_equipment", "description": "new unspecified process equipment"}],
+            "equipment": [
+                {"kind": "process_equipment", "description": "new unspecified process equipment"}
+            ],
             "chemicals": [{"name": "hazardous material", "quantity": None, "unit": None}],
             "waste_streams": [{"description": "process waste", "kg_per_month": None}],
             "disturbance_acres": None,

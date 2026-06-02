@@ -13,18 +13,37 @@ from typing import Literal
 # ---------------------------------------------------------------------------
 
 AgentRole = Literal[
-    "intake", "planner", "triage", "researcher", "verifier",
-    "synthesizer", "discovery", "system", "all"
+    "intake",
+    "planner",
+    "triage",
+    "researcher",
+    "verifier",
+    "synthesizer",
+    "discovery",
+    "system",
+    "all",
 ]
 
 ToolCategory = Literal[
-    "intake_jurisdiction", "knowledge_base_read", "retrieval_currency",
-    "verification_defensibility", "discovery", "output_compliance", "harness_control"
+    "intake_jurisdiction",
+    "knowledge_base_read",
+    "retrieval_currency",
+    "verification_defensibility",
+    "discovery",
+    "output_compliance",
+    "harness_control",
 ]
 
 ToolWriteTarget = Literal[
-    "none", "projects", "fetched_sources", "extractions", "verification_records",
-    "determinations", "staging", "audit_log", "fetched_sources_and_determinations"
+    "none",
+    "projects",
+    "fetched_sources",
+    "extractions",
+    "verification_records",
+    "determinations",
+    "staging",
+    "audit_log",
+    "fetched_sources_and_determinations",
 ]
 
 # ---------------------------------------------------------------------------

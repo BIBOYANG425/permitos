@@ -1,9 +1,9 @@
 """
 Python port of src/lib/research/__tests__/planner.test.ts.
 """
+
 from __future__ import annotations
 
-import pytest
 
 from research_core.planner import plan_research
 from research_core.scope import scope_pack_from_facts
@@ -13,6 +13,7 @@ from research_core.scope import scope_pack_from_facts
 # researcher budget
 # ---------------------------------------------------------------------------
 
+
 def test_each_research_task_has_at_least_4_model_calls():
     """gives each research task at least 4 model calls for the agentic loop"""
     scope = {
@@ -21,7 +22,9 @@ def test_each_research_task_has_at_least_4_model_calls():
         "project_change": {
             "description": "test project",
             "equipment": [{"kind": "coating_booth", "description": "booth"}],
-            "chemicals": [{"name": "solvent", "quantity": 60, "unit": "gal", "hazard": "flammable"}],
+            "chemicals": [
+                {"name": "solvent", "quantity": 60, "unit": "gal", "hazard": "flammable"}
+            ],
             "waste_streams": [],
             "disturbance_acres": None,
             "process_discharge": None,
@@ -37,6 +40,7 @@ def test_each_research_task_has_at_least_4_model_calls():
 # ---------------------------------------------------------------------------
 # planResearch — count varies with facts
 # ---------------------------------------------------------------------------
+
 
 def test_equipment_only_activates_air_not_hazmat_waste():
     """equipment-only project activates air but not hazmat/waste"""

@@ -18,6 +18,7 @@ from research_core.confidence import compute_confidence
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _norm_ws(value: str) -> str:
     """Collapse whitespace runs, mirroring normWs from TS."""
     return re.sub(r"\s+", " ", value).strip()
@@ -27,7 +28,10 @@ def _needs_review(hypothesis_id: str, failure_type: str, reason: str) -> dict:
     """Mirror the needsReview helper."""
     checks = {
         "currency": {"pass": True, "reason": "source/cache status recorded"},
-        "authority": {"pass": True, "reason": "authority could be evaluated or source failure was explicit"},
+        "authority": {
+            "pass": True,
+            "reason": "authority could be evaluated or source failure was explicit",
+        },
         "grounding": {"pass": failure_type != "source_failed", "reason": reason},
         "predicate_math": {"pass": False, "reason": reason},
     }
@@ -44,6 +48,7 @@ def _needs_review(hypothesis_id: str, failure_type: str, reason: str) -> dict:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def verify_evidence(scope: dict, bundle: dict) -> dict:
     """Mirror verifyEvidence from verifier.ts."""
     sources = bundle.get("sources", [])
@@ -51,15 +56,14 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
 
     # --- no source ---
     if not source:
-        return _needs_review(bundle["hypothesis_id"], "source_failed", "No source was returned by the worker.")
+        return _needs_review(
+            bundle["hypothesis_id"], "source_failed", "No source was returned by the worker."
+        )
 
     hypothesis_id = bundle["hypothesis_id"]
 
     # --- HMBP demo-bad branch ---
-    if (
-        hypothesis_id == "H-HAZMAT-HMBP"
-        and source.get("content_hash") == "sha256:demo-hmbp-bad"
-    ):
+    if hypothesis_id == "H-HAZMAT-HMBP" and source.get("content_hash") == "sha256:demo-hmbp-bad":
         checks = {
             "currency": {"pass": True, "reason": "source fetched from seeded cache for this run"},
             "authority": {"pass": True, "reason": "official/high-authority HMBP source fixture"},
@@ -67,7 +71,10 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
                 "pass": False,
                 "reason": "Quote mentions threshold quantities, but extracted claim says all hazardous material storage.",
             },
-            "predicate_math": {"pass": False, "reason": "No threshold was extracted from the quoted text."},
+            "predicate_math": {
+                "pass": False,
+                "reason": "No threshold was extracted from the quoted text.",
+            },
         }
         return {
             "hypothesis_id": hypothesis_id,
@@ -102,7 +109,11 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
             threshold = None
 
         if quantity is None or threshold is None:
-            return _needs_review(hypothesis_id, "missing_fact", "Hazardous material quantity or threshold is missing.")
+            return _needs_review(
+                hypothesis_id,
+                "missing_fact",
+                "Hazardous material quantity or threshold is missing.",
+            )
 
         passes_threshold = quantity >= threshold
         op = ">=" if passes_threshold else "<"
@@ -112,7 +123,10 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
         checks = {
             "currency": {"pass": True, "reason": "source fetched from seeded cache for this run"},
             "authority": {"pass": True, "reason": "official/high-authority HMBP source fixture"},
-            "grounding": {"pass": True, "reason": "quote contains the liquid hazardous material threshold"},
+            "grounding": {
+                "pass": True,
+                "reason": "quote contains the liquid hazardous material threshold",
+            },
             "predicate_math": {
                 "pass": passes_threshold,
                 "reason": pred_reason,
@@ -132,13 +146,17 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
         waste_streams = scope.get("project_change", {}).get("waste_streams", [])
         missing = any(ws.get("kg_per_month") is None for ws in waste_streams)
         if missing:
-            return _needs_review(hypothesis_id, "missing_fact", "Monthly hazardous waste quantity is missing.")
+            return _needs_review(
+                hypothesis_id, "missing_fact", "Monthly hazardous waste quantity is missing."
+            )
 
     # --- H-WASTEWATER-PRETREATMENT missing fact ---
     if hypothesis_id == "H-WASTEWATER-PRETREATMENT":
         process_discharge = scope.get("project_change", {}).get("process_discharge")
         if process_discharge is None:
-            return _needs_review(hypothesis_id, "missing_fact", "Process wastewater discharge status is missing.")
+            return _needs_review(
+                hypothesis_id, "missing_fact", "Process wastewater discharge status is missing."
+            )
 
     # --- H-STORM-CGP ---
     if hypothesis_id == "H-STORM-CGP":
@@ -153,7 +171,10 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
         checks = {
             "currency": {"pass": True, "reason": "source fetched from seeded cache for this run"},
             "authority": {"pass": True, "reason": "official state stormwater source fixture"},
-            "grounding": {"pass": True, "reason": "quote contains one-acre construction disturbance threshold"},
+            "grounding": {
+                "pass": True,
+                "reason": "quote contains one-acre construction disturbance threshold",
+            },
             "predicate_math": {
                 "pass": passes_threshold,
                 "reason": pred_reason,
@@ -184,21 +205,21 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
     source_quote = _norm_ws((source.get("quote") or "").strip())
     claim_quote = _norm_ws((claim.get("quote") if claim else "" or "").strip())
 
-    grounded = (
-        len(source_quote) > 0
-        and len(claim_quote) > 0
-        and claim_quote in source_quote
-    )
+    grounded = len(source_quote) > 0 and len(claim_quote) > 0 and claim_quote in source_quote
 
     conclusion = bundle.get("researcher_conclusion")
     decided = conclusion in ("applies", "does_not_apply")
 
     fetched_at = source.get("fetched_at") or ""
-    currency_reason = f"source fetched {fetched_at[:10]}" if fetched_at else "source fetched (unknown)"
+    currency_reason = (
+        f"source fetched {fetched_at[:10]}" if fetched_at else "source fetched (unknown)"
+    )
 
     authority_rank = source.get("authority_rank", 99)
     authority_pass = authority_rank <= 2
-    authority_reason = "official or high-authority source" if authority_pass else "source authority rank is low"
+    authority_reason = (
+        "official or high-authority source" if authority_pass else "source authority rank is low"
+    )
 
     grounding_reason = (
         "extracted claim quote appears in the cited source quote"
@@ -207,7 +228,8 @@ def verify_evidence(scope: dict, bundle: dict) -> dict:
     )
 
     pred_reason_general = (
-        f"researcher reached a grounded conclusion: {conclusion}" if decided
+        f"researcher reached a grounded conclusion: {conclusion}"
+        if decided
         else "researcher could not reach a grounded conclusion"
     )
 

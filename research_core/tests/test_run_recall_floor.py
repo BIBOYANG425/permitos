@@ -50,17 +50,18 @@ class TestRunRecallFloorWiring:
         # strip the HMBP hypothesis from the proposed research graph.
         gapped_plan = {
             **plan,
-            "research_graph": [
-                h for h in plan["research_graph"] if h["id"] != "H-HAZMAT-HMBP"
-            ],
+            "research_graph": [h for h in plan["research_graph"] if h["id"] != "H-HAZMAT-HMBP"],
         }
 
         # Evidence is irrelevant to the recall floor; pass none.
         run = finalize_run("recall-test", scope, gapped_plan, [], [])
 
         hmbp_row = next(
-            (d for d in run["determinations"]
-             if d["requirement"] == "California Hazardous Materials Business Plan (HMBP)"),
+            (
+                d
+                for d in run["determinations"]
+                if d["requirement"] == "California Hazardous Materials Business Plan (HMBP)"
+            ),
             None,
         )
         assert hmbp_row is not None, "recall floor should add a row for the missed ca-hmbp program"

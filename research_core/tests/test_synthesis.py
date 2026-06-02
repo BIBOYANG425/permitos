@@ -1,7 +1,7 @@
 """Python port of src/lib/research/__tests__/synthesis.test.ts."""
+
 from __future__ import annotations
 
-import pytest
 from research_core.synthesis import synthesize
 
 
@@ -90,6 +90,7 @@ def _ev(conclusion: str) -> dict:
 # ---------------------------------------------------------------------------
 # Tests: synthesize reads researcher_conclusion
 # ---------------------------------------------------------------------------
+
 
 class TestSynthesizeReadsResearcherConclusion:
     def test_maps_verified_does_not_apply_to_applies_no(self):

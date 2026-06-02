@@ -12,6 +12,7 @@ from __future__ import annotations
 # Public entry-point
 # ---------------------------------------------------------------------------
 
+
 def synthesize(
     scope: dict,
     research_graph: list[dict],
@@ -43,11 +44,13 @@ def synthesize(
         doc = review.get("document", {})
         for fact in review.get("permit_handoff_facts", []):
             if fact.get("review_flag") and fact.get("value") is True:
-                sds_handoff_facts.append({
-                    **fact,
-                    "document_id": doc.get("id"),
-                    "document_name": doc.get("name"),
-                })
+                sds_handoff_facts.append(
+                    {
+                        **fact,
+                        "document_id": doc.get("id"),
+                        "document_name": doc.get("name"),
+                    }
+                )
 
     determinations: list[dict] = []
     for hypothesis in research_graph:
@@ -65,16 +68,18 @@ def synthesize(
     memory_updates: list[dict] = []
     for det in determinations:
         if det.get("verified"):
-            memory_updates.append({
-                "memory_type": "verified_source_fact",
-                "fact": f"{det['requirement']}: {det['applies']}",
-                "source_url": det.get("source_url", ""),
-                "content_hash": _evidence_by_requirement(evidence, det["requirement"]),
-                "quote": det.get("quote"),
-                "verifier_verdict": "pass",
-                "as_of_date": "2026-05-30",
-                "expires_or_recheck_after": "2026-11-30",
-            })
+            memory_updates.append(
+                {
+                    "memory_type": "verified_source_fact",
+                    "fact": f"{det['requirement']}: {det['applies']}",
+                    "source_url": det.get("source_url", ""),
+                    "content_hash": _evidence_by_requirement(evidence, det["requirement"]),
+                    "quote": det.get("quote"),
+                    "verifier_verdict": "pass",
+                    "as_of_date": "2026-05-30",
+                    "expires_or_recheck_after": "2026-11-30",
+                }
+            )
 
     report_markdown = _render_report(scope, determinations)
 
@@ -88,6 +93,7 @@ def synthesize(
 # ---------------------------------------------------------------------------
 # SDS handoff helpers
 # ---------------------------------------------------------------------------
+
 
 def _fields_for_hypothesis(hypothesis_id: str) -> set[str]:
     """Mirror fieldsForHypothesis from synthesis.ts."""
@@ -110,6 +116,7 @@ def _matching_sds_handoff_facts(hypothesis: dict, facts: list[dict]) -> list[dic
 # ---------------------------------------------------------------------------
 # Determination helpers
 # ---------------------------------------------------------------------------
+
 
 def _determination_for(
     scope: dict,
@@ -236,6 +243,7 @@ def _evidence_by_requirement(evidence_bundles: list[dict], requirement: str) -> 
 # ---------------------------------------------------------------------------
 # Report rendering
 # ---------------------------------------------------------------------------
+
 
 def _render_report(scope: dict, determinations: list[dict]) -> str:
     """Mirror renderReport from synthesis.ts."""

@@ -19,7 +19,6 @@ JURISDICTION_STACK = ["SCAQMD", "California Water Boards", "Local CUPA"]
 
 def create_run_id() -> str:
     """Mirror TS: `run_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`"""
-    now_36 = format(int(time.time() * 1000), "b")  # not base-36 yet — fix below
     # Python: int to base-36
     now_b36 = _to_base36(int(time.time() * 1000))
     rand_b36 = _to_base36(random.randint(0, 2**32))[2:8]  # slice(2, 8) from random string
@@ -71,7 +70,9 @@ def scope_pack_from_facts(facts: dict, run_id: str, description: str) -> dict:
     equipment = [
         {
             "kind": e["kind"],
-            "description": e.get("description", "") if isinstance(e.get("description"), str) else "",
+            "description": e.get("description", "")
+            if isinstance(e.get("description"), str)
+            else "",
         }
         for e in raw_equipment
         if e and isinstance(e.get("kind"), str)
@@ -95,7 +96,9 @@ def scope_pack_from_facts(facts: dict, run_id: str, description: str) -> dict:
     waste_streams = [
         {
             "description": w["description"],
-            "kg_per_month": w["kg_per_month"] if isinstance(w.get("kg_per_month"), (int, float)) else None,
+            "kg_per_month": w["kg_per_month"]
+            if isinstance(w.get("kg_per_month"), (int, float))
+            else None,
         }
         for w in raw_waste
         if w and isinstance(w.get("description"), str)
@@ -119,32 +122,44 @@ def scope_pack_from_facts(facts: dict, run_id: str, description: str) -> dict:
 
     missing_facts: list[dict] = []
     if any(c["quantity"] is None for c in chemicals):
-        missing_facts.append({
-            "field": "chemicals.quantity",
-            "why_needed": "HMBP threshold comparison needs the stored quantity.",
-            "blocks": ["hazmat"],
-        })
+        missing_facts.append(
+            {
+                "field": "chemicals.quantity",
+                "why_needed": "HMBP threshold comparison needs the stored quantity.",
+                "blocks": ["hazmat"],
+            }
+        )
     if any(w["kg_per_month"] is None for w in waste_streams):
-        missing_facts.append({
-            "field": "waste_streams.kg_per_month",
-            "why_needed": "Hazardous waste generator category depends on monthly generation quantity.",
-            "blocks": ["waste"],
-        })
+        missing_facts.append(
+            {
+                "field": "waste_streams.kg_per_month",
+                "why_needed": "Hazardous waste generator category depends on monthly generation quantity.",
+                "blocks": ["waste"],
+            }
+        )
     if not naics and not sic:
-        missing_facts.append({
-            "field": "facility.naics_or_sic",
-            "why_needed": "Industrial stormwater coverage depends on SIC/NAICS.",
-            "blocks": ["stormwater"],
-        })
+        missing_facts.append(
+            {
+                "field": "facility.naics_or_sic",
+                "why_needed": "Industrial stormwater coverage depends on SIC/NAICS.",
+                "blocks": ["stormwater"],
+            }
+        )
     if process_discharge is None:
-        missing_facts.append({
-            "field": "project_change.process_discharge",
-            "why_needed": "Wastewater pretreatment depends on whether process wastewater is discharged.",
-            "blocks": ["wastewater"],
-        })
+        missing_facts.append(
+            {
+                "field": "project_change.process_discharge",
+                "why_needed": "Wastewater pretreatment depends on whether process wastewater is discharged.",
+                "blocks": ["wastewater"],
+            }
+        )
 
     raw_address = facts.get("address")
-    address = raw_address if isinstance(raw_address, str) and raw_address else "Southern California facility"
+    address = (
+        raw_address
+        if isinstance(raw_address, str) and raw_address
+        else "Southern California facility"
+    )
 
     return {
         "run_id": run_id,

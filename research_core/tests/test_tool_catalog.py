@@ -1,9 +1,9 @@
 """
 Python port of src/lib/research/__tests__/toolCatalog.test.ts.
 """
+
 from __future__ import annotations
 
-import pytest
 
 from research_core.tool_catalog import (
     HARNESS_TOOL_CATALOG,
@@ -21,6 +21,7 @@ from tests.fixtures.scenarios import seeded_complex_scope
 # harness tool catalog
 # ---------------------------------------------------------------------------
 
+
 def test_tool_ids_unique():
     """keeps tool ids unique"""
     ids = [tool["id"] for tool in HARNESS_TOOL_CATALOG]
@@ -29,10 +30,21 @@ def test_tool_ids_unique():
 
 def test_includes_universal_and_subagent_control_primitives():
     """includes the universal harness and subagent control primitives"""
-    for expected in ["log_step", "emit_trace_event", "validate_artifact_schema", "send_message", "escalate_to_human"]:
+    for expected in [
+        "log_step",
+        "emit_trace_event",
+        "validate_artifact_schema",
+        "send_message",
+        "escalate_to_human",
+    ]:
         assert expected in universal_harness_tool_ids
 
-    for expected in ["spawn_subagents", "send_subagent_message", "wait_for_subagents", "cancel_subagent"]:
+    for expected in [
+        "spawn_subagents",
+        "send_subagent_message",
+        "wait_for_subagents",
+        "cancel_subagent",
+    ]:
         assert expected in subagent_control_tool_ids
 
 

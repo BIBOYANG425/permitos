@@ -21,7 +21,7 @@ FAIL_CAP: dict[str, float] = {
 }
 
 _DEFAULT_FAIL_CAP = 0.6
-_BASE_ALL_PASS = 0.9       # residual uncertainty even when every check passes
+_BASE_ALL_PASS = 0.9  # residual uncertainty even when every check passes
 _PER_EXTRA_FAIL_PENALTY = 0.05
 _MIN_CONFIDENCE = 0.05
 _MAX_CONFIDENCE = 0.97
