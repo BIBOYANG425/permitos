@@ -11,47 +11,7 @@ from __future__ import annotations
 import re
 
 from research_core._format import js_str
-
-
-# ---------------------------------------------------------------------------
-# confidence.ts port (inline — small, avoids a circular import)
-# ---------------------------------------------------------------------------
-
-_FAIL_CAP: dict[str, float] = {
-    "currency": 0.3,
-    "grounding": 0.35,
-    "authority": 0.5,
-    "predicate_math": 0.55,
-    "cross_source": 0.7,
-}
-
-_DEFAULT_FAIL_CAP = 0.6
-_BASE_ALL_PASS = 0.9
-_PER_EXTRA_FAIL_PENALTY = 0.05
-_MIN_CONFIDENCE = 0.05
-_MAX_CONFIDENCE = 0.97
-
-
-def _clamp(value: float, lo: float, hi: float) -> float:
-    return max(lo, min(hi, value))
-
-
-def _round2(value: float) -> float:
-    return round(value * 100) / 100
-
-
-def compute_confidence(checks: dict) -> float:
-    """Mirror computeConfidence from confidence.ts (no consistency signal)."""
-    failed = [(name, c) for name, c in checks.items() if not c["pass"]]
-
-    confidence = _BASE_ALL_PASS
-    for name, _ in failed:
-        confidence = min(confidence, _FAIL_CAP.get(name, _DEFAULT_FAIL_CAP))
-
-    if len(failed) > 1:
-        confidence -= _PER_EXTRA_FAIL_PENALTY * (len(failed) - 1)
-
-    return _round2(_clamp(confidence, _MIN_CONFIDENCE, _MAX_CONFIDENCE))
+from research_core.confidence import compute_confidence
 
 
 # ---------------------------------------------------------------------------
