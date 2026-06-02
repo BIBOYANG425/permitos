@@ -16,6 +16,14 @@ downstream. orchestrate fixes that by being a single coroutine that:
   4. runs finalize with run_id threaded EXPLICITLY as {"run_id": ...} — finalize
      never has to depend on the contextvar in the real flow.
 
+Concurrency: the process-global active run_id is a SINGLE global, but `nat eval`
+runs dataset items concurrently (its local runner gathers items with no honored
+concurrency cap). Steps 2-3 (set_active_run_id THROUGH the supervisor's tool
+calls) are therefore wrapped in `_ACTIVE_RUN_LOCK` so only one run's active-id
+window is open at a time — concurrent items serialize on that lock instead of
+clobbering each other's active id (correct, not parallel). The lock is `async
+with` only; it does not swallow results. `nat run` is single-run and uncontended.
+
 Fail-loud: the plan -> supervise -> finalize CORE is never wrapped in a
 result-fabricating try/except. A failure in any sub-step (LLM, Modal fan-out,
 finalize pipeline) propagates. The ONLY guarded section is the post-run epilogue
@@ -35,7 +43,7 @@ from nat.data_models.function import FunctionBaseConfig
 
 from research_aiq.invariants import check_invariants
 from research_aiq.observability import record_run
-from research_aiq.run_store import STORE, set_active_run_id, set_run_id
+from research_aiq.run_store import _ACTIVE_RUN_LOCK, STORE, set_active_run_id, set_run_id
 
 logger = logging.getLogger("research_aiq.orchestrate")
 
@@ -53,22 +61,38 @@ async def orchestrate(config: OrchestrateConfig, builder: Builder):
     finalize = await builder.get_function(config.finalize_function)
 
     async def _call(input_message: str) -> str:
-        # 1. Deterministic planner: mints run_id, seeds the run-scoped STORE.
+        # 1. Deterministic planner: mints run_id, seeds the run-scoped STORE. This
+        #    stays OUTSIDE the active-run lock: it only writes STORE.init(run_id, ...)
+        #    keyed by its own freshly minted run_id, which is safe across concurrent
+        #    `nat eval` items (the STORE is per-run; only the process-global active
+        #    run_id needs serializing).
         plan_out = await plan.acall_invoke(input_message)
         plan_parsed = json.loads(plan_out)
         run_id = plan_parsed["run_id"]
 
-        # 2. Bind run_id in THIS coroutine before the supervisor forks its tool
-        #    context. set_active_run_id (process-global) is what actually reaches
-        #    the tools; set_run_id (contextvar) is kept as a best-effort secondary.
-        set_run_id(run_id)
-        set_active_run_id(run_id)
+        # 2-3. CRITICAL SECTION — serialized by _ACTIVE_RUN_LOCK. The process-global
+        #    active run_id is the load-bearing carrier that survives langgraph's
+        #    forked tool context, but it is a SINGLE global; `nat eval` runs items
+        #    concurrently (its local runner gathers items with no concurrency cap),
+        #    so without this lock item B's set_active_run_id would clobber item A's
+        #    active id mid-run and spawn_researchers/submit_plan would write A's
+        #    bundles into B. Holding the lock from set_active_run_id THROUGH the
+        #    supervisor's tool calls keeps exactly one run's active-id window open at
+        #    a time. `nat run` is single-run and leaves the lock uncontended. This is
+        #    `async with` only — no result swallowing; exceptions still propagate.
+        async with _ACTIVE_RUN_LOCK:
+            # Bind run_id in THIS coroutine before the supervisor forks its tool
+            # context. set_active_run_id (process-global) is what actually reaches
+            # the tools; set_run_id (contextvar) is kept as a best-effort secondary.
+            set_run_id(run_id)
+            set_active_run_id(run_id)
 
-        # 3. Agentic supervisor reviews the candidates and drives spawn/submit.
-        #    Feed it the candidate summary string (what its system prompt expects).
-        await supervisor.acall_invoke(plan_parsed["candidate_summary"])
+            # Agentic supervisor reviews the candidates and drives spawn/submit.
+            # Feed it the candidate summary string (what its system prompt expects).
+            await supervisor.acall_invoke(plan_parsed["candidate_summary"])
 
-        # 4. Deterministic backstop with run_id threaded explicitly.
+        # 4. Deterministic backstop with run_id threaded explicitly. Safe OUTSIDE the
+        #    lock: finalize reads STORE by the explicit run_id, not the global.
         final = await finalize.acall_invoke(json.dumps({"run_id": run_id}))
 
         # --- always-on post-run observability + invariants -------------------

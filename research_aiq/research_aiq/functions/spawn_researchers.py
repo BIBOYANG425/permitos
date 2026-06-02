@@ -33,7 +33,9 @@ from research_aiq.run_store import STORE, current_run_id, get_active_run_id
 
 
 class SpawnResearchersConfig(FunctionBaseConfig, name="spawn_researchers"):
-    modal_endpoint_env: str = "MODAL_RESEARCH_ENDPOINT"
+    # No config fields: the Modal endpoint/token are read directly from the
+    # environment (MODAL_RESEARCH_ENDPOINT / MODAL_RESEARCH_TOKEN) in _modal_fanout.
+    pass
 
 
 async def _modal_fanout(task_specs: list[dict]) -> list[dict]:

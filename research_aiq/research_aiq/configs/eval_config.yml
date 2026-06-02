@@ -75,6 +75,14 @@ workflow:
 # ---------------------------------------------------------------------------
 eval:
   general:
+    # Defense-in-depth + intent: run dataset items one at a time. NOTE nat's LOCAL
+    # eval runner (nat/plugins/eval/runtime/evaluate.py::run_workflow_local) does an
+    # UNCONDITIONAL `asyncio.gather` over items and does NOT honor max_concurrency on
+    # that path (it only flows to DatasetHandler sizing, SessionManager, and the
+    # REMOTE runner). The real serialization guarantee is the asyncio.Lock orchestrate
+    # holds around the run_id window (see run_store._ACTIVE_RUN_LOCK); this setting
+    # documents intent and caps any path that does honor it.
+    max_concurrency: 1
     # nat passes file_path straight to pandas with NO resolution relative to this
     # config file — it is resolved against the CURRENT WORKING DIRECTORY. The
     # documented invocation runs from the research_aiq/ package dir (see the header),

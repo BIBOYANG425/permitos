@@ -205,10 +205,14 @@ class GroundingFaithfulnessEvaluator(BaseEvaluator):
         determinations = output.get("determinations", [])
         run_id = output.get("run_id")
 
-        # The gathered EvidenceBundles live in the run-scoped STORE (the live path:
-        # spawn_researchers wrote them; one active run per process during `nat eval`).
-        # Faithfulness is checked against those real sources via the SAME helper the
-        # always-on grounding invariant uses, so the two never disagree.
+        # The gathered EvidenceBundles live in the run-scoped STORE keyed by run_id
+        # (the live path: spawn_researchers wrote them). `nat eval` runs items
+        # concurrently, but run_id resolution uses a process-global guarded by an
+        # asyncio.Lock in orchestrate, so only one run's active-id window is open at
+        # a time and each item's bundles land under its own run_id (concurrent items
+        # serialize on that lock — correct, not parallel). Faithfulness is checked
+        # against those real sources via the SAME helper the always-on grounding
+        # invariant uses, so the two never disagree.
         bundles: list[dict] = []
         if run_id:
             try:

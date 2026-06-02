@@ -11,11 +11,23 @@ run_id flows to the agent's tools via TWO mechanisms:
   async-context or task boundary because it is module state, not context state.
   The `orchestrate` function sets this fresh at the start of each run (in its own
   coroutine, after reading run_id from the plan output), so it is the load-bearing
-  carrier that reaches spawn_researchers. ASSUMES ONE ACTIVE RUN PER PROCESS at a
-  time (true for `nat run` and sequential `nat eval --reps`)."""
+  carrier that reaches spawn_researchers.
+
+Concurrency: `nat eval` runs dataset items CONCURRENTLY (its local runner does an
+unconditional `asyncio.gather` over items — no max_concurrency cap on that path),
+so two runs would otherwise race on this single process-global active run_id and
+cross-contaminate each other's bundles. The window in which the global is the
+source of truth (set_active_run_id -> supervisor tool calls) is therefore guarded
+by `_ACTIVE_RUN_LOCK`, an asyncio.Lock held by `orchestrate` for the duration of a
+run. Only ONE run's active-id window is open at a time; concurrent eval items
+serialize on that lock (correct, but not parallel — the accepted trade-off). The
+per-run STORE itself is keyed by run_id, so it is safe across concurrent items;
+only the active-id resolution needs serializing. `nat run` is a single run and
+leaves the lock uncontended."""
 
 from __future__ import annotations
 
+import asyncio
 import contextvars
 
 _run_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
@@ -24,6 +36,12 @@ _run_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
 
 # Process-global run_id (NOT a contextvar) — survives langgraph context forks.
 _active_run_id: str | None = None
+
+# Guards the window where the process-global active run_id is the source of truth.
+# orchestrate holds this for the whole set_active_run_id -> supervisor-tool-calls
+# window so that concurrent `nat eval` items (gathered with no concurrency cap;
+# see module docstring) serialize and never clobber each other's active run_id.
+_ACTIVE_RUN_LOCK = asyncio.Lock()
 
 
 def set_run_id(run_id: str):
@@ -37,7 +55,8 @@ def current_run_id() -> str | None:
 def set_active_run_id(run_id: str | None) -> None:
     """Set the process-global active run_id. Survives any async-context/task boundary.
 
-    Assumes a single active run per process at a time (one run_id live at once).
+    Only one run's active-id window is open at a time: orchestrate sets this while
+    holding _ACTIVE_RUN_LOCK, so concurrent eval items serialize rather than racing.
     """
     global _active_run_id
     _active_run_id = run_id
