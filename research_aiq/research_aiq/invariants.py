@@ -35,6 +35,9 @@ Invariants
       that is presented as a confident, verified yes/no instead of needs_review.
 
 Purity: no I/O, no AIQ imports, no mutation of inputs. Only research_core is reused.
+The per-determination grounding test (determination_is_grounded) and the bundle
+index (index_bundles_by_hypothesis) are factored out as public helpers so the
+offline grounding_faithfulness evaluator (evaluators.py) applies the identical rule.
 
 Header last reviewed: 2026-06-02
 """
@@ -141,6 +144,37 @@ def _sources_for_determination(
     return collected
 
 
+def determination_is_grounded(
+    det: dict,
+    bundles: list[dict],
+    bundles_by_hypothesis: dict[str, dict],
+) -> bool:
+    """True if *det*'s verbatim quote is present in one of its cited source bundles.
+
+    The single per-determination grounding test, factored out so BOTH the always-on
+    invariant (`_check_grounding`) and the offline `grounding_faithfulness` evaluator
+    apply the EXACT same rule: collapse whitespace, then substring-contains the
+    determination's quote against the union of sources linked to it (by source_url,
+    falling back to the bundles for the hypotheses behind its requirement label).
+    """
+    sources = _sources_for_determination(det, bundles, bundles_by_hypothesis)
+    return _quote_in_any_source(det.get("quote", ""), sources)
+
+
+def index_bundles_by_hypothesis(bundles: list[dict]) -> dict[str, dict]:
+    """hypothesis_id -> bundle (last write wins, matching RunStore dedupe).
+
+    Shared by check_invariants and the grounding evaluator so the linkage is built
+    one way everywhere.
+    """
+    out: dict[str, dict] = {}
+    for bundle in bundles or []:
+        hid = bundle.get("hypothesis_id")
+        if hid is not None:
+            out[hid] = bundle
+    return out
+
+
 def _check_grounding(
     determinations: list[dict],
     bundles: list[dict],
@@ -150,8 +184,7 @@ def _check_grounding(
     for det in determinations:
         if not det.get("verified"):
             continue
-        sources = _sources_for_determination(det, bundles, bundles_by_hypothesis)
-        if not _quote_in_any_source(det.get("quote", ""), sources):
+        if not determination_is_grounded(det, bundles, bundles_by_hypothesis):
             requirement = det.get("requirement", "<unknown requirement>")
             violations.append(
                 f"grounding: determination {requirement!r} is marked verified but its "
@@ -247,11 +280,7 @@ def check_invariants(result: dict, bundles: list[dict]) -> list[str]:
     scope = result.get("scope")
 
     # Index bundles by hypothesis_id once (last write wins, matching RunStore dedupe).
-    bundles_by_hypothesis: dict[str, dict] = {}
-    for bundle in bundles or []:
-        hid = bundle.get("hypothesis_id")
-        if hid is not None:
-            bundles_by_hypothesis[hid] = bundle
+    bundles_by_hypothesis = index_bundles_by_hypothesis(bundles)
 
     violations: list[str] = []
     violations.extend(_check_grounding(determinations, bundles or [], bundles_by_hypothesis))

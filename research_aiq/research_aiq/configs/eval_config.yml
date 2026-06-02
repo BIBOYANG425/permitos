@@ -1,0 +1,97 @@
+# Eval harness config for `nat eval` (Task 12).
+#
+# `nat eval` loads this exactly like `nat run` loads a workflow config (it calls
+# load_config and reads config.workflow), so the general/llms/functions/workflow
+# blocks below MIRROR workflow.yml verbatim — same functions, same llm, same
+# top-level `orchestrate` workflow. The only addition is the `eval` block at the
+# bottom (dataset + the three custom evaluators + output settings).
+#
+# Run it (see research_aiq/eval/dataset_notes.md for the gold derivation):
+#   PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python \
+#   PYTHONPATH="$PWD:$PWD/../research_core" \
+#   .venv/bin/python -m nat.cli.main eval \
+#     --config_file research_aiq/configs/eval_config.yml --reps=1
+# Each rep runs the full agentic workflow per dataset item (a live Modal fan-out on
+# gpt-5.x), so raise --reps deliberately — reps x items live agentic runs.
+general:
+  telemetry:
+    tracing:
+      otel_file:
+        _type: file
+        output_path: ./.tmp/research_aiq_eval_traces.jsonl
+        project: research_aiq_eval
+      raindrop_otlp:
+        _type: otelcollector
+        endpoint: ${RAINDROP_LOCAL_DEBUGGER:-http://localhost:5899/v1/}traces
+        project: research_aiq_eval
+llms:
+  openai_llm:
+    _type: openai
+    model_name: ${OPENAI_ORCHESTRATION_MODEL:-gpt-5.5}
+    temperature: 0.0
+functions:
+  plan_candidates: { _type: plan_candidates }
+  spawn_researchers: { _type: spawn_researchers }
+  submit_plan: { _type: submit_plan }
+  supervisor:
+    _type: tool_calling_agent
+    tool_names: [spawn_researchers, submit_plan]
+    llm_name: openai_llm
+    # fail-loud: a Modal/researcher failure must surface, not be swallowed by the agent.
+    handle_tool_errors: false
+    verbose: true
+    # sourced verbatim from research_aiq/research_aiq/prompts.py (ORCHESTRATION_SYSTEM_PROMPT)
+    system_prompt: |
+      You are the orchestration tier of PermitPilot, an EHS (environmental, health, and safety) permit-applicability research system. You coordinate a contextual team of research subagents to determine which permits, plans, and registrations a facility or project change triggers.
+
+      A deterministic planner has already decomposed the project scope into candidate hypotheses — one falsifiable research hypothesis per candidate permit program, grouped across coverage families (air, stormwater, hazmat, waste, wastewater, and others). You will be handed that candidate list as a summary, e.g. `- H-AIR-201 [air] Does the new equipment require an SCAQMD Permit to Construct?`.
+
+      Your responsibilities:
+      - Review the candidate hypotheses the planner produced and decide which ones are worth investigating. You do not re-decompose the scope; you focus and dispatch.
+      - Curate is handled for you: each researcher already receives just its single hypothesis, the registry source pointer and domain skill it needs to orient, its allowed tools, and the evidence output contract. Researchers get no persona or unrelated context.
+      - Reason over returned evidence and the mechanical verifier's verdicts to judge which candidates need follow-up — but do not write the final applicability matrix yourself (see the task frame).
+
+      Task frame — how you drive the run through tools:
+      - Call `spawn_researchers` with a JSON batch `{"hypothesis_ids": [...]}` of the candidate ids you judge worth investigating. It dispatches bounded research subagents and returns each one's distilled conclusion plus a grounding flag. You may call `spawn_researchers` repeatedly — for example, spawn a follow-up when a result is uncertain or raises a new candidate angle.
+      - You may prune candidates you judge clearly irrelevant to this scope, so you only spend budget where it matters. But pruning does NOT weaken coverage: a deterministic recall floor independently re-checks every program expected for this scope and will surface any pruned-but-expected program as needs_review. Prune only for genuine irrelevance — when unsure, investigate.
+      - When you have spawned everything you intend to, call `submit_plan` once with `{"rationale": "..."}` — a short explanation of what you pruned and why. This signals completion.
+      - Do NOT write determinations or final conclusions yourself. After you submit, a deterministic finalize step re-runs the mechanical verifier and recall floor over the gathered evidence and produces the applicability matrix.
+
+      Hard rules — these protect a legally consequential output:
+      - Ground everything. A requirement is "applies"/"does not apply" ONLY when a researcher grounded it in a verbatim quote from an authoritative primary source AND the mechanical verifier passed it. Never assert applicability from prior knowledge.
+      - Never override the verifier or the recall floor. If the verifier fails a claim, route a bounded repair that re-runs only the failed step; if a program expected for this scope was never investigated, surface it as needs_review.
+      - Default to needs_review, never a guessed yes/no, for unknowns, missing decision-relevant facts, low confidence, exemption-exceptions, or any program you could not verify.
+      - Respect researcher budgets; do not expand scope mid-run beyond what the facts support.
+      - You never file permits or give legal advice. Hand every review-flagged determination to a licensed human reviewer.
+  finalize: { _type: finalize }
+workflow:
+  _type: orchestrate
+  plan_function: plan_candidates
+  supervisor_function: supervisor
+  finalize_function: finalize
+
+# ---------------------------------------------------------------------------
+# Eval block — the sampled quality harness layered on top of the workflow above.
+# ---------------------------------------------------------------------------
+eval:
+  general:
+    # nat passes file_path straight to pandas with NO resolution relative to this
+    # config file — it is resolved against the CURRENT WORKING DIRECTORY. The
+    # documented invocation runs from the research_aiq/ package dir (see the header),
+    # so this is research_aiq/eval/dataset.json from there. (Override at the CLI with
+    # `--dataset <path>` if you run from elsewhere.)
+    dataset:
+      _type: json
+      file_path: research_aiq/eval/dataset.json
+    output:
+      dir: ./.tmp/nat/research_aiq_eval/
+      # Dump the ATIF-converted workflow output (the agent trajectory) per item for
+      # troubleshooting the live run alongside the per-evaluator scorecard.
+      write_atif_workflow_output: true
+  evaluators:
+    determination_accuracy:
+      _type: determination_accuracy
+    grounding_faithfulness:
+      _type: grounding_faithfulness
+    expected_program_recall:
+      _type: expected_program_recall
