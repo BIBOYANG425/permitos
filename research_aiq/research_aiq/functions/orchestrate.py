@@ -16,18 +16,28 @@ downstream. orchestrate fixes that by being a single coroutine that:
   4. runs finalize with run_id threaded EXPLICITLY as {"run_id": ...} — finalize
      never has to depend on the contextvar in the real flow.
 
-Fail-loud: nothing here is wrapped in a result-fabricating try/except. A failure
-in any sub-step (LLM, Modal fan-out, finalize pipeline) propagates.
+Fail-loud: the plan -> supervise -> finalize CORE is never wrapped in a
+result-fabricating try/except. A failure in any sub-step (LLM, Modal fan-out,
+finalize pipeline) propagates. The ONLY guarded section is the post-run epilogue
+(observability + always-on invariants) — supplementary telemetry that must NEVER
+alter the returned determinations nor raise out of orchestrate. That single broad
+except guards the epilogue exclusively; it does not creep over the core.
 """
 
 import json
+import logging
+import os
 
 from nat.builder.builder import Builder
 from nat.builder.function_info import FunctionInfo
 from nat.cli.register_workflow import register_function
 from nat.data_models.function import FunctionBaseConfig
 
-from research_aiq.run_store import set_active_run_id, set_run_id
+from research_aiq.invariants import check_invariants
+from research_aiq.observability import record_run
+from research_aiq.run_store import STORE, set_active_run_id, set_run_id
+
+logger = logging.getLogger("research_aiq.orchestrate")
 
 
 class OrchestrateConfig(FunctionBaseConfig, name="orchestrate"):
@@ -59,7 +69,46 @@ async def orchestrate(config: OrchestrateConfig, builder: Builder):
         await supervisor.acall_invoke(plan_parsed["candidate_summary"])
 
         # 4. Deterministic backstop with run_id threaded explicitly.
-        return await finalize.acall_invoke(json.dumps({"run_id": run_id}))
+        final = await finalize.acall_invoke(json.dumps({"run_id": run_id}))
+
+        # --- always-on post-run observability + invariants -------------------
+        # FAIL-SOFT epilogue ONLY. `final` is the product and is returned no
+        # matter what happens below. This is the one place a broad `except` is
+        # correct: it guards ONLY this telemetry/invariants block, never the
+        # plan -> supervise -> finalize core above (which stays fail-loud). The
+        # epilogue must never alter `final` and never raise out of orchestrate.
+        try:
+            parsed = json.loads(final)
+            determinations = parsed.get("determinations", [])
+            status = parsed.get("status")
+            scope = STORE.scope(run_id)
+            bundles = STORE.bundles(run_id)
+            violations = check_invariants(
+                {"scope": scope, "determinations": determinations, "status": status},
+                bundles,
+            )
+            if violations:
+                logger.warning(
+                    "research_aiq invariant violations in run %s: %s", run_id, violations
+                )
+            metrics = {
+                "status": status,
+                "n_determinations": len(determinations),
+                "n_verified": sum(1 for d in determinations if d.get("verified")),
+                "n_needs_review": sum(
+                    1 for d in determinations if d.get("applies") == "needs_review"
+                ),
+                "n_investigated": len(STORE.investigated_ids(run_id)),
+                "n_invariant_violations": len(violations),
+                "invariant_violations": violations,
+                "model": os.environ.get("OPENAI_ORCHESTRATION_MODEL"),
+            }
+            record_run(run_id, metrics)
+        except Exception:  # observability/invariants must never break a run
+            logger.exception(
+                "research_aiq post-run observability failed (non-fatal) for run %s", run_id
+            )
+        return final
 
     yield FunctionInfo.from_fn(
         _call,
