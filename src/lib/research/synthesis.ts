@@ -133,11 +133,14 @@ function requirementFor(hypothesisId: string) {
     "H-AIR-VOC": "VOC emissions review",
     "H-AIR-219": "SCAQMD Rule 219 exemption check",
     "H-AIR-222": "SCAQMD Rule 222 registration check",
+    "H-AIR-TITLEV": "Clean Air Act Title V operating permit applicability",
     "H-STORM-IGP": "California Industrial General Permit applicability",
     "H-STORM-CGP": "Construction stormwater permit coverage",
     "H-HAZMAT-HMBP": "HMBP/CERS hazardous material reporting",
+    "H-HAZMAT-EPCRA": "EPCRA Tier II / §311-312 reporting applicability",
     "H-WASTE-GENERATOR": "Hazardous waste generator status",
-    "H-WASTEWATER-PRETREATMENT": "Industrial wastewater pretreatment review"
+    "H-WASTEWATER-PRETREATMENT": "Industrial wastewater pretreatment review",
+    "H-OSHA-PSM": "OSHA Process Safety Management (PSM) applicability"
   };
   return map[hypothesisId] ?? hypothesisId;
 }
