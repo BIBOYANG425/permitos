@@ -23,7 +23,7 @@ class RunStore:
         self._runs: dict[str, dict] = {}
 
     def init(self, run_id: str, scope: dict, candidates: list[dict]) -> None:
-        self._runs[run_id] = {"scope": scope, "candidates": candidates, "bundles": {}}
+        self._runs[run_id] = {"scope": scope, "candidates": candidates, "bundles": {}, "notes": []}
 
     def add_bundles(self, run_id: str, bundles: list[dict]) -> None:
         store = self._runs[run_id]["bundles"]
@@ -41,6 +41,12 @@ class RunStore:
 
     def candidates(self, run_id: str) -> list[dict]:
         return self._runs[run_id]["candidates"]
+
+    def add_note(self, run_id: str, note: str) -> None:
+        self._runs[run_id]["notes"].append(note)
+
+    def notes(self, run_id: str) -> list[str]:
+        return list(self._runs[run_id]["notes"])
 
 
 STORE = RunStore()  # module singleton

@@ -15,3 +15,10 @@ def test_contextvar_run_id_roundtrip():
     token = set_run_id("r2")
     assert current_run_id() == "r2"
     token.var.reset(token)  # reset the ContextVar back to its prior value
+
+
+def test_store_records_notes():
+    s = RunStore()
+    s.init("rn", scope={}, candidates=[])
+    s.add_note("rn", "pruned hazmat")
+    assert s.notes("rn") == ["pruned hazmat"]
