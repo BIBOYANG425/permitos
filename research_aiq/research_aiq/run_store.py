@@ -22,8 +22,20 @@ class RunStore:
     def __init__(self) -> None:
         self._runs: dict[str, dict] = {}
 
-    def init(self, run_id: str, scope: dict, candidates: list[dict]) -> None:
-        self._runs[run_id] = {"scope": scope, "candidates": candidates, "bundles": {}, "notes": []}
+    def init(
+        self, run_id: str, scope: dict, candidates: list[dict], tasks: list[dict] | None = None
+    ) -> None:
+        # `tasks` are the planner's research_tasks (one per candidate). spawn_researchers
+        # forwards the task_spec for each investigated id to the Modal worker, which
+        # consumes the full spec (hypothesis_id + allowed_tools + budget). Optional so
+        # existing callers/tests that only seed candidates keep working.
+        self._runs[run_id] = {
+            "scope": scope,
+            "candidates": candidates,
+            "tasks": {t["hypothesis_id"]: t for t in (tasks or [])},
+            "bundles": {},
+            "notes": [],
+        }
 
     def add_bundles(self, run_id: str, bundles: list[dict]) -> None:
         store = self._runs[run_id]["bundles"]
@@ -41,6 +53,15 @@ class RunStore:
 
     def candidates(self, run_id: str) -> list[dict]:
         return self._runs[run_id]["candidates"]
+
+    def task_for(self, run_id: str, hypothesis_id: str) -> dict:
+        """The planner's research_task (Modal task_spec) for a hypothesis.
+
+        Falls back to a minimal {"hypothesis_id": ...} spec when no task was seeded
+        (e.g. tests that only seed candidates) — the worker still needs the id.
+        """
+        tasks = self._runs[run_id].get("tasks", {})
+        return tasks.get(hypothesis_id, {"hypothesis_id": hypothesis_id})
 
     def add_note(self, run_id: str, note: str) -> None:
         self._runs[run_id]["notes"].append(note)

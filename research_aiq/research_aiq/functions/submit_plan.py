@@ -20,9 +20,12 @@ class SubmitPlanConfig(FunctionBaseConfig, name="submit_plan"):
     pass
 
 
-async def _submit_impl(args_json: str, *, run_id: str | None = None) -> str:
+async def _submit_impl(input_message: str, *, run_id: str | None = None) -> str:
+    # Param name MUST be `input_message` so nat's LangChain tool wrapper auto-wraps
+    # the supervisor's bare-string tool call ({"rationale": "..."}) into this schema.
+    # See spawn_researchers._spawn_impl for the full rationale.
     run_id = run_id or current_run_id()
-    rationale = json.loads(args_json).get("rationale", "")
+    rationale = json.loads(input_message).get("rationale", "")
     if run_id is not None:
         STORE.add_note(run_id, rationale)
     return json.dumps({"ok": True, "rationale": rationale})
@@ -30,8 +33,14 @@ async def _submit_impl(args_json: str, *, run_id: str | None = None) -> str:
 
 @register_function(config_type=SubmitPlanConfig)
 async def submit_plan(config: SubmitPlanConfig, builder: Builder):
+    # Clean single-`input_message` closure so FunctionInfo.from_fn advertises an
+    # `input_message` schema (not the generic `value` fallback that the keyword-only
+    # run_id seam would force). See spawn_researchers.spawn_researchers for details.
+    async def _call(input_message: str) -> str:
+        return await _submit_impl(input_message)
+
     yield FunctionInfo.from_fn(
-        _submit_impl,
+        _call,
         description=(
             "Finish orchestration once every hypothesis you intend to investigate has been "
             "spawned. Provide a short rationale for what you pruned and why. The set of "

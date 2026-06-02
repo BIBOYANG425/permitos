@@ -135,3 +135,55 @@ def test_finalize_unknown_run_is_fail_loud():
 
     with pytest.raises(KeyError):
         asyncio.run(_finalize_impl(json.dumps({"run_id": "does-not-exist"})))
+
+
+def test_finalize_falls_back_to_contextvar_run_id():
+    """In the live workflow finalize's input is the supervisor's FREEFORM text, not
+    {"run_id": ...}. _finalize_impl must then resolve run_id from the contextvar that
+    plan_candidates set earlier in the same run — and finalize the right run anyway.
+
+    This is the load-bearing Gap-1 fix for the e2e: prove that given non-JSON input
+    finalize still produces determinations for the contextvar-bound run.
+    """
+    from research_core.planner import plan_research
+
+    run_id = "fin-ctxvar"
+    scope = _scope_with()
+
+    plan = plan_research(scope, [])
+    STORE.init(run_id, scope=scope, candidates=plan["research_graph"])
+    STORE.add_bundles(run_id, [_air_201_bundle()])
+    set_run_id(run_id)  # the only place run_id is available — input has none
+
+    # Freeform supervisor output: NOT JSON, no run_id field.
+    out = asyncio.run(_finalize_impl("I spawned the air hypotheses and pruned the rest. Done."))
+    result = json.loads(out)
+
+    assert result["run_id"] == run_id  # resolved from the contextvar, not the input
+    # Same recall-floor behavior as the JSON-input path: ca-hmbp is expected (scope
+    # has chemicals) but was not investigated -> needs_review.
+    assert result["status"] == "needs_review"
+    hmbp_row = next(
+        (
+            d
+            for d in result["determinations"]
+            if d["requirement"] == "California Hazardous Materials Business Plan (HMBP)"
+        ),
+        None,
+    )
+    assert hmbp_row is not None
+    assert hmbp_row["applies"] == "needs_review"
+
+
+def test_finalize_no_run_id_anywhere_is_fail_loud():
+    """No run_id in the input AND no active contextvar -> RuntimeError (no fabrication)."""
+    import pytest
+
+    from research_aiq.run_store import _run_id_var
+
+    token = _run_id_var.set(None)  # ensure no leaked contextvar from a prior test
+    try:
+        with pytest.raises(RuntimeError, match="no run_id"):
+            asyncio.run(_finalize_impl("freeform text with no run id at all"))
+    finally:
+        _run_id_var.reset(token)

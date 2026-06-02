@@ -22,13 +22,21 @@ class PlanCandidatesConfig(FunctionBaseConfig, name="plan_candidates"):
     pass
 
 
-async def _plan_candidates_impl(scope_json: str) -> str:
-    scope = json.loads(scope_json)
+async def _plan_candidates_impl(input_message: str) -> str:
+    # Param name MUST be `input_message`: the sequential_executor passes the bare
+    # `--input` string to this first step via the LangChain tool wrapper, which only
+    # round-trips a bare string when the function's schema field is `input_message`.
+    # The scope JSON arrives here as this string.
+    scope = json.loads(input_message)
     run_id = scope.get("run_id") or f"run-{uuid.uuid4().hex[:8]}"
     scope["run_id"] = run_id
     plan = plan_research(scope, [])
     candidates = plan["research_graph"]
-    STORE.init(run_id, scope=scope, candidates=candidates)
+    # Seed both the candidate hypotheses (what the supervisor reviews) and the
+    # research_tasks (the per-hypothesis Modal task_spec spawn_researchers forwards).
+    STORE.init(
+        run_id, scope=scope, candidates=candidates, tasks=plan.get("research_tasks", [])
+    )
     set_run_id(run_id)
     summary = "\n".join(
         f"- {h['id']} [{h['family']}] {h['question']}" for h in candidates

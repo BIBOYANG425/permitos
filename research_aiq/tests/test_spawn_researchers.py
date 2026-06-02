@@ -12,6 +12,11 @@ def _seed(run_id):
         run_id,
         scope={"run_id": run_id},
         candidates=[{"id": "H-A", "family": "air"}, {"id": "H-B", "family": "hazmat"}],
+        # research_tasks (Modal task_specs) — spawn_researchers forwards these to fanout.
+        tasks=[
+            {"hypothesis_id": "H-A", "allowed_tools": ["fetch_source"], "budget": {}},
+            {"hypothesis_id": "H-B", "allowed_tools": ["fetch_source"], "budget": {}},
+        ],
     )
     set_run_id(run_id)
 
@@ -19,16 +24,19 @@ def _seed(run_id):
 def test_spawn_accumulates_bundles_and_returns_distilled():
     _seed("s1")
 
-    async def fake_fanout(ids):  # stand-in for the Modal call
+    async def fake_fanout(task_specs):  # stand-in for the Modal call; receives task_specs
+        # Assert _spawn_impl forwarded the real task_spec (not a bare id) for the
+        # accepted hypothesis — proves the run-store task lookup is wired through.
+        assert task_specs == [{"hypothesis_id": "H-A", "allowed_tools": ["fetch_source"], "budget": {}}]
         return [
             {
-                "hypothesis_id": i,
+                "hypothesis_id": spec["hypothesis_id"],
                 "sources": [{"url": "x", "quote": "q"}],
                 "researcher_conclusion": "applies",
                 "extracted_claims": [],
                 "uncertainties": [],
             }
-            for i in ids
+            for spec in task_specs
         ]
 
     out = asyncio.run(
@@ -44,7 +52,7 @@ def test_spawn_accumulates_bundles_and_returns_distilled():
 def test_spawn_fail_loud_on_total_fanout_failure():
     _seed("s2")
 
-    async def boom(ids):
+    async def boom(task_specs):
         raise RuntimeError("modal unreachable")
 
     with pytest.raises(RuntimeError):
