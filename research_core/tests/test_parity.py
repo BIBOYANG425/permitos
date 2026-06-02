@@ -20,7 +20,6 @@ def golden(request) -> dict:
     return load(request.param)
 
 # --- Plan parity (Task 8) ---
-@pytest.mark.skip(reason="planner not ported yet")
 def test_plan_parity(golden):
     from research_core.planner import plan_research
     plan = plan_research(golden["scope_pack"], [])
