@@ -2,7 +2,11 @@
 Faithful Python port of the PURE helper functions from src/lib/research/scope.ts
 that the planner depends on.
 
-Excluded: parseScope (LLM, async), applySdsHandoffToScope (SDS, later task).
+Also includes parse_scope (Regime 2), the opt-in LLM scope-extraction wrapper
+(requires OPENAI_API_KEY; openai is lazy-imported so the offline suite never
+needs the package).
+
+Excluded: applySdsHandoffToScope (SDS, later task).
 """
 
 from __future__ import annotations
@@ -167,6 +171,130 @@ def scope_pack_from_facts(facts: dict, run_id: str, description: str) -> dict:
             }
         ],
     }
+
+
+# ---------------------------------------------------------------------------
+# Regime 2: opt-in LLM scope-extraction wrapper
+# ---------------------------------------------------------------------------
+
+# Tool schema mirrors SUBMIT_SCOPE_TOOL in scope.ts
+_SUBMIT_SCOPE_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "submit_scope",
+        "description": "Return the structured facts extracted from the project description.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "address": {"type": ["string", "null"]},
+                "naics": {"type": ["string", "null"]},
+                "sic": {"type": ["string", "null"]},
+                "equipment": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "kind": {"type": "string"},
+                            "description": {"type": "string"},
+                        },
+                        "required": ["kind"],
+                    },
+                },
+                "chemicals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "quantity": {"type": ["number", "null"]},
+                            "unit": {"type": ["string", "null"]},
+                            "hazard": {"type": "string"},
+                        },
+                        "required": ["name"],
+                    },
+                },
+                "waste_streams": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "description": {"type": "string"},
+                            "kg_per_month": {"type": ["number", "null"]},
+                        },
+                        "required": ["description"],
+                    },
+                },
+                "disturbance_acres": {"type": ["number", "null"]},
+                "process_discharge": {"type": ["boolean", "null"]},
+            },
+            "required": [],
+        },
+    },
+}
+
+
+def parse_scope(input: dict, run_id: str) -> dict:
+    """
+    Opt-in LLM scope-extraction wrapper (Regime 2).
+
+    Mirrors parseScope in scope.ts:
+    - Reads input["project_description"] (ResearchRunInput-shaped dict).
+    - Calls OpenAI (sync) using the same model/params as the TS version.
+    - Model read from OPENAI_INTAKE_MODEL env var; default "gpt-4o-mini".
+    - Falls back to empty_scope() if OPENAI_API_KEY is absent or call fails.
+    - openai is lazy-imported so the offline suite never requires the package.
+
+    Returns a ScopePack-shaped dict.
+    """
+    import json as _json
+    import logging
+    import os
+
+    description = (input.get("project_description") or "").strip()
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return empty_scope(run_id, description)
+
+    try:
+        import openai as _openai  # lazy import — offline path never touches this
+
+        from research_core.prompts import SCOPE_EXTRACTION_SYSTEM
+
+        client = _openai.OpenAI(api_key=api_key)
+        model = os.environ.get("OPENAI_INTAKE_MODEL", "gpt-4o-mini")
+
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": SCOPE_EXTRACTION_SYSTEM},
+                {"role": "user", "content": description},
+            ],
+            tools=[_SUBMIT_SCOPE_TOOL],  # type: ignore[arg-type]
+            tool_choice={"type": "function", "function": {"name": "submit_scope"}},
+            max_tokens=800,
+        )
+
+        tool_call = None
+        choices = completion.choices
+        if choices:
+            msg = choices[0].message
+            if msg.tool_calls:
+                tc = msg.tool_calls[0]
+                if tc.type == "function":
+                    tool_call = tc
+
+        if tool_call is None:
+            return empty_scope(run_id, description)
+
+        facts = _json.loads(tool_call.function.arguments or "{}")
+        return scope_pack_from_facts(facts, run_id, description)
+
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).error(
+            "parse_scope LLM extraction failed; using empty scope: %s", exc
+        )
+        return empty_scope(run_id, description)
 
 
 def project_facts(scope: dict) -> dict:
