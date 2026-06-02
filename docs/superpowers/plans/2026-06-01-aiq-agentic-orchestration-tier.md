@@ -503,7 +503,7 @@ general:
 llms:
   openai_llm:
     _type: openai
-    model_name: ${OPENAI_ORCHESTRATION_MODEL:-gpt-4o-mini}
+    model_name: ${OPENAI_ORCHESTRATION_MODEL:-gpt-5.5}
     temperature: 0.0
 functions:
   plan_candidates: { _type: plan_candidates }
