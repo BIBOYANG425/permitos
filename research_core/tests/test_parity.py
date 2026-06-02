@@ -27,7 +27,6 @@ def test_plan_parity(golden):
         assert canonical(_as_dicts(plan[key])) == canonical(golden["plan"][key]), key
 
 # --- Verdict + repaired-evidence parity (Tasks 9) ---
-@pytest.mark.skip(reason="verifier not ported yet")
 def test_verdict_parity(golden):
     from research_core.pipeline import run_verification
     out = run_verification(golden["scope_pack"], golden["fixture_evidence"])
