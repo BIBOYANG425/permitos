@@ -8,8 +8,6 @@ The planner-dependent case is skipped until research_core.planner is ported
 
 from __future__ import annotations
 
-import pytest
-
 from research_core.program_registry import PROGRAM_REGISTRY, all_programs, programs_for_family
 
 
@@ -49,7 +47,6 @@ def test_has_unique_id_per_entry():
     assert len(set(ids)) == len(ids)
 
 
-@pytest.mark.skip(reason="planner not ported yet (Task 8)")
 def test_covers_every_hypothesis_the_planner_can_emit():
     """it('covers every hypothesis the planner can emit') — requires plan_research."""
     from research_core.planner import plan_research  # noqa: PLC0415
