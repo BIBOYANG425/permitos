@@ -5,6 +5,20 @@ general:
         _type: file
         output_path: ./.tmp/research_aiq_traces.jsonl
         project: research_aiq
+      # Raindrop ingests OTLP natively: its local Workshop debugger answers
+      # `{RAINDROP_LOCAL_DEBUGGER}traces` (= http://localhost:5899/v1/traces) and
+      # returns {"ok":true,"spansIngested":N} for an OTLP/HTTP span export.
+      # nat's `otelcollector` exporter (nvidia-nat-opentelemetry) ships spans there
+      # via OTLPSpanAdapterExporter. This makes the agent's per-step spans land in
+      # Raindrop alongside the run-level interaction recorded by observability.py.
+      # The default mirrors .env.local; ${VAR:-default} is interpolated by nat
+      # (nat/utils/io/yaml_tools.py). RAINDROP_LOCAL_DEBUGGER already ends in `/v1/`,
+      # so appending `traces` yields the OTLP path. Like all telemetry this is
+      # additive and best-effort — if the debugger is down, span export just drops.
+      raindrop_otlp:
+        _type: otelcollector
+        endpoint: ${RAINDROP_LOCAL_DEBUGGER:-http://localhost:5899/v1/}traces
+        project: research_aiq
 llms:
   openai_llm:
     _type: openai
