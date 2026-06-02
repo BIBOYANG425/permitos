@@ -1,14 +1,17 @@
-"""Faithful Python port of the verify→repair loop from src/lib/research/run.ts.
+"""Faithful Python port of the verify→repair loop and finalizeRun from
+src/lib/research/run.ts.
 
-run_verification(scope, fixture_evidence) → dict with:
-  - verification_verdicts: list of deduplicated (latest per hypothesis_id) verdict dicts
-  - evidence_bundles:      list of deduplicated (latest per hypothesis_id) evidence dicts
+Public API:
+  run_verification(scope, fixture_evidence) → dict
+  finalize_run(run_id, scope, plan, evidence, base_trace, sds_reviews=()) → dict
 
-Mirrors finalizeRun's verify/repair segment. In fixture mode the repair is always the
-canned repair_evidence (no live agent re-run).
+run_verification mirrors finalizeRun's verify/repair segment (fixture path).
+finalize_run mirrors the full finalizeRun: verify/repair + synthesis + recall floor.
 """
 
 from __future__ import annotations
+import math
+import random
 
 from research_core.verifier import repair_evidence, verify_evidence
 
@@ -47,4 +50,159 @@ def run_verification(scope: dict, fixture_evidence: list[dict]) -> dict:
     return {
         "verification_verdicts": _latest_by_hypothesis(verification_verdicts),
         "evidence_bundles": _latest_by_hypothesis(evidence_bundles),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Trace helper — mirrors trace() from trace.ts
+# ---------------------------------------------------------------------------
+
+def _trace(
+    run_id: str,
+    actor: str,
+    phase: str,
+    status: str,
+    message: str,
+    artifact_id: str | None = None,
+) -> dict:
+    """Mirror trace() from trace.ts. artifact_id is optional."""
+    rand_suffix = "".join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=8))
+    id_suffix = artifact_id if artifact_id is not None else rand_suffix
+    from datetime import datetime, timezone
+    return {
+        "id": f"trace_{actor}_{phase}_{id_suffix}",
+        "run_id": run_id,
+        "ts": datetime.now(tz=timezone.utc).isoformat(),
+        "actor": actor,
+        "phase": phase,
+        "status": status,
+        "message": message,
+        "artifact_id": artifact_id,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Recall gap determination — mirrors recallGapDetermination() from run.ts
+# ---------------------------------------------------------------------------
+
+def _recall_gap_determination(program: dict) -> dict:
+    """Mirror recallGapDetermination(program) from run.ts.
+
+    A determination row for a program the registry expected for this scope but
+    that no hypothesis investigated. Unverified, zero confidence, flagged for
+    review — never presented as a settled "yes"/"no".
+    """
+    return {
+        "requirement": program["name"],
+        "applies": "needs_review",
+        "trigger": f"Expected for this project scope but never investigated ({program['jurisdiction']}).",
+        "project_fact": f"Recall gap — {program['family']} family program was not proposed",
+        "citation": "No research performed — flagged by the recall floor",
+        "quote": program["what_it_does"],
+        "source_url": program["authority_source_url"],
+        "confidence": 0,
+        "verified": False,
+        "review_flag": True,
+    }
+
+
+# ---------------------------------------------------------------------------
+# finalize_run — mirrors finalizeRun() from run.ts
+# ---------------------------------------------------------------------------
+
+def finalize_run(
+    run_id: str,
+    scope: dict,
+    plan: dict,
+    evidence: list[dict],
+    base_trace: list[dict],
+    sds_reviews: list[dict] = (),
+) -> dict:
+    """Mirror finalizeRun() from run.ts (fixture/offline path).
+
+    Args:
+        run_id:     run identifier string
+        scope:      ScopePack dict
+        plan:       dict from plan_research() with keys: coverage_family_statuses,
+                    regulatory_angles, research_graph, research_tasks
+        evidence:   list of EvidenceBundle dicts (may be empty)
+        base_trace: list of TraceEvent dicts to start from
+        sds_reviews: list of SdsReview dicts (default empty)
+
+    Returns a ResearchRun-shaped dict.
+    """
+    from research_core.synthesis import synthesize
+    from research_core.completeness import verify_determination_set
+    from research_core.program_registry import PROGRAM_REGISTRY
+
+    trace_events: list[dict] = list(base_trace)
+    evidence_bundles: list[dict] = list(evidence)
+    verification_verdicts: list[dict] = []
+
+    # Verify/repair loop (fixture path — synchronous)
+    for bundle in evidence:
+        verdict = verify_evidence(scope, bundle)
+        verification_verdicts.append(verdict)
+        for ticket in verdict["repair_tickets"]:
+            repaired = repair_evidence(scope, ticket)
+            evidence_bundles.append(repaired)
+            verification_verdicts.append(verify_evidence(scope, repaired))
+
+    latest_verdicts = _latest_by_hypothesis(verification_verdicts)
+    latest_evidence = _latest_by_hypothesis(evidence_bundles)
+
+    synthesis = synthesize(
+        scope,
+        plan["research_graph"],
+        plan["regulatory_angles"],
+        latest_evidence,
+        latest_verdicts,
+        list(sds_reviews),
+    )
+    trace_events.append(
+        _trace(run_id, "synthesis_agent", "matrix", "done", "Applicability matrix synthesized")
+    )
+
+    # Recall floor: re-derive the EXPECTED program set from registry x scope and
+    # flag any program that was never investigated.
+    investigated_hypotheses: set[str] = {h["id"] for h in plan["research_graph"]}
+    proposed_program_ids: list[str] = [
+        program["id"]
+        for program in PROGRAM_REGISTRY
+        if any(hid in investigated_hypotheses for hid in program["hypothesis_ids"])
+    ]
+    recall = verify_determination_set(scope, proposed_program_ids)
+    for program in recall["missing"]:
+        trace_events.append(
+            _trace(
+                run_id,
+                "verifier",
+                "recall_floor",
+                "needs_review",
+                f"Recall gap: {program['name']} is expected for this scope but was never investigated",
+                program["id"],
+            )
+        )
+
+    determinations = [
+        *synthesis["determinations"],
+        *[_recall_gap_determination(p) for p in recall["missing"]],
+    ]
+    status = "needs_review" if any(row["review_flag"] for row in determinations) else "done"
+
+    return {
+        "run_id": run_id,
+        "status": status,
+        "scope_pack": scope,
+        "sds_reviews": list(sds_reviews),
+        "coverage_family_statuses": plan["coverage_family_statuses"],
+        "regulatory_angles": plan["regulatory_angles"],
+        "research_graph": plan["research_graph"],
+        "research_tasks": plan["research_tasks"],
+        "evidence_bundles": latest_evidence,
+        "verification_verdicts": latest_verdicts,
+        "memory_updates": synthesis["memory_updates"],
+        "determinations": determinations,
+        "trace_events": trace_events,
+        "report_markdown": synthesis["report_markdown"],
     }
