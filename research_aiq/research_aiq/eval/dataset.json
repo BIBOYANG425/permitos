@@ -1,0 +1,37 @@
+[
+  {
+    "id": "scope-scaqmd-coating-booth",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"SCAQMD\"], \"naics\": null, \"sic\": null}, \"project_change\": {\"description\": \"Adding a coating booth and storing 60 gallons of a flammable solvent in Los Angeles County.\", \"equipment\": [{\"kind\": \"coating_booth\", \"description\": \"\"}], \"chemicals\": [{\"name\": \"solvent\", \"quantity\": 60, \"unit\": \"gal\"}], \"waste_streams\": [], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "scaqmd-permit-to-construct": "applies",
+      "scaqmd-rule-219-exemption": "needs_review",
+      "scaqmd-rule-222-registration": "needs_review",
+      "ca-hmbp": "applies",
+      "caa-title-v": "needs_review",
+      "epcra-tier-ii": "needs_review",
+      "osha-psm": "needs_review"
+    }
+  },
+  {
+    "id": "scope-grading-stormwater",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"Los Angeles RWQCB\"], \"naics\": \"237310\", \"sic\": null}, \"project_change\": {\"description\": \"Grading 5 acres for a new distribution-yard pad in Riverside County; no new emitting equipment or chemical storage.\", \"equipment\": [], \"chemicals\": [], \"waste_streams\": [], \"disturbance_acres\": 5.0, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "ca-construction-general-permit": "applies",
+      "ca-industrial-general-permit": "needs_review"
+    }
+  },
+  {
+    "id": "scope-wastewater-pretreatment",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"LA County Sanitation Districts\"], \"naics\": \"332813\", \"sic\": null}, \"project_change\": {\"description\": \"Installing a metal-finishing line that discharges process wastewater to the sewer and generates spent plating-bath waste.\", \"equipment\": [{\"kind\": \"plating_line\", \"description\": \"electroplating line\"}], \"chemicals\": [], \"waste_streams\": [{\"description\": \"spent plating bath\", \"kg_per_month\": null}], \"disturbance_acres\": null, \"process_discharge\": true}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "scaqmd-permit-to-construct": "applies",
+      "scaqmd-rule-219-exemption": "needs_review",
+      "scaqmd-rule-222-registration": "needs_review",
+      "ca-industrial-general-permit": "needs_review",
+      "ca-construction-general-permit": "needs_review",
+      "epa-hazwaste-generator": "applies",
+      "epa-pretreatment": "applies",
+      "caa-title-v": "needs_review"
+    }
+  }
+]

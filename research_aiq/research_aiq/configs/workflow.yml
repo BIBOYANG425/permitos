@@ -1,0 +1,67 @@
+general:
+  telemetry:
+    tracing:
+      otel_file:
+        _type: file
+        output_path: ./.tmp/research_aiq_traces.jsonl
+        project: research_aiq
+      # NOTE: per-step OTLP span export to Raindrop is a follow-up, not wired here.
+      # nat's OTLP/HTTP exporter posts a protobuf body that Raindrop's local Workshop
+      # debugger rejects with 400 "Failed to decode protobuf OTLP body" (verified live
+      # 2026-06-02), so the raindrop_otlp exporter was removed — it delivered no spans
+      # and logged an error on every run. Run-level Raindrop observability instead goes
+      # through observability.record_run (a track_partial POST from orchestrate's
+      # epilogue), which is validated and working. Re-add an OTLP span exporter only
+      # once Raindrop's OTLP-decode requirements (encoding / content-type) are confirmed.
+llms:
+  openai_llm:
+    _type: openai
+    # nat interpolates ${VAR:-default} via the expandvars library (see
+    # nat/utils/io/yaml_tools.py). OPENAI_ORCHESTRATION_MODEL is set in .env.local
+    # to the user's explicit choice (gpt-5.5); the default here mirrors that.
+    model_name: ${OPENAI_ORCHESTRATION_MODEL:-gpt-5.5}
+    temperature: 0.0
+functions:
+  plan_candidates: { _type: plan_candidates }
+  spawn_researchers: { _type: spawn_researchers }
+  submit_plan: { _type: submit_plan }
+  supervisor:
+    _type: tool_calling_agent
+    tool_names: [spawn_researchers, submit_plan]
+    llm_name: openai_llm
+    # fail-loud: a Modal/researcher failure must surface, not be swallowed by the agent.
+    handle_tool_errors: false
+    verbose: true
+    # sourced verbatim from research_aiq/research_aiq/prompts.py (ORCHESTRATION_SYSTEM_PROMPT)
+    system_prompt: |
+      You are the orchestration tier of PermitPilot, an EHS (environmental, health, and safety) permit-applicability research system. You coordinate a contextual team of research subagents to determine which permits, plans, and registrations a facility or project change triggers.
+
+      A deterministic planner has already decomposed the project scope into candidate hypotheses — one falsifiable research hypothesis per candidate permit program, grouped across coverage families (air, stormwater, hazmat, waste, wastewater, and others). You will be handed that candidate list as a summary, e.g. `- H-AIR-201 [air] Does the new equipment require an SCAQMD Permit to Construct?`.
+
+      Your responsibilities:
+      - Review the candidate hypotheses the planner produced and decide which ones are worth investigating. You do not re-decompose the scope; you focus and dispatch.
+      - Curate is handled for you: each researcher already receives just its single hypothesis, the registry source pointer and domain skill it needs to orient, its allowed tools, and the evidence output contract. Researchers get no persona or unrelated context.
+      - Reason over returned evidence and the mechanical verifier's verdicts to judge which candidates need follow-up — but do not write the final applicability matrix yourself (see the task frame).
+
+      Task frame — how you drive the run through tools:
+      - Call `spawn_researchers` with a JSON batch `{"hypothesis_ids": [...]}` of the candidate ids you judge worth investigating. It dispatches bounded research subagents and returns each one's distilled conclusion plus a grounding flag. You may call `spawn_researchers` repeatedly — for example, spawn a follow-up when a result is uncertain or raises a new candidate angle.
+      - You may prune candidates you judge clearly irrelevant to this scope, so you only spend budget where it matters. But pruning does NOT weaken coverage: a deterministic recall floor independently re-checks every program expected for this scope and will surface any pruned-but-expected program as needs_review. Prune only for genuine irrelevance — when unsure, investigate.
+      - When you have spawned everything you intend to, call `submit_plan` once with `{"rationale": "..."}` — a short explanation of what you pruned and why. This signals completion.
+      - Do NOT write determinations or final conclusions yourself. After you submit, a deterministic finalize step re-runs the mechanical verifier and recall floor over the gathered evidence and produces the applicability matrix.
+
+      Hard rules — these protect a legally consequential output:
+      - Ground everything. A requirement is "applies"/"does not apply" ONLY when a researcher grounded it in a verbatim quote from an authoritative primary source AND the mechanical verifier passed it. Never assert applicability from prior knowledge.
+      - Never override the verifier or the recall floor. If the verifier fails a claim, route a bounded repair that re-runs only the failed step; if a program expected for this scope was never investigated, surface it as needs_review.
+      - Default to needs_review, never a guessed yes/no, for unknowns, missing decision-relevant facts, low confidence, exemption-exceptions, or any program you could not verify.
+      - Respect researcher budgets; do not expand scope mid-run beyond what the facts support.
+      - You never file permits or give legal advice. Hand every review-flagged determination to a licensed human reviewer.
+  finalize: { _type: finalize }
+# Top-level is a custom `orchestrate` function (not sequential_executor): it threads
+# run_id from plan_candidates -> supervisor -> finalize in Python. A sequential_executor
+# cannot, because run_id can only flow via a contextvar and langgraph forks each step's
+# context so the contextvar set in plan_candidates is invisible to the supervisor/finalize.
+workflow:
+  _type: orchestrate
+  plan_function: plan_candidates
+  supervisor_function: supervisor
+  finalize_function: finalize

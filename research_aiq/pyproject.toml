@@ -1,0 +1,35 @@
+[project]
+name = "research_aiq"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["nvidia-nat[langchain]>=1.5", "research_core", "httpx"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.entry-points.'nat.components']
+research_aiq = "research_aiq.register"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["research_aiq"]
+
+[tool.uv.sources]
+research_core = { path = "../research_core", editable = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Import both packages from source regardless of the editable .pth state. `uv run`'s
+# auto-sync sometimes rewrites the editable install and breaks `import research_core`
+# / `research_aiq`; pinning pythonpath here makes the test suite resolve both from
+# source so `uv run pytest` / `.venv/bin/python -m pytest` work without an explicit
+# PYTHONPATH. (Live `nat run`/`nat eval` still need the package pip-installed for
+# entry-point discovery — see README.)
+pythonpath = [".", "../research_core"]
