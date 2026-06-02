@@ -29,7 +29,7 @@ from nat.builder.function_info import FunctionInfo
 from nat.cli.register_workflow import register_function
 from nat.data_models.function import FunctionBaseConfig
 
-from research_aiq.run_store import STORE, current_run_id
+from research_aiq.run_store import STORE, current_run_id, get_active_run_id
 
 
 class SpawnResearchersConfig(FunctionBaseConfig, name="spawn_researchers"):
@@ -81,7 +81,11 @@ async def _spawn_impl(input_message: str, *, fanout=_modal_fanout, run_id: str |
     # With any other name the agent emits a mismatched envelope (e.g. {"value": ...})
     # and input coercion crashes. The supervisor calls this as a tool, so the bundled
     # JSON batch {"hypothesis_ids": [...]} arrives here as this string.
-    run_id = run_id or current_run_id()
+    # run_id resolution order: explicit kw (tests) -> contextvar -> process-global.
+    # The contextvar does NOT survive langgraph's forked tool context, so during a
+    # real `nat run` it is get_active_run_id() (set by orchestrate in its own
+    # coroutine) that actually carries the run_id here.
+    run_id = run_id or current_run_id() or get_active_run_id()
     args = json.loads(input_message)
     requested = [str(x) for x in args.get("hypothesis_ids", [])]
     valid = {c["id"] for c in STORE.candidates(run_id)}

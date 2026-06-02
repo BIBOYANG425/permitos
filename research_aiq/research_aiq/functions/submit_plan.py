@@ -13,7 +13,7 @@ from nat.builder.function_info import FunctionInfo
 from nat.cli.register_workflow import register_function
 from nat.data_models.function import FunctionBaseConfig
 
-from research_aiq.run_store import STORE, current_run_id
+from research_aiq.run_store import STORE, current_run_id, get_active_run_id
 
 
 class SubmitPlanConfig(FunctionBaseConfig, name="submit_plan"):
@@ -23,8 +23,9 @@ class SubmitPlanConfig(FunctionBaseConfig, name="submit_plan"):
 async def _submit_impl(input_message: str, *, run_id: str | None = None) -> str:
     # Param name MUST be `input_message` so nat's LangChain tool wrapper auto-wraps
     # the supervisor's bare-string tool call ({"rationale": "..."}) into this schema.
-    # See spawn_researchers._spawn_impl for the full rationale.
-    run_id = run_id or current_run_id()
+    # See spawn_researchers._spawn_impl for the full rationale (incl. why the
+    # process-global, not the contextvar, is what reaches this tool under langgraph).
+    run_id = run_id or current_run_id() or get_active_run_id()
     rationale = json.loads(input_message).get("rationale", "")
     if run_id is not None:
         STORE.add_note(run_id, rationale)

@@ -48,6 +48,12 @@ functions:
       - Respect researcher budgets; do not expand scope mid-run beyond what the facts support.
       - You never file permits or give legal advice. Hand every review-flagged determination to a licensed human reviewer.
   finalize: { _type: finalize }
+# Top-level is a custom `orchestrate` function (not sequential_executor): it threads
+# run_id from plan_candidates -> supervisor -> finalize in Python. A sequential_executor
+# cannot, because run_id can only flow via a contextvar and langgraph forks each step's
+# context so the contextvar set in plan_candidates is invisible to the supervisor/finalize.
 workflow:
-  _type: sequential_executor
-  tool_list: [plan_candidates, supervisor, finalize]
+  _type: orchestrate
+  plan_function: plan_candidates
+  supervisor_function: supervisor
+  finalize_function: finalize
