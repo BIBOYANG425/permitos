@@ -138,12 +138,14 @@ def finalize_run(
     trace_events: list[dict] = list(base_trace)
     evidence_bundles: list[dict] = list(evidence)
     verification_verdicts: list[dict] = []
+    repair_tickets: list[dict] = []
 
     # Verify/repair loop (fixture path — synchronous)
     for bundle in evidence:
         verdict = verify_evidence(scope, bundle)
         verification_verdicts.append(verdict)
         for ticket in verdict["repair_tickets"]:
+            repair_tickets.append(ticket)
             repaired = repair_evidence(scope, ticket)
             evidence_bundles.append(repaired)
             verification_verdicts.append(verify_evidence(scope, repaired))
@@ -201,6 +203,7 @@ def finalize_run(
         "research_tasks": plan["research_tasks"],
         "evidence_bundles": latest_evidence,
         "verification_verdicts": latest_verdicts,
+        "repair_tickets": repair_tickets,
         "memory_updates": synthesis["memory_updates"],
         "determinations": determinations,
         "trace_events": trace_events,

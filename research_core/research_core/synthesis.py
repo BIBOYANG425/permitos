@@ -199,9 +199,12 @@ def _project_fact_for(scope: dict, hypothesis_id: str, angle_label: str) -> str:
     if hypothesis_id == "H-HAZMAT-HMBP":
         chemicals = scope.get("project_change", {}).get("chemicals", [])
         chemical = chemicals[0] if chemicals else None
-        quantity = chemical.get("quantity", "missing") if chemical else "missing"
-        unit = chemical.get("unit", "") if chemical else ""
-        name = chemical.get("name", "hazardous material") if chemical else "hazardous material"
+        raw_quantity = chemical.get("quantity") if chemical else None
+        raw_unit = chemical.get("unit") if chemical else None
+        raw_name = chemical.get("name") if chemical else None
+        quantity = "missing" if raw_quantity is None else raw_quantity
+        unit = "" if raw_unit is None else raw_unit
+        name = "hazardous material" if raw_name is None else raw_name
         return f"{quantity} {unit} {name}".strip()
     if hypothesis_id == "H-STORM-CGP":
         acres = scope.get("project_change", {}).get("disturbance_acres", "missing")

@@ -33,19 +33,21 @@ def test_verdict_parity(golden):
     assert canonical(_as_dicts(out["verification_verdicts"])) == canonical(golden["verification_verdicts"])
     assert canonical(_as_dicts(out["evidence_bundles"])) == canonical(golden["evidence_bundles"])
 
-# --- Determinations + status parity (Tasks 10-13: synthesis, completeness, pipeline) ---
-@pytest.mark.skip(reason="pipeline not ported yet")
+# --- Determinations + status parity ---
 def test_determinations_parity(golden):
+    from research_core.planner import plan_research
     from research_core.pipeline import finalize_run
-    result = finalize_run(golden["run_id"], golden["scope_pack"], golden["fixture_evidence"])
+    plan = plan_research(golden["scope_pack"], [])
+    result = finalize_run(golden["run_id"], golden["scope_pack"], plan, golden["fixture_evidence"], [], [])
     assert canonical(_as_dicts(result["determinations"])) == canonical(golden["determinations"])
     assert result["status"] == golden["status"]
 
-# --- report_markdown STRUCTURAL parity (Task 10) ---
-@pytest.mark.skip(reason="synthesis not ported yet")
+# --- report_markdown STRUCTURAL parity ---
 def test_report_markdown_structural(golden):
+    from research_core.planner import plan_research
     from research_core.pipeline import finalize_run
-    result = finalize_run(golden["run_id"], golden["scope_pack"], golden["fixture_evidence"])
+    plan = plan_research(golden["scope_pack"], [])
+    result = finalize_run(golden["run_id"], golden["scope_pack"], plan, golden["fixture_evidence"], [], [])
     md = result["report_markdown"]
     for det in golden["determinations"]:
         assert det["requirement"] in md, det["requirement"]
