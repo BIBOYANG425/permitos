@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "eval": "tsx src/evals/golden.ts",
+    "export:goldens": "tsx src/evals/exportGoldens.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

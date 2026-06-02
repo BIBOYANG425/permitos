@@ -1,0 +1,1978 @@
+{
+  "run_id": "golden-missing",
+  "scope_pack": {
+    "run_id": "golden-missing",
+    "facility": {
+      "address": "Southern California manufacturing facility",
+      "jurisdiction_stack": [
+        "SCAQMD",
+        "California Water Boards",
+        "Local CUPA"
+      ],
+      "naics": null,
+      "sic": null
+    },
+    "project_change": {
+      "description": "Facility adds a new chemical and process but omits quantities and industry codes.",
+      "equipment": [
+        {
+          "kind": "process_equipment",
+          "description": "new unspecified process equipment"
+        }
+      ],
+      "chemicals": [
+        {
+          "name": "hazardous material",
+          "quantity": null,
+          "unit": null
+        }
+      ],
+      "waste_streams": [
+        {
+          "description": "process waste",
+          "kg_per_month": null
+        }
+      ],
+      "disturbance_acres": null,
+      "process_discharge": null
+    },
+    "missing_facts": [
+      {
+        "field": "facility.naics_or_sic",
+        "why_needed": "Industrial stormwater coverage depends on SIC/NAICS or industrial activity.",
+        "blocks": [
+          "industrial_stormwater"
+        ]
+      },
+      {
+        "field": "chemicals.quantity",
+        "why_needed": "HMBP threshold evaluation depends on hazardous material quantity and units.",
+        "blocks": [
+          "hmbp_threshold"
+        ]
+      },
+      {
+        "field": "waste_streams.kg_per_month",
+        "why_needed": "Hazardous waste generator status depends on monthly waste generation.",
+        "blocks": [
+          "hazardous_waste_generator_status"
+        ]
+      }
+    ],
+    "assumptions": []
+  },
+  "fixture_evidence": [
+    {
+      "hypothesis_id": "H-AIR-201",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "source_name": "SCAQMD Rule 201",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-201",
+          "effective_date": null,
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "permit_trigger",
+          "value": "new or altered equipment that may emit air contaminants",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Permit to Construct Application",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Submit application through SCAQMD online portal or in person"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-VOC",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "source_name": "SCAQMD Rule 201",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-201",
+          "effective_date": null,
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "permit_trigger",
+          "value": "new or altered equipment that may emit air contaminants",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Permit to Construct Application",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Submit application through SCAQMD online portal or in person"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-219",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-219.pdf",
+          "source_name": "SCAQMD Rule 219",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-219",
+          "effective_date": null,
+          "quote": "Equipment listed in this rule may be exempt from written permit requirements when the listed conditions are satisfied."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "exemption_check_required",
+          "value": "true",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-219.pdf",
+          "quote": "Equipment listed in this rule may be exempt from written permit requirements when the listed conditions are satisfied.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Rule 219 Exemption Worksheet",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Complete exemption worksheet to document equipment qualifies under Rule 219"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-222",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-222.pdf",
+          "source_name": "SCAQMD Rule 222",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-222",
+          "effective_date": null,
+          "quote": "Owners or operators of specified equipment shall file registration information when the rule applies to that equipment category."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "registration_possible",
+          "value": "true",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-222.pdf",
+          "quote": "Owners or operators of specified equipment shall file registration information when the rule applies to that equipment category.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Rule 222 Registration",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "File registration form for equipment category covered by Rule 222"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-TITLEV",
+      "sources": [],
+      "extracted_claims": [],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "No source fixture found for H-AIR-TITLEV"
+      ]
+    },
+    {
+      "hypothesis_id": "H-STORM-IGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "source_name": "California Industrial General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-igp",
+          "effective_date": null,
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "regulated_sic",
+          "value": "3471",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS IGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal"
+      }
+    },
+    {
+      "hypothesis_id": "H-STORM-CGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "source_name": "California Construction General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-cgp",
+          "effective_date": null,
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "acreage_threshold",
+          "value": "1",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS CGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal before construction begins"
+      }
+    },
+    {
+      "hypothesis_id": "H-HAZMAT-HMBP",
+      "sources": [
+        {
+          "url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
+          "source_name": "California HMBP Threshold Summary",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-hmbp-bad",
+          "effective_date": null,
+          "quote": "Businesses must submit information for hazardous materials at or above threshold quantities."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "overbroad_claim",
+          "value": "HMBP applies to all hazardous material storage",
+          "source_url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
+          "quote": "Businesses must submit information for hazardous materials at or above threshold quantities.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "Hazardous Materials Business Plan (HMBP)",
+        "form_url": "https://cers.calepa.ca.gov/",
+        "agency": "CalEPA / Local CUPA",
+        "portal_url": "https://cers.calepa.ca.gov/",
+        "instructions": "Submit through CERS portal to your local Certified Unified Program Agency"
+      }
+    },
+    {
+      "hypothesis_id": "H-HAZMAT-EPCRA",
+      "sources": [],
+      "extracted_claims": [],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "No source fixture found for H-HAZMAT-EPCRA"
+      ]
+    },
+    {
+      "hypothesis_id": "H-WASTE-GENERATOR",
+      "sources": [
+        {
+          "url": "https://www.epa.gov/hwgenerators/categories-hazardous-waste-generators",
+          "source_name": "EPA Hazardous Waste Generator Categories",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-epa-generator",
+          "effective_date": null,
+          "quote": "Generator category depends on the amount of hazardous waste generated in a calendar month."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "generator_quantity_required",
+          "value": "true",
+          "source_url": "https://www.epa.gov/hwgenerators/categories-hazardous-waste-generators",
+          "quote": "Generator category depends on the amount of hazardous waste generated in a calendar month.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "Monthly hazardous waste quantity is missing."
+      ],
+      "permit_filing": {
+        "form_name": "EPA Hazardous Waste Generator Registration",
+        "form_url": "https://hwts.dtsc.ca.gov/",
+        "agency": "EPA / DTSC",
+        "portal_url": "https://hwts.dtsc.ca.gov/",
+        "instructions": "Register through DTSC Hazardous Waste Tracking System"
+      }
+    },
+    {
+      "hypothesis_id": "H-WASTEWATER-PRETREATMENT",
+      "sources": [
+        {
+          "url": "https://www.epa.gov/npdes/national-pretreatment-program",
+          "source_name": "EPA Pretreatment Program Overview",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-epa-pretreatment",
+          "effective_date": null,
+          "quote": "Industrial users that discharge process wastewater to publicly owned treatment works may be subject to pretreatment requirements."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "process_discharge_required",
+          "value": "true",
+          "source_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+          "quote": "Industrial users that discharge process wastewater to publicly owned treatment works may be subject to pretreatment requirements.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "Industrial Wastewater Discharge Permit Application",
+        "form_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+        "agency": "Local POTW",
+        "portal_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+        "instructions": "Contact your local Publicly Owned Treatment Works for application forms"
+      }
+    },
+    {
+      "hypothesis_id": "H-OSHA-PSM",
+      "sources": [],
+      "extracted_claims": [],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "No source fixture found for H-OSHA-PSM"
+      ]
+    }
+  ],
+  "plan": {
+    "coverage_family_statuses": [
+      {
+        "id": "CF-AIR",
+        "family": "air",
+        "status": "active",
+        "reason": "Project adds equipment that may emit air contaminants.",
+        "project_facts_considered": [
+          "process_equipment"
+        ],
+        "missing_facts": []
+      },
+      {
+        "id": "CF-STORMWATER",
+        "family": "stormwater",
+        "status": "blocked_missing_fact",
+        "reason": "SIC/NAICS and disturbance acreage are missing.",
+        "project_facts_considered": [
+          "sic=null",
+          "naics=null",
+          "acres=null"
+        ],
+        "missing_facts": [
+          "facility.naics_or_sic",
+          "project_change.disturbance_acres"
+        ]
+      },
+      {
+        "id": "CF-HAZMAT",
+        "family": "hazmat",
+        "status": "blocked_missing_fact",
+        "reason": "Project includes hazardous material storage.",
+        "project_facts_considered": [
+          "hazardous material:missing "
+        ],
+        "missing_facts": [
+          "chemicals.quantity",
+          "chemicals.unit"
+        ]
+      },
+      {
+        "id": "CF-WASTE",
+        "family": "waste",
+        "status": "active",
+        "reason": "Project identifies waste streams that need generator-status review.",
+        "project_facts_considered": [
+          "process waste:missing kg/month"
+        ],
+        "missing_facts": [
+          "waste_streams.kg_per_month"
+        ]
+      },
+      {
+        "id": "CF-WASTEWATER",
+        "family": "wastewater",
+        "status": "blocked_missing_fact",
+        "reason": "Process discharge status is missing.",
+        "project_facts_considered": [
+          "process_discharge=null"
+        ],
+        "missing_facts": [
+          "project_change.process_discharge"
+        ]
+      },
+      {
+        "id": "CF-OSHA",
+        "family": "osha",
+        "status": "active",
+        "reason": "Stored chemicals may include a highly hazardous chemical at or above an OSHA PSM threshold quantity.",
+        "project_facts_considered": [
+          "hazardous material:missing "
+        ],
+        "missing_facts": []
+      }
+    ],
+    "regulatory_angles": [
+      {
+        "id": "A-AIR-EMITTING-EQUIPMENT",
+        "family": "air",
+        "label": "New or modified emitting equipment",
+        "reason": "Coating or process equipment may require air district authorization.",
+        "triggering_facts": [
+          "process_equipment"
+        ],
+        "status": "active"
+      },
+      {
+        "id": "A-AIR-EXEMPTION-OR-REGISTRATION",
+        "family": "air",
+        "label": "Air exemption or registration path",
+        "reason": "SCAQMD rules may route some equipment to exemption or registration instead of a permit.",
+        "triggering_facts": [
+          "process_equipment"
+        ],
+        "status": "active"
+      },
+      {
+        "id": "A-AIR-FEDERAL-OPERATING",
+        "family": "air",
+        "label": "Federal Clean Air Act operating permit",
+        "reason": "A facility whose potential-to-emit reaches major-source levels may need a federal Title V operating permit on top of the district permit.",
+        "triggering_facts": [
+          "process_equipment"
+        ],
+        "status": "active"
+      },
+      {
+        "id": "A-STORMWATER-INDUSTRIAL",
+        "family": "stormwater",
+        "label": "Industrial stormwater coverage",
+        "reason": "SIC/NAICS may trigger California Industrial General Permit coverage.",
+        "triggering_facts": [
+          "sic=null",
+          "naics=null"
+        ],
+        "status": "blocked_missing_fact"
+      },
+      {
+        "id": "A-STORMWATER-CONSTRUCTION",
+        "family": "stormwater",
+        "label": "Construction stormwater coverage",
+        "reason": "Construction activity disturbing one or more acres may require permit coverage.",
+        "triggering_facts": [
+          "disturbance_acres=null"
+        ],
+        "status": "blocked_missing_fact"
+      },
+      {
+        "id": "A-HAZMAT-HMBP",
+        "family": "hazmat",
+        "label": "Hazardous material business plan threshold",
+        "reason": "Hazardous material quantities must be compared to reporting thresholds.",
+        "triggering_facts": [
+          "hazardous material:missing "
+        ],
+        "status": "blocked_missing_fact"
+      },
+      {
+        "id": "A-HAZMAT-EPCRA",
+        "family": "hazmat",
+        "label": "EPCRA community right-to-know reporting",
+        "reason": "Federal EPCRA Tier II / §311-312 reporting may apply when hazardous chemicals exceed reporting thresholds, independent of the state HMBP.",
+        "triggering_facts": [
+          "hazardous material:missing "
+        ],
+        "status": "blocked_missing_fact"
+      },
+      {
+        "id": "A-WASTE-GENERATOR-STATUS",
+        "family": "waste",
+        "label": "Hazardous waste generator status",
+        "reason": "Spent solvent or process waste may affect generator category.",
+        "triggering_facts": [
+          "process waste:missing kg/month"
+        ],
+        "status": "blocked_missing_fact"
+      },
+      {
+        "id": "A-WASTEWATER-PRETREATMENT",
+        "family": "wastewater",
+        "label": "Industrial wastewater pretreatment",
+        "reason": "Industrial process wastewater discharges may trigger pretreatment review.",
+        "triggering_facts": [
+          "process_discharge=null"
+        ],
+        "status": "blocked_missing_fact"
+      },
+      {
+        "id": "A-OSHA-PSM",
+        "family": "osha",
+        "label": "OSHA Process Safety Management",
+        "reason": "Storing a listed highly hazardous chemical at or above its threshold quantity triggers the OSHA PSM standard (29 CFR 1910.119).",
+        "triggering_facts": [
+          "hazardous material:missing "
+        ],
+        "status": "active"
+      }
+    ],
+    "research_graph": [
+      {
+        "id": "H-AIR-201",
+        "angle_id": "A-AIR-EMITTING-EQUIPMENT",
+        "family": "air",
+        "question": "Does the new equipment require an SCAQMD Permit to Construct?",
+        "claim_to_test": "SCAQMD Permit to Construct may apply before installing emitting equipment.",
+        "required_facts": [
+          "process_equipment"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-AIR-VOC",
+        "angle_id": "A-AIR-EMITTING-EQUIPMENT",
+        "family": "air",
+        "question": "Do solvent VOC emissions require additional review?",
+        "claim_to_test": "Solvent use may create VOC-related review needs.",
+        "required_facts": [
+          "process_equipment"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-AIR-219",
+        "angle_id": "A-AIR-EXEMPTION-OR-REGISTRATION",
+        "family": "air",
+        "question": "Is Rule 219 exemption available?",
+        "claim_to_test": "Rule 219 may exempt listed equipment if conditions are satisfied.",
+        "required_facts": [
+          "process_equipment"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-AIR-222",
+        "angle_id": "A-AIR-EXEMPTION-OR-REGISTRATION",
+        "family": "air",
+        "question": "Does Rule 222 registration apply instead?",
+        "claim_to_test": "Rule 222 registration may apply to specified equipment categories.",
+        "required_facts": [
+          "process_equipment"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-AIR-TITLEV",
+        "angle_id": "A-AIR-FEDERAL-OPERATING",
+        "family": "air",
+        "question": "Does the facility's potential-to-emit require a federal Title V operating permit?",
+        "claim_to_test": "Major-source potential-to-emit may require a Clean Air Act Title V operating permit.",
+        "required_facts": [
+          "process_equipment"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-STORM-IGP",
+        "angle_id": "A-STORMWATER-INDUSTRIAL",
+        "family": "stormwater",
+        "question": "Does SIC/NAICS trigger Industrial General Permit coverage?",
+        "claim_to_test": "SIC/NAICS may trigger California Industrial General Permit coverage.",
+        "required_facts": [
+          "sic=null",
+          "naics=null"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-STORM-CGP",
+        "angle_id": "A-STORMWATER-CONSTRUCTION",
+        "family": "stormwater",
+        "question": "Does construction disturb one or more acres?",
+        "claim_to_test": "Construction disturbance at or above one acre may require construction stormwater permit coverage.",
+        "required_facts": [
+          "disturbance_acres=null"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-HAZMAT-HMBP",
+        "angle_id": "A-HAZMAT-HMBP",
+        "family": "hazmat",
+        "question": "Does hazardous material quantity exceed HMBP thresholds?",
+        "claim_to_test": "HMBP applies to all hazardous material storage.",
+        "required_facts": [
+          "hazardous material:missing "
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-HAZMAT-EPCRA",
+        "angle_id": "A-HAZMAT-EPCRA",
+        "family": "hazmat",
+        "question": "Do stored hazardous chemicals exceed EPCRA Tier II reporting thresholds?",
+        "claim_to_test": "EPCRA §311-312 Tier II reporting may apply when a hazardous chemical exceeds its reporting threshold.",
+        "required_facts": [
+          "hazardous material:missing "
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-WASTE-GENERATOR",
+        "angle_id": "A-WASTE-GENERATOR-STATUS",
+        "family": "waste",
+        "question": "Does waste generation change hazardous waste generator status?",
+        "claim_to_test": "Spent solvent may affect generator status.",
+        "required_facts": [
+          "process waste:missing kg/month"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-WASTEWATER-PRETREATMENT",
+        "angle_id": "A-WASTEWATER-PRETREATMENT",
+        "family": "wastewater",
+        "question": "Does process wastewater discharge require pretreatment review?",
+        "claim_to_test": "Industrial process wastewater may require pretreatment review.",
+        "required_facts": [
+          "process_discharge=null"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-OSHA-PSM",
+        "angle_id": "A-OSHA-PSM",
+        "family": "osha",
+        "question": "Does a stored highly hazardous chemical meet the OSHA PSM threshold quantity?",
+        "claim_to_test": "OSHA Process Safety Management applies when a listed highly hazardous chemical is at or above its threshold quantity.",
+        "required_facts": [
+          "hazardous material:missing "
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      }
+    ],
+    "research_tasks": [
+      {
+        "task_id": "T-AIR-201",
+        "hypothesis_id": "H-AIR-201",
+        "assigned_agent": "air_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-AIR-VOC",
+        "hypothesis_id": "H-AIR-VOC",
+        "assigned_agent": "air_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-AIR-219",
+        "hypothesis_id": "H-AIR-219",
+        "assigned_agent": "air_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-AIR-222",
+        "hypothesis_id": "H-AIR-222",
+        "assigned_agent": "air_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-AIR-TITLEV",
+        "hypothesis_id": "H-AIR-TITLEV",
+        "assigned_agent": "air_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-STORM-IGP",
+        "hypothesis_id": "H-STORM-IGP",
+        "assigned_agent": "stormwater_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-STORM-CGP",
+        "hypothesis_id": "H-STORM-CGP",
+        "assigned_agent": "stormwater_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-HAZMAT-HMBP",
+        "hypothesis_id": "H-HAZMAT-HMBP",
+        "assigned_agent": "hazmat_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-HAZMAT-EPCRA",
+        "hypothesis_id": "H-HAZMAT-EPCRA",
+        "assigned_agent": "hazmat_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-WASTE-GENERATOR",
+        "hypothesis_id": "H-WASTE-GENERATOR",
+        "assigned_agent": "waste_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-WASTEWATER-PRETREATMENT",
+        "hypothesis_id": "H-WASTEWATER-PRETREATMENT",
+        "assigned_agent": "wastewater_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-OSHA-PSM",
+        "hypothesis_id": "H-OSHA-PSM",
+        "assigned_agent": "osha_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      }
+    ]
+  },
+  "verification_verdicts": [
+    {
+      "hypothesis_id": "H-AIR-201",
+      "verdict": "pass",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source fetched 2026-05-30"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "official or high-authority source"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "extracted claim quote appears in the cited source quote"
+        },
+        "predicate_math": {
+          "pass": true,
+          "reason": "researcher reached a grounded conclusion: applies"
+        }
+      },
+      "confidence": 0.9,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-AIR-VOC",
+      "verdict": "pass",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source fetched 2026-05-30"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "official or high-authority source"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "extracted claim quote appears in the cited source quote"
+        },
+        "predicate_math": {
+          "pass": true,
+          "reason": "researcher reached a grounded conclusion: applies"
+        }
+      },
+      "confidence": 0.9,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-AIR-219",
+      "verdict": "pass",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source fetched 2026-05-30"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "official or high-authority source"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "extracted claim quote appears in the cited source quote"
+        },
+        "predicate_math": {
+          "pass": true,
+          "reason": "researcher reached a grounded conclusion: applies"
+        }
+      },
+      "confidence": 0.9,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-AIR-222",
+      "verdict": "pass",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source fetched 2026-05-30"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "official or high-authority source"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "extracted claim quote appears in the cited source quote"
+        },
+        "predicate_math": {
+          "pass": true,
+          "reason": "researcher reached a grounded conclusion: applies"
+        }
+      },
+      "confidence": 0.9,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-AIR-TITLEV",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": false,
+          "reason": "No source was returned by the worker."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "No source was returned by the worker."
+        }
+      },
+      "confidence": 0.3,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-STORM-IGP",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "SIC/NAICS is missing; industrial stormwater coverage cannot be verified."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "SIC/NAICS is missing; industrial stormwater coverage cannot be verified."
+        }
+      },
+      "confidence": 0.55,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-STORM-CGP",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source fetched from seeded cache for this run"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "official state stormwater source fixture"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "quote contains one-acre construction disturbance threshold"
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "missing acres does not trigger a verified yes."
+        }
+      },
+      "confidence": 0.55,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-HAZMAT-HMBP",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Hazardous material quantity or threshold is missing."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "Hazardous material quantity or threshold is missing."
+        }
+      },
+      "confidence": 0.55,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-HAZMAT-EPCRA",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": false,
+          "reason": "No source was returned by the worker."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "No source was returned by the worker."
+        }
+      },
+      "confidence": 0.3,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-WASTE-GENERATOR",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Monthly hazardous waste quantity is missing."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "Monthly hazardous waste quantity is missing."
+        }
+      },
+      "confidence": 0.55,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-WASTEWATER-PRETREATMENT",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Process wastewater discharge status is missing."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "Process wastewater discharge status is missing."
+        }
+      },
+      "confidence": 0.55,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-OSHA-PSM",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": false,
+          "reason": "No source was returned by the worker."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "No source was returned by the worker."
+        }
+      },
+      "confidence": 0.3,
+      "repair_tickets": []
+    }
+  ],
+  "evidence_bundles": [
+    {
+      "hypothesis_id": "H-AIR-201",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "source_name": "SCAQMD Rule 201",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-201",
+          "effective_date": null,
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "permit_trigger",
+          "value": "new or altered equipment that may emit air contaminants",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Permit to Construct Application",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Submit application through SCAQMD online portal or in person"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-VOC",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "source_name": "SCAQMD Rule 201",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-201",
+          "effective_date": null,
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "permit_trigger",
+          "value": "new or altered equipment that may emit air contaminants",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+          "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Permit to Construct Application",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Submit application through SCAQMD online portal or in person"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-219",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-219.pdf",
+          "source_name": "SCAQMD Rule 219",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-219",
+          "effective_date": null,
+          "quote": "Equipment listed in this rule may be exempt from written permit requirements when the listed conditions are satisfied."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "exemption_check_required",
+          "value": "true",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-219.pdf",
+          "quote": "Equipment listed in this rule may be exempt from written permit requirements when the listed conditions are satisfied.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Rule 219 Exemption Worksheet",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Complete exemption worksheet to document equipment qualifies under Rule 219"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-222",
+      "sources": [
+        {
+          "url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-222.pdf",
+          "source_name": "SCAQMD Rule 222",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-scaqmd-rule-222",
+          "effective_date": null,
+          "quote": "Owners or operators of specified equipment shall file registration information when the rule applies to that equipment category."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "registration_possible",
+          "value": "true",
+          "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-222.pdf",
+          "quote": "Owners or operators of specified equipment shall file registration information when the rule applies to that equipment category.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SCAQMD Rule 222 Registration",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "File registration form for equipment category covered by Rule 222"
+      }
+    },
+    {
+      "hypothesis_id": "H-AIR-TITLEV",
+      "sources": [],
+      "extracted_claims": [],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "No source fixture found for H-AIR-TITLEV"
+      ]
+    },
+    {
+      "hypothesis_id": "H-STORM-IGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "source_name": "California Industrial General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-igp",
+          "effective_date": null,
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "regulated_sic",
+          "value": "3471",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS IGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal"
+      }
+    },
+    {
+      "hypothesis_id": "H-STORM-CGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "source_name": "California Construction General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-cgp",
+          "effective_date": null,
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "acreage_threshold",
+          "value": "1",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS CGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal before construction begins"
+      }
+    },
+    {
+      "hypothesis_id": "H-HAZMAT-HMBP",
+      "sources": [
+        {
+          "url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
+          "source_name": "California HMBP Threshold Summary",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-hmbp-repaired",
+          "effective_date": null,
+          "quote": "A hazardous material must be reported when present in quantities equal to or greater than 55 gallons for liquids, 500 pounds for solids, or 200 cubic feet for compressed gases."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "liquid_gallons_threshold",
+          "value": "55",
+          "source_url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
+          "quote": "A hazardous material must be reported when present in quantities equal to or greater than 55 gallons for liquids, 500 pounds for solids, or 200 cubic feet for compressed gases.",
+          "confidence": 0.91
+        },
+        {
+          "field": "predicate_math",
+          "value": "missing quantity",
+          "source_url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
+          "quote": "A hazardous material must be reported when present in quantities equal to or greater than 55 gallons for liquids, 500 pounds for solids, or 200 cubic feet for compressed gases.",
+          "confidence": 0.2
+        }
+      ],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "Chemical quantity missing; cannot compare HMBP threshold."
+      ]
+    },
+    {
+      "hypothesis_id": "H-HAZMAT-EPCRA",
+      "sources": [],
+      "extracted_claims": [],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "No source fixture found for H-HAZMAT-EPCRA"
+      ]
+    },
+    {
+      "hypothesis_id": "H-WASTE-GENERATOR",
+      "sources": [
+        {
+          "url": "https://www.epa.gov/hwgenerators/categories-hazardous-waste-generators",
+          "source_name": "EPA Hazardous Waste Generator Categories",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-epa-generator",
+          "effective_date": null,
+          "quote": "Generator category depends on the amount of hazardous waste generated in a calendar month."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "generator_quantity_required",
+          "value": "true",
+          "source_url": "https://www.epa.gov/hwgenerators/categories-hazardous-waste-generators",
+          "quote": "Generator category depends on the amount of hazardous waste generated in a calendar month.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "Monthly hazardous waste quantity is missing."
+      ],
+      "permit_filing": {
+        "form_name": "EPA Hazardous Waste Generator Registration",
+        "form_url": "https://hwts.dtsc.ca.gov/",
+        "agency": "EPA / DTSC",
+        "portal_url": "https://hwts.dtsc.ca.gov/",
+        "instructions": "Register through DTSC Hazardous Waste Tracking System"
+      }
+    },
+    {
+      "hypothesis_id": "H-WASTEWATER-PRETREATMENT",
+      "sources": [
+        {
+          "url": "https://www.epa.gov/npdes/national-pretreatment-program",
+          "source_name": "EPA Pretreatment Program Overview",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-epa-pretreatment",
+          "effective_date": null,
+          "quote": "Industrial users that discharge process wastewater to publicly owned treatment works may be subject to pretreatment requirements."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "process_discharge_required",
+          "value": "true",
+          "source_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+          "quote": "Industrial users that discharge process wastewater to publicly owned treatment works may be subject to pretreatment requirements.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "Industrial Wastewater Discharge Permit Application",
+        "form_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+        "agency": "Local POTW",
+        "portal_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+        "instructions": "Contact your local Publicly Owned Treatment Works for application forms"
+      }
+    },
+    {
+      "hypothesis_id": "H-OSHA-PSM",
+      "sources": [],
+      "extracted_claims": [],
+      "researcher_conclusion": "needs_review",
+      "uncertainties": [
+        "No source fixture found for H-OSHA-PSM"
+      ]
+    }
+  ],
+  "determinations": [
+    {
+      "requirement": "SCAQMD Permit to Construct/Operate review",
+      "applies": "yes",
+      "trigger": "Does the new equipment require an SCAQMD Permit to Construct?",
+      "project_fact": "New or modified emitting equipment",
+      "citation": "SCAQMD Rule 201, fetched 2026-05-30",
+      "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
+      "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+      "confidence": 0.9,
+      "verified": true,
+      "review_flag": false,
+      "permit_filing": {
+        "form_name": "SCAQMD Permit to Construct Application",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Submit application through SCAQMD online portal or in person"
+      }
+    },
+    {
+      "requirement": "VOC emissions review",
+      "applies": "yes",
+      "trigger": "Do solvent VOC emissions require additional review?",
+      "project_fact": "New or modified emitting equipment",
+      "citation": "SCAQMD Rule 201, fetched 2026-05-30",
+      "quote": "A person shall not build, erect, install, alter, or replace any equipment that may emit air contaminants without written authorization.",
+      "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+      "confidence": 0.9,
+      "verified": true,
+      "review_flag": false,
+      "permit_filing": {
+        "form_name": "SCAQMD Permit to Construct Application",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Submit application through SCAQMD online portal or in person"
+      }
+    },
+    {
+      "requirement": "SCAQMD Rule 219 exemption check",
+      "applies": "yes",
+      "trigger": "Is Rule 219 exemption available?",
+      "project_fact": "Air exemption or registration path",
+      "citation": "SCAQMD Rule 219, fetched 2026-05-30",
+      "quote": "Equipment listed in this rule may be exempt from written permit requirements when the listed conditions are satisfied.",
+      "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-219.pdf",
+      "confidence": 0.9,
+      "verified": true,
+      "review_flag": false,
+      "permit_filing": {
+        "form_name": "SCAQMD Rule 219 Exemption Worksheet",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "Complete exemption worksheet to document equipment qualifies under Rule 219"
+      }
+    },
+    {
+      "requirement": "SCAQMD Rule 222 registration check",
+      "applies": "yes",
+      "trigger": "Does Rule 222 registration apply instead?",
+      "project_fact": "Air exemption or registration path",
+      "citation": "SCAQMD Rule 222, fetched 2026-05-30",
+      "quote": "Owners or operators of specified equipment shall file registration information when the rule applies to that equipment category.",
+      "source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-222.pdf",
+      "confidence": 0.9,
+      "verified": true,
+      "review_flag": false,
+      "permit_filing": {
+        "form_name": "SCAQMD Rule 222 Registration",
+        "form_url": "https://www.aqmd.gov/home/permits/permit-applications",
+        "agency": "South Coast AQMD",
+        "portal_url": "https://www.aqmd.gov/home/permits",
+        "instructions": "File registration form for equipment category covered by Rule 222"
+      }
+    },
+    {
+      "requirement": "H-AIR-TITLEV",
+      "applies": "needs_review",
+      "trigger": "Does the facility's potential-to-emit require a federal Title V operating permit?",
+      "project_fact": "Federal Clean Air Act operating permit",
+      "citation": "No supporting source verified",
+      "quote": "No source was returned by the worker.",
+      "source_url": "",
+      "confidence": 0.3,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "California Industrial General Permit applicability",
+      "applies": "needs_review",
+      "trigger": "Does SIC/NAICS trigger Industrial General Permit coverage?",
+      "project_fact": "SIC missing / NAICS missing",
+      "citation": "California Industrial General Permit, fetched 2026-05-30",
+      "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
+      "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+      "confidence": 0.55,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "Construction stormwater permit coverage",
+      "applies": "needs_review",
+      "trigger": "Does construction disturb one or more acres?",
+      "project_fact": "missing acres disturbed",
+      "citation": "California Construction General Permit, fetched 2026-05-30",
+      "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
+      "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+      "confidence": 0.55,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "HMBP/CERS hazardous material reporting",
+      "applies": "needs_review",
+      "trigger": "Does hazardous material quantity exceed HMBP thresholds?",
+      "project_fact": "missing  hazardous material",
+      "citation": "California HMBP Threshold Summary, fetched 2026-05-30",
+      "quote": "A hazardous material must be reported when present in quantities equal to or greater than 55 gallons for liquids, 500 pounds for solids, or 200 cubic feet for compressed gases.",
+      "source_url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
+      "confidence": 0.55,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "H-HAZMAT-EPCRA",
+      "applies": "needs_review",
+      "trigger": "Do stored hazardous chemicals exceed EPCRA Tier II reporting thresholds?",
+      "project_fact": "EPCRA community right-to-know reporting",
+      "citation": "No supporting source verified",
+      "quote": "No source was returned by the worker.",
+      "source_url": "",
+      "confidence": 0.3,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "Hazardous waste generator status",
+      "applies": "needs_review",
+      "trigger": "Does waste generation change hazardous waste generator status?",
+      "project_fact": "Hazardous waste generator status",
+      "citation": "EPA Hazardous Waste Generator Categories, fetched 2026-05-30",
+      "quote": "Generator category depends on the amount of hazardous waste generated in a calendar month.",
+      "source_url": "https://www.epa.gov/hwgenerators/categories-hazardous-waste-generators",
+      "confidence": 0.55,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "Industrial wastewater pretreatment review",
+      "applies": "needs_review",
+      "trigger": "Does process wastewater discharge require pretreatment review?",
+      "project_fact": "Industrial wastewater pretreatment",
+      "citation": "EPA Pretreatment Program Overview, fetched 2026-05-30",
+      "quote": "Industrial users that discharge process wastewater to publicly owned treatment works may be subject to pretreatment requirements.",
+      "source_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+      "confidence": 0.55,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "H-OSHA-PSM",
+      "applies": "needs_review",
+      "trigger": "Does a stored highly hazardous chemical meet the OSHA PSM threshold quantity?",
+      "project_fact": "OSHA Process Safety Management",
+      "citation": "No supporting source verified",
+      "quote": "No source was returned by the worker.",
+      "source_url": "",
+      "confidence": 0.3,
+      "verified": false,
+      "review_flag": true
+    }
+  ],
+  "status": "needs_review",
+  "report_markdown": "# PermitPilot Applicability Matrix\n\nFacility: Southern California manufacturing facility\n\nJurisdiction stack: SCAQMD, California Water Boards, Local CUPA\n\n| Requirement | Applies | Status | Confidence |\n|---|---:|---|---:|\n| SCAQMD Permit to Construct/Operate review | yes | verified | 90% |\n| VOC emissions review | yes | verified | 90% |\n| SCAQMD Rule 219 exemption check | yes | verified | 90% |\n| SCAQMD Rule 222 registration check | yes | verified | 90% |\n| H-AIR-TITLEV | needs_review | needs review | 30% |\n| California Industrial General Permit applicability | needs_review | needs review | 55% |\n| Construction stormwater permit coverage | needs_review | needs review | 55% |\n| HMBP/CERS hazardous material reporting | needs_review | needs review | 55% |\n| H-HAZMAT-EPCRA | needs_review | needs review | 30% |\n| Hazardous waste generator status | needs_review | needs review | 55% |\n| Industrial wastewater pretreatment review | needs_review | needs review | 55% |\n| H-OSHA-PSM | needs_review | needs review | 30% |\n\nHuman review remains required for unverified, missing-fact, or novel determinations.\n"
+}

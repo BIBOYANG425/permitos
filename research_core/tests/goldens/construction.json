@@ -1,0 +1,438 @@
+{
+  "run_id": "golden-construction",
+  "scope_pack": {
+    "run_id": "golden-construction",
+    "facility": {
+      "address": "Southern California light industrial site",
+      "jurisdiction_stack": [
+        "California Water Boards",
+        "Local Municipality"
+      ],
+      "naics": null,
+      "sic": null
+    },
+    "project_change": {
+      "description": "Simple construction project disturbing 1.2 acres.",
+      "equipment": [],
+      "chemicals": [],
+      "waste_streams": [],
+      "disturbance_acres": 1.2,
+      "process_discharge": false
+    },
+    "missing_facts": [],
+    "assumptions": [
+      {
+        "claim": "Construction disturbance acreage is supplied by intake.",
+        "basis": "Seeded golden eval case.",
+        "confidence": 0.9
+      }
+    ]
+  },
+  "fixture_evidence": [
+    {
+      "hypothesis_id": "H-STORM-IGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "source_name": "California Industrial General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-igp",
+          "effective_date": null,
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "regulated_sic",
+          "value": "3471",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS IGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal"
+      }
+    },
+    {
+      "hypothesis_id": "H-STORM-CGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "source_name": "California Construction General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-cgp",
+          "effective_date": null,
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "acreage_threshold",
+          "value": "1",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS CGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal before construction begins"
+      }
+    }
+  ],
+  "plan": {
+    "coverage_family_statuses": [
+      {
+        "id": "CF-AIR",
+        "family": "air",
+        "status": "out_of_scope",
+        "reason": "No equipment added that could emit air contaminants.",
+        "project_facts_considered": [],
+        "missing_facts": []
+      },
+      {
+        "id": "CF-STORMWATER",
+        "family": "stormwater",
+        "status": "active",
+        "reason": "Industrial activity codes or construction acreage require stormwater review.",
+        "project_facts_considered": [
+          "sic=null",
+          "naics=null",
+          "acres=1.2"
+        ],
+        "missing_facts": []
+      },
+      {
+        "id": "CF-HAZMAT",
+        "family": "hazmat",
+        "status": "out_of_scope",
+        "reason": "No hazardous materials indicated in intake.",
+        "project_facts_considered": [],
+        "missing_facts": []
+      },
+      {
+        "id": "CF-WASTE",
+        "family": "waste",
+        "status": "out_of_scope",
+        "reason": "No waste stream indicated.",
+        "project_facts_considered": [],
+        "missing_facts": []
+      },
+      {
+        "id": "CF-WASTEWATER",
+        "family": "wastewater",
+        "status": "out_of_scope",
+        "reason": "No process wastewater discharge indicated.",
+        "project_facts_considered": [
+          "process_discharge=false"
+        ],
+        "missing_facts": []
+      },
+      {
+        "id": "CF-OSHA",
+        "family": "osha",
+        "status": "out_of_scope",
+        "reason": "No chemicals indicated; OSHA Process Safety Management is out of scope.",
+        "project_facts_considered": [],
+        "missing_facts": []
+      }
+    ],
+    "regulatory_angles": [
+      {
+        "id": "A-STORMWATER-INDUSTRIAL",
+        "family": "stormwater",
+        "label": "Industrial stormwater coverage",
+        "reason": "SIC/NAICS may trigger California Industrial General Permit coverage.",
+        "triggering_facts": [
+          "sic=null",
+          "naics=null"
+        ],
+        "status": "blocked_missing_fact"
+      },
+      {
+        "id": "A-STORMWATER-CONSTRUCTION",
+        "family": "stormwater",
+        "label": "Construction stormwater coverage",
+        "reason": "Construction activity disturbing one or more acres may require permit coverage.",
+        "triggering_facts": [
+          "disturbance_acres=1.2"
+        ],
+        "status": "active"
+      }
+    ],
+    "research_graph": [
+      {
+        "id": "H-STORM-IGP",
+        "angle_id": "A-STORMWATER-INDUSTRIAL",
+        "family": "stormwater",
+        "question": "Does SIC/NAICS trigger Industrial General Permit coverage?",
+        "claim_to_test": "SIC/NAICS may trigger California Industrial General Permit coverage.",
+        "required_facts": [
+          "sic=null",
+          "naics=null"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "H-STORM-CGP",
+        "angle_id": "A-STORMWATER-CONSTRUCTION",
+        "family": "stormwater",
+        "question": "Does construction disturb one or more acres?",
+        "claim_to_test": "Construction disturbance at or above one acre may require construction stormwater permit coverage.",
+        "required_facts": [
+          "disturbance_acres=1.2"
+        ],
+        "expected_source_type": "regulation",
+        "success_criteria": [
+          "official or high-authority source",
+          "quote contains trigger, threshold, exemption, or blocker",
+          "predicate evaluation is reproducible"
+        ],
+        "dependencies": []
+      }
+    ],
+    "research_tasks": [
+      {
+        "task_id": "T-STORM-IGP",
+        "hypothesis_id": "H-STORM-IGP",
+        "assigned_agent": "stormwater_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      },
+      {
+        "task_id": "T-STORM-CGP",
+        "hypothesis_id": "H-STORM-CGP",
+        "assigned_agent": "stormwater_researcher",
+        "allowed_tools": [
+          "send_message",
+          "emit_trace_event",
+          "validate_artifact_schema",
+          "log_step",
+          "escalate_to_human",
+          "read_skill",
+          "get_triggers",
+          "get_source_pointers",
+          "get_cached_source",
+          "fetch_source",
+          "prove_currency",
+          "extract_threshold",
+          "evaluate_predicate",
+          "quarantine_injection"
+        ],
+        "blocked_tools": [
+          "get_form",
+          "build_applicability_matrix",
+          "generate_compliance_calendar",
+          "assemble_review_package",
+          "freshness_sweep",
+          "propose_map_entry",
+          "propose_form_entry"
+        ],
+        "budget": {
+          "max_sources": 3,
+          "max_runtime_seconds": 30,
+          "max_model_calls": 4
+        }
+      }
+    ]
+  },
+  "verification_verdicts": [
+    {
+      "hypothesis_id": "H-STORM-IGP",
+      "verdict": "needs_review",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source/cache status recorded"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "authority could be evaluated or source failure was explicit"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "SIC/NAICS is missing; industrial stormwater coverage cannot be verified."
+        },
+        "predicate_math": {
+          "pass": false,
+          "reason": "SIC/NAICS is missing; industrial stormwater coverage cannot be verified."
+        }
+      },
+      "confidence": 0.55,
+      "repair_tickets": []
+    },
+    {
+      "hypothesis_id": "H-STORM-CGP",
+      "verdict": "pass",
+      "checks": {
+        "currency": {
+          "pass": true,
+          "reason": "source fetched from seeded cache for this run"
+        },
+        "authority": {
+          "pass": true,
+          "reason": "official state stormwater source fixture"
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "quote contains one-acre construction disturbance threshold"
+        },
+        "predicate_math": {
+          "pass": true,
+          "reason": "1.2 acres is at or above the 1 acre threshold."
+        }
+      },
+      "confidence": 0.9,
+      "repair_tickets": []
+    }
+  ],
+  "evidence_bundles": [
+    {
+      "hypothesis_id": "H-STORM-IGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "source_name": "California Industrial General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-igp",
+          "effective_date": null,
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "regulated_sic",
+          "value": "3471",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+          "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS IGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal"
+      }
+    },
+    {
+      "hypothesis_id": "H-STORM-CGP",
+      "sources": [
+        {
+          "url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "source_name": "California Construction General Permit",
+          "authority_rank": 1,
+          "fetched_at": "2026-05-30T00:00:00Z",
+          "content_hash": "sha256:demo-ca-cgp",
+          "effective_date": null,
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit."
+        }
+      ],
+      "extracted_claims": [
+        {
+          "field": "acreage_threshold",
+          "value": "1",
+          "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+          "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
+          "confidence": 0.82
+        }
+      ],
+      "researcher_conclusion": "applies",
+      "uncertainties": [],
+      "permit_filing": {
+        "form_name": "SMARTS CGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal before construction begins"
+      }
+    }
+  ],
+  "determinations": [
+    {
+      "requirement": "California Industrial General Permit applicability",
+      "applies": "needs_review",
+      "trigger": "Does SIC/NAICS trigger Industrial General Permit coverage?",
+      "project_fact": "SIC missing / NAICS missing",
+      "citation": "California Industrial General Permit, fetched 2026-05-30",
+      "quote": "Industrial facilities described by regulated Standard Industrial Classification codes must obtain coverage under the Industrial General Permit unless an exclusion applies.",
+      "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+      "confidence": 0.55,
+      "verified": false,
+      "review_flag": true
+    },
+    {
+      "requirement": "Construction stormwater permit coverage",
+      "applies": "yes",
+      "trigger": "Does construction disturb one or more acres?",
+      "project_fact": "1.2 acres disturbed",
+      "citation": "California Construction General Permit, fetched 2026-05-30",
+      "quote": "Construction activity that disturbs one or more acres of soil must obtain coverage under the Construction General Permit.",
+      "source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+      "confidence": 0.9,
+      "verified": true,
+      "review_flag": false,
+      "permit_filing": {
+        "form_name": "SMARTS CGP Notice of Intent",
+        "form_url": "https://smarts.waterboards.ca.gov/",
+        "agency": "California Water Boards",
+        "portal_url": "https://smarts.waterboards.ca.gov/",
+        "instructions": "File NOI through SMARTS online portal before construction begins"
+      }
+    }
+  ],
+  "status": "needs_review",
+  "report_markdown": "# PermitPilot Applicability Matrix\n\nFacility: Southern California light industrial site\n\nJurisdiction stack: California Water Boards, Local Municipality\n\n| Requirement | Applies | Status | Confidence |\n|---|---:|---|---:|\n| California Industrial General Permit applicability | needs_review | needs review | 55% |\n| Construction stormwater permit coverage | yes | verified | 90% |\n\nHuman review remains required for unverified, missing-fact, or novel determinations.\n"
+}
