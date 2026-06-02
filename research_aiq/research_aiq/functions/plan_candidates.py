@@ -34,13 +34,9 @@ async def _plan_candidates_impl(input_message: str) -> str:
     candidates = plan["research_graph"]
     # Seed both the candidate hypotheses (what the supervisor reviews) and the
     # research_tasks (the per-hypothesis Modal task_spec spawn_researchers forwards).
-    STORE.init(
-        run_id, scope=scope, candidates=candidates, tasks=plan.get("research_tasks", [])
-    )
+    STORE.init(run_id, scope=scope, candidates=candidates, tasks=plan.get("research_tasks", []))
     set_run_id(run_id)
-    summary = "\n".join(
-        f"- {h['id']} [{h['family']}] {h['question']}" for h in candidates
-    )
+    summary = "\n".join(f"- {h['id']} [{h['family']}] {h['question']}" for h in candidates)
     return json.dumps({"run_id": run_id, "candidate_summary": summary})
 
 

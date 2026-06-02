@@ -27,7 +27,9 @@ def test_spawn_accumulates_bundles_and_returns_distilled():
     async def fake_fanout(task_specs):  # stand-in for the Modal call; receives task_specs
         # Assert _spawn_impl forwarded the real task_spec (not a bare id) for the
         # accepted hypothesis — proves the run-store task lookup is wired through.
-        assert task_specs == [{"hypothesis_id": "H-A", "allowed_tools": ["fetch_source"], "budget": {}}]
+        assert task_specs == [
+            {"hypothesis_id": "H-A", "allowed_tools": ["fetch_source"], "budget": {}}
+        ]
         return [
             {
                 "hypothesis_id": spec["hypothesis_id"],
@@ -40,7 +42,9 @@ def test_spawn_accumulates_bundles_and_returns_distilled():
         ]
 
     out = asyncio.run(
-        _spawn_impl(json.dumps({"hypothesis_ids": ["H-A", "H-BOGUS"]}), fanout=fake_fanout, run_id="s1")
+        _spawn_impl(
+            json.dumps({"hypothesis_ids": ["H-A", "H-BOGUS"]}), fanout=fake_fanout, run_id="s1"
+        )
     )
     parsed = json.loads(out)
     assert STORE.investigated_ids("s1") == ["H-A"]  # only the valid candidate

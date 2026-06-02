@@ -59,10 +59,14 @@ def test_orchestrate_threads_run_id_plan_to_finalize(monkeypatch):
         {"requirement": "R2", "applies": "needs_review", "verified": False},
     ]
     finalize = _FakeFn(
-        json.dumps({"run_id": "run-ORCH", "determinations": determinations, "status": "needs_review"})
+        json.dumps(
+            {"run_id": "run-ORCH", "determinations": determinations, "status": "needs_review"}
+        )
     )
 
-    builder = _FakeBuilder({"plan_candidates": plan, "supervisor": supervisor, "finalize": finalize})
+    builder = _FakeBuilder(
+        {"plan_candidates": plan, "supervisor": supervisor, "finalize": finalize}
+    )
 
     # Seed STORE.scope so the always-on post-run epilogue runs to completion rather
     # than short-circuiting in its fail-soft guard. The exact violation count is not
@@ -143,10 +147,16 @@ def test_orchestrate_epilogue_is_fail_soft(monkeypatch):
     plan = _FakeFn(json.dumps({"run_id": "run-SOFT", "candidate_summary": "x"}))
     supervisor = _FakeFn("ok")
     final_payload = json.dumps(
-        {"run_id": "run-SOFT", "determinations": [{"requirement": "R", "applies": "yes"}], "status": "complete"}
+        {
+            "run_id": "run-SOFT",
+            "determinations": [{"requirement": "R", "applies": "yes"}],
+            "status": "complete",
+        }
     )
     finalize = _FakeFn(final_payload)
-    builder = _FakeBuilder({"plan_candidates": plan, "supervisor": supervisor, "finalize": finalize})
+    builder = _FakeBuilder(
+        {"plan_candidates": plan, "supervisor": supervisor, "finalize": finalize}
+    )
 
     # Deliberately do NOT seed STORE for run-SOFT, AND make record_run explode. Either
     # alone would break a non-fail-soft epilogue; together they prove the guard holds.

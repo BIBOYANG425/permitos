@@ -74,7 +74,9 @@ async def _modal_fanout(task_specs: list[dict]) -> list[dict]:
         return await asyncio.gather(*(_one(spec) for spec in task_specs))
 
 
-async def _spawn_impl(input_message: str, *, fanout=_modal_fanout, run_id: str | None = None) -> str:
+async def _spawn_impl(
+    input_message: str, *, fanout=_modal_fanout, run_id: str | None = None
+) -> str:
     # Param name MUST be `input_message`: nat's LangChain tool wrapper
     # (nat/plugins/langchain/tool_wrapper.py) only auto-wraps a bare-string tool
     # call into the function's schema when the schema field is named `input_message`.

@@ -58,11 +58,13 @@ SCOPE_STORMWATER = {
 }
 
 # Requirement labels (from synthesis._requirement_for) for the stormwater programs.
-REQ_CGP = "Construction stormwater permit coverage"        # ca-construction-general-permit
+REQ_CGP = "Construction stormwater permit coverage"  # ca-construction-general-permit
 REQ_IGP = "California Industrial General Permit applicability"  # ca-industrial-general-permit
 
 
-def _det(requirement: str, applies: str, *, verified: bool, quote: str = "", source_url: str = "") -> dict:
+def _det(
+    requirement: str, applies: str, *, verified: bool, quote: str = "", source_url: str = ""
+) -> dict:
     """A determination row with the real shape. review_flag = not verified."""
     return {
         "requirement": requirement,
@@ -106,26 +108,41 @@ def _run(evaluator, item) -> float:
 # ROW uses ("yes"/"no"/"needs_review"). The evaluator normalizes the row vocab into the
 # gold vocab (yes->applies, no->does_not_apply, needs_review->needs_review) before
 # comparing, so a row that says "yes" matches gold "applies".
-GOLD_STORMWATER = {"ca-construction-general-permit": "applies", "ca-industrial-general-permit": "needs_review"}
+GOLD_STORMWATER = {
+    "ca-construction-general-permit": "applies",
+    "ca-industrial-general-permit": "needs_review",
+}
 
 
 def test_determination_accuracy_perfect_is_1():
     # CGP row "yes" -> normalizes to gold "applies"; IGP row "needs_review" -> matches.
-    output = _output([
-        _det(REQ_CGP, "yes", verified=True),
-        _det(REQ_IGP, "needs_review", verified=False),
-    ])
-    item = _item(input_obj=json.dumps(SCOPE_STORMWATER), expected_output_obj=GOLD_STORMWATER, output_obj=output)
+    output = _output(
+        [
+            _det(REQ_CGP, "yes", verified=True),
+            _det(REQ_IGP, "needs_review", verified=False),
+        ]
+    )
+    item = _item(
+        input_obj=json.dumps(SCOPE_STORMWATER),
+        expected_output_obj=GOLD_STORMWATER,
+        output_obj=output,
+    )
     assert _run(DeterminationAccuracyEvaluator(), item) == 1.0
 
 
 def test_determination_accuracy_half_wrong_is_one_half():
     # CGP "yes"->"applies" matches gold; IGP "yes"->"applies" is WRONG (gold needs_review).
-    output = _output([
-        _det(REQ_CGP, "yes", verified=True),
-        _det(REQ_IGP, "yes", verified=True),
-    ])
-    item = _item(input_obj=json.dumps(SCOPE_STORMWATER), expected_output_obj=GOLD_STORMWATER, output_obj=output)
+    output = _output(
+        [
+            _det(REQ_CGP, "yes", verified=True),
+            _det(REQ_IGP, "yes", verified=True),
+        ]
+    )
+    item = _item(
+        input_obj=json.dumps(SCOPE_STORMWATER),
+        expected_output_obj=GOLD_STORMWATER,
+        output_obj=output,
+    )
     assert _run(DeterminationAccuracyEvaluator(), item) == 0.5
 
 
@@ -133,18 +150,28 @@ def test_determination_accuracy_missing_gold_program_scores_zero_for_it():
     # IGP is entirely ABSENT from the output -> predicted None != gold -> 0 for IGP.
     # CGP "yes"->"applies" matches -> 1/2.
     output = _output([_det(REQ_CGP, "yes", verified=True)])
-    item = _item(input_obj=json.dumps(SCOPE_STORMWATER), expected_output_obj=GOLD_STORMWATER, output_obj=output)
+    item = _item(
+        input_obj=json.dumps(SCOPE_STORMWATER),
+        expected_output_obj=GOLD_STORMWATER,
+        output_obj=output,
+    )
     assert _run(DeterminationAccuracyEvaluator(), item) == 0.5
 
 
 def test_determination_accuracy_negated_does_not_match_applies():
     # A row that says "no" -> "does_not_apply" must NOT match gold "applies". CGP "no"
     # fails; IGP "needs_review" matches -> 1/2. Guards the vocab normalization.
-    output = _output([
-        _det(REQ_CGP, "no", verified=True),
-        _det(REQ_IGP, "needs_review", verified=False),
-    ])
-    item = _item(input_obj=json.dumps(SCOPE_STORMWATER), expected_output_obj=GOLD_STORMWATER, output_obj=output)
+    output = _output(
+        [
+            _det(REQ_CGP, "no", verified=True),
+            _det(REQ_IGP, "needs_review", verified=False),
+        ]
+    )
+    item = _item(
+        input_obj=json.dumps(SCOPE_STORMWATER),
+        expected_output_obj=GOLD_STORMWATER,
+        output_obj=output,
+    )
     assert _run(DeterminationAccuracyEvaluator(), item) == 0.5
 
 
@@ -155,10 +182,12 @@ def test_determination_accuracy_negated_does_not_match_applies():
 
 def test_expected_program_recall_full_is_1():
     # Both expected programs (CGP + IGP) appear -> 2/2.
-    output = _output([
-        _det(REQ_CGP, "applies", verified=True),
-        _det(REQ_IGP, "needs_review", verified=False),
-    ])
+    output = _output(
+        [
+            _det(REQ_CGP, "applies", verified=True),
+            _det(REQ_IGP, "needs_review", verified=False),
+        ]
+    )
     item = _item(input_obj=json.dumps(SCOPE_STORMWATER), expected_output_obj={}, output_obj=output)
     assert _run(ExpectedProgramRecallEvaluator(), item) == 1.0
 
@@ -186,7 +215,9 @@ def _air_201_bundle() -> dict:
     """Bundle whose source quote CONTAINS the grounded determination's quote verbatim."""
     return {
         "hypothesis_id": "H-AIR-201",
-        "sources": [{"url": URL_AIR_201, "source_name": "SCAQMD Rule 201", "quote": _GROUNDED_QUOTE}],
+        "sources": [
+            {"url": URL_AIR_201, "source_name": "SCAQMD Rule 201", "quote": _GROUNDED_QUOTE}
+        ],
         "extracted_claims": [],
         "researcher_conclusion": "applies",
         "uncertainties": [],
@@ -273,6 +304,8 @@ def test_dataset_gold_keys_are_expected_programs():
         expected_ids = {p["id"] for p in expected_programs_for_scope(scope)}
         gold_ids = set(item["answer"])
         assert gold_ids, f"{item['id']} has empty gold"
-        assert gold_ids <= expected_ids, f"{item['id']}: gold names non-expected {gold_ids - expected_ids}"
+        assert gold_ids <= expected_ids, (
+            f"{item['id']}: gold names non-expected {gold_ids - expected_ids}"
+        )
         # Gold dispositions are constrained to the curated vocab.
         assert set(item["answer"].values()) <= {"applies", "needs_review"}

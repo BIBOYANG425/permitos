@@ -13,6 +13,7 @@ run_id flows to the agent's tools via TWO mechanisms:
   coroutine, after reading run_id from the plan output), so it is the load-bearing
   carrier that reaches spawn_researchers. ASSUMES ONE ACTIVE RUN PER PROCESS at a
   time (true for `nat run` and sequential `nat eval --reps`)."""
+
 from __future__ import annotations
 
 import contextvars

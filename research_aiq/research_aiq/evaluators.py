@@ -176,7 +176,9 @@ class DeterminationAccuracyEvaluator(BaseEvaluator):
 
 
 @register_evaluator(config_type=DeterminationAccuracyConfig)
-async def register_determination_accuracy(config: DeterminationAccuracyConfig, builder: EvalBuilder):
+async def register_determination_accuracy(
+    config: DeterminationAccuracyConfig, builder: EvalBuilder
+):
     evaluator = DeterminationAccuracyEvaluator(max_concurrency=builder.get_max_concurrency())
     yield EvaluatorInfo(
         config=config,
@@ -212,15 +214,16 @@ class GroundingFaithfulnessEvaluator(BaseEvaluator):
             try:
                 bundles = STORE.bundles(run_id)
             except KeyError:
-                logger.warning("grounding_faithfulness: run_id %r not in STORE; "
-                               "no bundles to ground against.", run_id)
+                logger.warning(
+                    "grounding_faithfulness: run_id %r not in STORE; no bundles to ground against.",
+                    run_id,
+                )
                 bundles = []
         bundles_by_hypothesis = index_bundles_by_hypothesis(bundles)
 
         verified = [d for d in determinations if d.get("verified")]
         grounded = [
-            d for d in verified
-            if determination_is_grounded(d, bundles, bundles_by_hypothesis)
+            d for d in verified if determination_is_grounded(d, bundles, bundles_by_hypothesis)
         ]
 
         # 1.0 when nothing is verified: faithfulness is "no verified claim is
@@ -242,7 +245,9 @@ class GroundingFaithfulnessEvaluator(BaseEvaluator):
 
 
 @register_evaluator(config_type=GroundingFaithfulnessConfig)
-async def register_grounding_faithfulness(config: GroundingFaithfulnessConfig, builder: EvalBuilder):
+async def register_grounding_faithfulness(
+    config: GroundingFaithfulnessConfig, builder: EvalBuilder
+):
     evaluator = GroundingFaithfulnessEvaluator(max_concurrency=builder.get_max_concurrency())
     yield EvaluatorInfo(
         config=config,
@@ -295,7 +300,9 @@ class ExpectedProgramRecallEvaluator(BaseEvaluator):
 
 
 @register_evaluator(config_type=ExpectedProgramRecallConfig)
-async def register_expected_program_recall(config: ExpectedProgramRecallConfig, builder: EvalBuilder):
+async def register_expected_program_recall(
+    config: ExpectedProgramRecallConfig, builder: EvalBuilder
+):
     evaluator = ExpectedProgramRecallEvaluator(max_concurrency=builder.get_max_concurrency())
     yield EvaluatorInfo(
         config=config,
