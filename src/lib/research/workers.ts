@@ -89,11 +89,14 @@ function fixtureForHypothesis(hypothesisId: string) {
     "H-AIR-VOC": "scaqmd_rule_201",
     "H-AIR-219": "scaqmd_rule_219",
     "H-AIR-222": "scaqmd_rule_222",
+    "H-AIR-TITLEV": "caa_title_v",
     "H-STORM-IGP": "industrial_general_permit",
     "H-STORM-CGP": "construction_general_permit",
     "H-HAZMAT-HMBP": "hmbp_threshold_bad",
+    "H-HAZMAT-EPCRA": "epcra_tier_ii",
     "H-WASTE-GENERATOR": "hazardous_waste_generator",
-    "H-WASTEWATER-PRETREATMENT": "wastewater_pretreatment"
+    "H-WASTEWATER-PRETREATMENT": "wastewater_pretreatment",
+    "H-OSHA-PSM": "osha_psm"
   };
   return map[hypothesisId] ?? "";
 }
