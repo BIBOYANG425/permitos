@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "eval": "tsx src/evals/golden.ts",
+    "export:goldens": "tsx src/evals/exportGoldens.ts",
+    "check:goldens": "pnpm export:goldens && git diff --exit-code -- research_core/tests/goldens",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
