@@ -1,12 +1,18 @@
 import math
+from pathlib import Path
 
 from research_aiq.eval_report import (
     MODEL_PRICING,
     aggregate_run_metrics,
+    build_scorecard,
     cost_from_usage,
     derive_run_metrics,
+    load_eval_output,
     percentile,
+    render_scorecard_md,
 )
+
+_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "nat_eval_output"
 
 
 def test_cost_from_usage_uses_per_model_pricing():
@@ -59,3 +65,31 @@ def test_aggregate_run_metrics_rolls_up_cost():
     # p50/p95 over the per-run cost_per_determination (nearest-rank)
     assert agg["cost_per_determination_p50_usd"] in (0.5, 1.5)
     assert agg["cost_per_determination_p95_usd"] == 1.5
+
+
+def test_load_eval_output_reads_scores_runs_and_latency():
+    data = load_eval_output(_FIXTURE)
+    # per-evaluator average scores
+    assert set(data["evaluators"]) >= {
+        "determination_accuracy", "grounding_faithfulness", "expected_program_recall"
+    }
+    # at least one per-run record with the normalized usage + n_determinations
+    assert data["runs"] and "usage" in data["runs"][0] and "n_determinations" in data["runs"][0]
+    # the spawn_researchers tool latency block (seconds)
+    assert data["spawn_latency"] is None or "avg_s" in data["spawn_latency"]
+
+
+def test_load_eval_output_is_fail_soft_on_missing_dir(tmp_path):
+    data = load_eval_output(tmp_path)  # empty dir -> no files
+    assert data["evaluators"] == {} and data["runs"] == [] and data["spawn_latency"] is None
+
+
+def test_build_and_render_scorecard_groups_primary_directional_and_cost():
+    sc = build_scorecard(load_eval_output(_FIXTURE))
+    md = render_scorecard_md(sc)
+    # primary metrics present
+    assert "expected_program_recall" in md and "grounding_faithfulness" in md
+    # accuracy explicitly labeled directional
+    assert "directional" in md.lower()
+    # cost-per-determination headline present
+    assert "determination" in md.lower() and ("cost" in md.lower())

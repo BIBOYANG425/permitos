@@ -27,18 +27,31 @@ We return an `EvalOutputItem(id, score in [0,1], reasoning=<dict>, error=None)`.
 
 The three evaluators
 --------------------
-  determination_accuracy : predicted vs gold disposition per gold program; score =
-                           fraction matching (a gold program missing from the output
-                           scores 0 for that program).
-  grounding_faithfulness : fraction of VERIFIED determinations whose verbatim quote is
-                           actually present in its gathered source bundle. REUSES
-                           invariants.determination_is_grounded. The bundles are read
-                           from the run-scoped STORE by the run_id in the output (the
-                           live path); 1.0 when nothing is verified.
-  expected_program_recall: fraction of expected_programs_for_scope(scope) that APPEAR
-                           in the determinations. REUSES the recall-floor coverage
-                           logic (invariants._program_present_labels) — the same
-                           registry x scope derivation finalize's recall floor uses.
+PRIMARY (rigorous benchmark) — expected_program_recall + grounding_faithfulness.
+Both score against a deterministic ground truth (the program registry x scope
+derivation, and the verbatim quote present in the gathered bundle), so they are the
+metrics the scorecard reports as a real benchmark.
+
+DIRECTIONAL (not a rigorous benchmark) — determination_accuracy. By design there is
+no rigorous disposition gold: the gold dispositions are CURATED (hand-labeled), not a
+canonical ground truth, so accuracy is a useful trend signal only and the scorecard
+labels it directional.
+
+  expected_program_recall: [PRIMARY] fraction of expected_programs_for_scope(scope)
+                           that APPEAR in the determinations. REUSES the recall-floor
+                           coverage logic (invariants._program_present_labels) — the
+                           same registry x scope derivation finalize's recall floor
+                           uses.
+  grounding_faithfulness : [PRIMARY] fraction of VERIFIED determinations whose verbatim
+                           quote is actually present in its gathered source bundle.
+                           REUSES invariants.determination_is_grounded. The bundles are
+                           read from the run-scoped STORE by the run_id in the output
+                           (the live path); 1.0 when nothing is verified.
+  determination_accuracy : [DIRECTIONAL] predicted vs gold disposition per gold program;
+                           score = fraction matching (a gold program missing from the
+                           output scores 0 for that program). Gold dispositions are
+                           curated, so this is directional only — not a rigorous
+                           disposition benchmark.
 
 Header last reviewed: 2026-06-02
 """
