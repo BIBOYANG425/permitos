@@ -147,6 +147,19 @@ A full run is `--reps=N` over all 12 scopes — note it costs **real OpenAI + Mo
 money** and takes on the order of tens of minutes (each item fans ~10-12 live
 researchers).
 
+## Optimizer
+
+```bash
+.venv/bin/python -m research_aiq.optimize <out_md> <out_json>
+```
+
+Runs a focused comparison of orchestration models (`CANDIDATE_MODELS`) over a
+representative scope subset (`DEFAULT_SUBSET`) via `nat eval`, persists each model's
+scorecard, and writes a comparison report recommending the **cost-optimal** model
+that still holds the recall/grounding floors. recall + grounding are
+mechanism-constant (~1.0 for every model), so the real lever is **cost + grounding
+depth** (directional accuracy). Live + costly (models × subset × reps agentic runs).
+
 ## Fail-loud contract
 
 The `plan → supervise → finalize` **core is fail-loud**: missing `OPENAI_API_KEY`,
@@ -191,6 +204,19 @@ run. Observability failures (Raindrop down, debugger off) degrade to a single
 
 The run-level channel is additive/fail-soft: if the debugger is down, export simply drops —
 a run is never blocked or slowed.
+
+## Observability backend (Supabase)
+
+Run-level metrics (`research_runs`) and eval scorecards (`eval_scorecards`) are
+persisted to Supabase via the fail-soft `persistence.py` (stdlib `urllib` →
+PostgREST; a **no-op** if `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` are unset). It is
+wired into the `orchestrate` epilogue (`persist_run`) and `eval_report.main`
+(`persist_scorecard`), so a live run/eval lands a durable row without ever blocking
+or raising. Query and trend via the Supabase console.
+
+> The tables come from `supabase/migrations/<ts>_research_observability.sql` — apply
+> that migration **before** persistence can land rows (until then every write is a
+> silent no-op by design).
 
 ## research_core backstop
 
