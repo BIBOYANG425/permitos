@@ -77,8 +77,9 @@ describe("getRepairHistory", () => {
 });
 
 describe("hypothesisIdForDeterminationIndex", () => {
-  // Contract: src/lib/research/synthesis.ts builds determinations via
-  // hypotheses.map(...), so determinations[i] is 1:1 with research_graph[i].
+  // Contract: the orchestrate endpoint's finalize step (research_core.finalize_run)
+  // emits determinations index-aligned 1:1 with research_graph, so determinations[i]
+  // is 1:1 with research_graph[i].
   // Credit: pattern borrowed from BIBOYANG425's PR #1 / src/lib/researchSelectors.ts.
   it("returns the hypothesis id at the same index", () => {
     const hyps = [

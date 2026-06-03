@@ -63,8 +63,9 @@ export function getRepairHistory(run: ResearchRun, hypothesisId: string): Repair
 /**
  * Resolve a determination row back to its hypothesis id by index alignment.
  *
- * Contract: src/lib/research/synthesis.ts builds `determinations` via
- * `hypotheses.map(...)`, so `run.determinations[i]` corresponds to
+ * Contract: the orchestrate endpoint's finalize step
+ * (research_core.finalize_run) emits `determinations` index-aligned 1:1
+ * with `research_graph`, so `run.determinations[i]` corresponds to
  * `run.research_graph[i]`. This is the actual data contract, not a
  * fuzzy text match.
  *
