@@ -32,4 +32,4 @@ spawn_researchers (Modal fan-out). The profiler emits avg & p95 (no p50).
 
 - spawn_researchers avg: 19358.9 ms
 - spawn_researchers p95: 54369.8 ms
-- Researchers / run: 1.58
+- spawn_researchers calls / run: 1.58

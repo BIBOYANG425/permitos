@@ -14,6 +14,7 @@ Header last reviewed: 2026-06-02
 
 from __future__ import annotations
 
+import datetime
 import json
 import math
 from dataclasses import dataclass, field
@@ -223,7 +224,7 @@ class Scorecard:
     aggregate: dict = field(default_factory=dict)
     # Modal fan-out latency converted to MS for display (or None).
     spawn_latency_ms: dict | None = None
-    researchers_per_run: float | None = None
+    spawn_researchers_calls_per_run: float | None = None
     unpriced_models: list[str] = field(default_factory=list)
 
 
@@ -240,7 +241,7 @@ def build_scorecard(data: dict, pricing: dict = MODEL_PRICING) -> Scorecard:
 
     spawn = data.get("spawn_latency")
     spawn_ms = None
-    researchers_per_run = None
+    spawn_researchers_calls_per_run = None
     if spawn:
         avg_s = spawn.get("avg_s")
         p95_s = spawn.get("p95_s")
@@ -251,7 +252,7 @@ def build_scorecard(data: dict, pricing: dict = MODEL_PRICING) -> Scorecard:
         }
         n_runs = aggregate.get("n_runs", 0)
         if n_runs:
-            researchers_per_run = spawn.get("usage_count", 0) / n_runs
+            spawn_researchers_calls_per_run = spawn.get("usage_count", 0) / n_runs
 
     # Models that appear in any run's usage but have no entry in the price map.
     unpriced: list[str] = []
@@ -266,7 +267,7 @@ def build_scorecard(data: dict, pricing: dict = MODEL_PRICING) -> Scorecard:
         run_metrics=run_metrics,
         aggregate=aggregate,
         spawn_latency_ms=spawn_ms,
-        researchers_per_run=researchers_per_run,
+        spawn_researchers_calls_per_run=spawn_researchers_calls_per_run,
         unpriced_models=unpriced,
     )
 
@@ -354,7 +355,9 @@ def render_scorecard_md(
         lines.append(
             f"- spawn_researchers p95: {_fmt(sc.spawn_latency_ms.get('p95_ms'), suffix=' ms', places=1)}"
         )
-        lines.append(f"- Researchers / run: {_fmt(sc.researchers_per_run, places=2)}")
+        lines.append(
+            f"- spawn_researchers calls / run: {_fmt(sc.spawn_researchers_calls_per_run, places=2)}"
+        )
     else:
         lines.append("- (no profiler latency for spawn_researchers found)")
     lines.append("")
@@ -376,12 +379,21 @@ def render_scorecard_md(
 # --------------------------------------------------------------------------- #
 
 
-def main(output_dir, out_md, out_json) -> None:
-    """Read a nat eval output dir; write a Markdown scorecard + a JSON sidecar."""
+def main(output_dir, out_md, out_json, date: str | None = None) -> None:
+    """Read a nat eval output dir; write a Markdown scorecard + a JSON sidecar.
+
+    The orchestration model is taken from the first loaded run; the date defaults
+    to today (overridable via the optional `date` arg) so the CLI never emits the
+    `<date>`/`<model>` placeholders.
+    """
     data = load_eval_output(output_dir)
     sc = build_scorecard(data)
 
-    md = render_scorecard_md(sc)
+    runs = data.get("runs") or []
+    model = runs[0].get("model") if runs else None
+    report_date = date or datetime.date.today().isoformat()
+
+    md = render_scorecard_md(sc, date=report_date, model=model)
     Path(out_md).write_text(md)
 
     sidecar = {
@@ -390,7 +402,7 @@ def main(output_dir, out_md, out_json) -> None:
         "aggregate": sc.aggregate,
         "run_metrics": sc.run_metrics,
         "spawn_latency_ms": sc.spawn_latency_ms,
-        "researchers_per_run": sc.researchers_per_run,
+        "spawn_researchers_calls_per_run": sc.spawn_researchers_calls_per_run,
         "unpriced_models": sc.unpriced_models,
     }
     Path(out_json).write_text(json.dumps(sidecar, indent=2))
@@ -399,4 +411,4 @@ def main(output_dir, out_md, out_json) -> None:
 if __name__ == "__main__":
     import sys
 
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main(*sys.argv[1:])

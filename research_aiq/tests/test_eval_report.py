@@ -106,3 +106,16 @@ def test_build_and_render_scorecard_groups_primary_directional_and_cost():
     assert "directional" in md.lower()
     # cost-per-determination headline present
     assert "determination" in md.lower() and ("cost" in md.lower())
+
+
+def test_render_fills_date_model_and_uses_calls_metric_name():
+    sc = build_scorecard(load_eval_output(_FIXTURE))
+    md = render_scorecard_md(sc, date="2026-06-02", model="gpt-5.2")
+    # no literal placeholders survive when date/model are provided
+    assert "<date>" not in md and "<model>" not in md
+    assert "2026-06-02" in md and "gpt-5.2" in md
+    # the spawn metric is named for what it measures (tool CALLS, not researchers)
+    assert "spawn_researchers calls / run" in md
+    assert "Researchers / run" not in md
+    assert sc.spawn_researchers_calls_per_run is not None
+    assert not hasattr(sc, "researchers_per_run")

@@ -92,6 +92,6 @@
     "p95_ms": 54369.830131530754,
     "usage_count": 19
   },
-  "researchers_per_run": 1.5833333333333333,
+  "spawn_researchers_calls_per_run": 1.5833333333333333,
   "unpriced_models": []
 }
