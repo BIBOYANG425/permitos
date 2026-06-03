@@ -17,7 +17,9 @@ _FIXTURE = Path(__file__).resolve().parent / "fixtures" / "nat_eval_output"
 
 def test_cost_from_usage_uses_per_model_pricing():
     usage = {"gpt-5.2": {"input_tokens": 1_000_000, "output_tokens": 1_000_000}}
-    assert cost_from_usage(usage, MODEL_PRICING) == 1.75 + 14.0  # gpt-5.2 = 1.75 in / 14.0 out per Mtok
+    assert (
+        cost_from_usage(usage, MODEL_PRICING) == 1.75 + 14.0
+    )  # gpt-5.2 = 1.75 in / 14.0 out per Mtok
 
 
 def test_cost_from_usage_sums_multiple_models():
@@ -29,7 +31,10 @@ def test_cost_from_usage_sums_multiple_models():
 
 
 def test_cost_from_usage_unknown_model_contributes_zero():
-    assert cost_from_usage({"mystery": {"input_tokens": 5_000_000, "output_tokens": 0}}, MODEL_PRICING) == 0.0
+    assert (
+        cost_from_usage({"mystery": {"input_tokens": 5_000_000, "output_tokens": 0}}, MODEL_PRICING)
+        == 0.0
+    )
 
 
 def test_percentile_nearest_rank_and_empty():
@@ -40,16 +45,22 @@ def test_percentile_nearest_rank_and_empty():
 
 
 def test_derive_run_metrics_cost_and_per_determination():
-    run = {"model": "gpt-5.2",
-           "usage": {"gpt-5.2": {"input_tokens": 1_000_000, "output_tokens": 0}},
-           "n_determinations": 4}
+    run = {
+        "model": "gpt-5.2",
+        "usage": {"gpt-5.2": {"input_tokens": 1_000_000, "output_tokens": 0}},
+        "n_determinations": 4,
+    }
     m = derive_run_metrics(run, MODEL_PRICING)
     assert math.isclose(m["cost_usd"], 1.75)
     assert math.isclose(m["cost_per_determination_usd"], 1.75 / 4)
 
 
 def test_derive_run_metrics_zero_determinations_is_none():
-    run = {"model": "gpt-5.2", "usage": {"gpt-5.2": {"input_tokens": 0, "output_tokens": 0}}, "n_determinations": 0}
+    run = {
+        "model": "gpt-5.2",
+        "usage": {"gpt-5.2": {"input_tokens": 0, "output_tokens": 0}},
+        "n_determinations": 0,
+    }
     assert derive_run_metrics(run, MODEL_PRICING)["cost_per_determination_usd"] is None
 
 
@@ -71,7 +82,9 @@ def test_load_eval_output_reads_scores_runs_and_latency():
     data = load_eval_output(_FIXTURE)
     # per-evaluator average scores
     assert set(data["evaluators"]) >= {
-        "determination_accuracy", "grounding_faithfulness", "expected_program_recall"
+        "determination_accuracy",
+        "grounding_faithfulness",
+        "expected_program_recall",
     }
     # at least one per-run record with the normalized usage + n_determinations
     assert data["runs"] and "usage" in data["runs"][0] and "n_determinations" in data["runs"][0]

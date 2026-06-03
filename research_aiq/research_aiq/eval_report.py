@@ -11,6 +11,7 @@ researcher LLM usage runs out-of-process and is out of scope for these cost figu
 
 Header last reviewed: 2026-06-02
 """
+
 from __future__ import annotations
 
 import json
@@ -65,8 +66,11 @@ def derive_run_metrics(run: dict, pricing: dict = MODEL_PRICING) -> dict:
 def aggregate_run_metrics(run_metrics: list[dict]) -> dict:
     """Roll up per-run metrics across all runs (items x reps)."""
     costs = [m["cost_usd"] for m in run_metrics]
-    cpd = [m["cost_per_determination_usd"] for m in run_metrics
-           if m.get("cost_per_determination_usd") is not None]
+    cpd = [
+        m["cost_per_determination_usd"]
+        for m in run_metrics
+        if m.get("cost_per_determination_usd") is not None
+    ]
     return {
         "n_runs": len(run_metrics),
         "total_cost_usd": sum(costs),
@@ -252,7 +256,7 @@ def build_scorecard(data: dict, pricing: dict = MODEL_PRICING) -> Scorecard:
     # Models that appear in any run's usage but have no entry in the price map.
     unpriced: list[str] = []
     for r in runs:
-        for model in (r.get("usage") or {}):
+        for model in r.get("usage") or {}:
             if model not in pricing and model not in unpriced:
                 unpriced.append(model)
 
@@ -318,24 +322,17 @@ def render_scorecard_md(
     if sc.evaluators_directional:
         for name in DIRECTIONAL:
             if name in sc.evaluators_directional:
-                lines.append(
-                    f"- {name}: {_fmt(sc.evaluators_directional[name], places=3)}"
-                )
+                lines.append(f"- {name}: {_fmt(sc.evaluators_directional[name], places=3)}")
     else:
         lines.append("- (no directional evaluator output found)")
     lines.append("")
 
     lines.append(
-        "## Cost (derived; orchestration LLM only — Modal researcher LLM cost "
-        "is separate)"
+        "## Cost (derived; orchestration LLM only — Modal researcher LLM cost is separate)"
     )
     lines.append("")
-    lines.append(
-        f"- Total cost: {_fmt(agg.get('total_cost_usd'), prefix='$')}"
-    )
-    lines.append(
-        f"- Mean cost / run: {_fmt(agg.get('mean_cost_per_run_usd'), prefix='$')}"
-    )
+    lines.append(f"- Total cost: {_fmt(agg.get('total_cost_usd'), prefix='$')}")
+    lines.append(f"- Mean cost / run: {_fmt(agg.get('mean_cost_per_run_usd'), prefix='$')}")
     lines.append(
         "- Cost per determination (p50): "
         f"{_fmt(agg.get('cost_per_determination_p50_usd'), prefix='$')}"
@@ -348,9 +345,7 @@ def render_scorecard_md(
 
     lines.append("## Latency")
     lines.append("")
-    lines.append(
-        "spawn_researchers (Modal fan-out). The profiler emits avg & p95 (no p50)."
-    )
+    lines.append("spawn_researchers (Modal fan-out). The profiler emits avg & p95 (no p50).")
     lines.append("")
     if sc.spawn_latency_ms:
         lines.append(
@@ -359,9 +354,7 @@ def render_scorecard_md(
         lines.append(
             f"- spawn_researchers p95: {_fmt(sc.spawn_latency_ms.get('p95_ms'), suffix=' ms', places=1)}"
         )
-        lines.append(
-            f"- Researchers / run: {_fmt(sc.researchers_per_run, places=2)}"
-        )
+        lines.append(f"- Researchers / run: {_fmt(sc.researchers_per_run, places=2)}")
     else:
         lines.append("- (no profiler latency for spawn_researchers found)")
     lines.append("")
