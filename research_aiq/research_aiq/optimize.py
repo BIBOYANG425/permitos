@@ -14,6 +14,7 @@ Header last reviewed: 2026-06-02
 from __future__ import annotations
 
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -27,11 +28,14 @@ _PKG = Path(__file__).resolve().parent  # research_aiq/research_aiq
 _DATASET = _PKG / "eval" / "dataset.json"
 _CONFIG = _PKG / "configs" / "eval_config.yml"
 
+logger = logging.getLogger("research_aiq.optimize")
+
 CANDIDATE_MODELS = ["gpt-5.2", "gpt-5.5", "gpt-4o-mini"]
-# A small representative subset of dataset ids keeps the live comparison bounded.
+# A small representative subset keeps the live comparison bounded (each id = one live
+# agentic run per model). Two diverse scopes (air-heavy + multi-family) surface
+# cross-model cost/grounding-depth differences without a large live spend.
 DEFAULT_SUBSET = [
     "scope-scaqmd-coating-booth",
-    "scope-grading-stormwater",
     "scope-wastewater-pretreatment",
 ]
 
@@ -99,24 +103,28 @@ def run_comparison(models=None, subset=None, reps=1) -> list[dict]:
                 "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python",
                 "PYTHONPATH": f"{pkg_dir}:{pkg_dir.parent}/research_core",
             }
-            subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "nat.cli.main",
-                    "eval",
-                    "--config_file",
-                    str(_CONFIG),
-                    "--dataset",
-                    ds,
-                    "--reps",
-                    str(reps),
-                ],
-                cwd=str(pkg_dir),
-                env=env,
-                check=True,
-            )
-            sc = build_scorecard(load_eval_output(pkg_dir / ".tmp/nat/research_aiq_eval"))
+            try:
+                subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "nat.cli.main",
+                        "eval",
+                        "--config_file",
+                        str(_CONFIG),
+                        "--dataset",
+                        ds,
+                        "--reps",
+                        str(reps),
+                    ],
+                    cwd=str(pkg_dir),
+                    env=env,
+                    check=True,
+                )
+                sc = build_scorecard(load_eval_output(pkg_dir / ".tmp/nat/research_aiq_eval"))
+            except Exception as exc:  # noqa: BLE001 - one model failing must not abort the comparison
+                logger.warning("optimizer: model %s eval failed, skipping it: %s", model, exc)
+                continue
             sidecar = {
                 "evaluators_primary": sc.evaluators_primary,
                 "evaluators_directional": sc.evaluators_directional,

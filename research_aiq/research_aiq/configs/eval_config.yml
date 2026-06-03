@@ -89,7 +89,12 @@ eval:
     profiler:
       token_usage_forecast: true
       compute_llm_metrics: true
-      workflow_runtime_forecast: true
+      # workflow_runtime_forecast DISABLED: nat's compute_workflow_runtime_metrics
+      # raises "DataFrame is missing required columns: example_number, event_timestamp"
+      # on small eval subsets (e.g. the optimizer's 2-3 scope runs), and eval_report
+      # does NOT consume its output (inference_optimization.json). The token-usage +
+      # bottleneck (simple_stack) profiling we DO use stays on.
+      workflow_runtime_forecast: false
       bottleneck_analysis:
         enable_simple_stack: true
     # Defense-in-depth + intent: run dataset items one at a time. NOTE nat's LOCAL
