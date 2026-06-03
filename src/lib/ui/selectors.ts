@@ -63,10 +63,13 @@ export function getRepairHistory(run: ResearchRun, hypothesisId: string): Repair
 /**
  * Resolve a determination row back to its hypothesis id by index alignment.
  *
- * Contract: src/lib/research/synthesis.ts builds `determinations` via
- * `hypotheses.map(...)`, so `run.determinations[i]` corresponds to
- * `run.research_graph[i]`. This is the actual data contract, not a
- * fuzzy text match.
+ * Contract: the orchestrate endpoint's finalize step
+ * (research_core.finalize_run) emits `determinations` PREFIX-aligned with
+ * `research_graph` — the first `research_graph.length` determinations
+ * correspond by index (`run.determinations[i]` ↔ `run.research_graph[i]`).
+ * Recall-floor rows are appended AFTER that prefix and have no hypothesis,
+ * so this returns null for those indices; the arrays are not required to be
+ * equal length. This is the actual data contract, not a fuzzy text match.
  *
  * Credit: pattern absorbed from BIBOYANG425's PR #1
  * (src/lib/researchSelectors.ts#hypothesisIdForDeterminationIndex).

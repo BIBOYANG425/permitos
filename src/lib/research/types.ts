@@ -1,4 +1,3 @@
-import type { HarnessToolId } from "./toolCatalog";
 import type { SdsHandoffRef, SdsReview } from "@/lib/sds/types";
 
 export type RunStatus =
@@ -87,8 +86,8 @@ export type ResearchTask = {
   task_id: string;
   hypothesis_id: string;
   assigned_agent: string;
-  allowed_tools: HarnessToolId[];
-  blocked_tools: HarnessToolId[];
+  allowed_tools: string[];
+  blocked_tools: string[];
   budget: {
     max_sources: number;
     max_runtime_seconds: number;

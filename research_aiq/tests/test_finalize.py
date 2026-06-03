@@ -187,3 +187,41 @@ def test_finalize_no_run_id_anywhere_is_fail_loud():
             asyncio.run(_finalize_impl("freeform text with no run id at all"))
     finally:
         _run_id_var.reset(token)
+
+
+def test_finalize_returns_full_research_run_shape():
+    """finalize must surface the FULL ResearchRun (what the Node UI renders), not the
+    trimmed {run_id, determinations, status}. The deployed orchestrate endpoint returns
+    finalize's output verbatim, and the renderer needs research_graph (index-aligned
+    with determinations), evidence_bundles, verification_verdicts, coverage families,
+    trace_events, and report_markdown."""
+    from research_core.planner import plan_research
+
+    run_id = "fin-full"
+    scope = _scope_with()
+    plan = plan_research(scope, [])
+    STORE.init(run_id, scope=scope, candidates=plan["research_graph"])
+    STORE.add_bundles(run_id, [_air_201_bundle()])
+    set_run_id(run_id)
+
+    result = json.loads(asyncio.run(_finalize_impl(json.dumps({"run_id": run_id}))))
+
+    for key in (
+        "run_id",
+        "status",
+        "scope_pack",
+        "coverage_family_statuses",
+        "regulatory_angles",
+        "research_graph",
+        "research_tasks",
+        "evidence_bundles",
+        "verification_verdicts",
+        "repair_tickets",
+        "memory_updates",
+        "determinations",
+        "trace_events",
+        "report_markdown",
+    ):
+        assert key in result, f"finalize output missing required ResearchRun key: {key}"
+    assert any(h["id"] == "H-AIR-201" for h in result["research_graph"])
+    assert isinstance(result["report_markdown"], str) and result["report_markdown"]

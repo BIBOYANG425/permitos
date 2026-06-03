@@ -77,8 +77,10 @@ describe("getRepairHistory", () => {
 });
 
 describe("hypothesisIdForDeterminationIndex", () => {
-  // Contract: src/lib/research/synthesis.ts builds determinations via
-  // hypotheses.map(...), so determinations[i] is 1:1 with research_graph[i].
+  // Contract: the orchestrate endpoint's finalize step (research_core.finalize_run)
+  // emits determinations PREFIX-aligned with research_graph — the first
+  // research_graph.length determinations correspond by index; recall-floor rows are
+  // appended after and resolve to null. Arrays are not required to be equal length.
   // Credit: pattern borrowed from BIBOYANG425's PR #1 / src/lib/researchSelectors.ts.
   it("returns the hypothesis id at the same index", () => {
     const hyps = [
