@@ -15,7 +15,7 @@ Today the Node app (`src/lib/research/`) runs the **full TS research pipeline** 
 
 1. **Full replacement.** Retire the TS research pipeline (planner/verifier/synthesis/workers/modes); research has one path — call the Python orchestrate. (The Modal `worker.py` stays — `research_aiq`'s `spawn_researchers` still uses it.)
 2. **Deploy via a Modal endpoint wrapping orchestrate** (sibling to `worker.py`), scale-to-zero, token-authed, Vercel-reachable.
-3. **Node keeps intake; the endpoint takes a scope.** The existing Node scope-extraction stays (front door + UI); only the research backend is swapped. The endpoint contract is `scope → determinations`.
+3. **Node keeps intake; the endpoint takes a scope.** The existing Node scope-extraction stays (front door + UI); only the research backend is swapped. The endpoint contract is `{token, scope} → ResearchRun` — Node still extracts the scope, and the backend takes `{token, scope}` and returns the full `ResearchRun` (not just determinations).
 4. **Fail-loud.** Endpoint unreachable/errors → the Node app surfaces a clear error, not the old silent fixture fallback (consistent with the project's fail-loud core).
 5. **Two-phase plan:** deploy the endpoint first (Phase 1), then cut over + retire (Phase 2).
 
@@ -26,8 +26,9 @@ Node intake (scope extraction, unchanged) ─► scope JSON
    └─ POST {token, scope} ─► [Modal] research_aiq orchestrate endpoint
         plan_candidates → supervisor → spawn_researchers ─► [Modal] worker.py (unchanged)
         → finalize (verify → repair → synthesize → recall floor)
-        → {run_id, determinations, status}
-   ◄─ determinations ─────────┘
+        → full ResearchRun (run_id, status, determinations, research_graph,
+          evidence_bundles, verification_verdicts, trace_events, report_markdown, …)
+   ◄─ ResearchRun ────────────┘
 Node renders the determinations (existing UI)
 ```
 
@@ -35,11 +36,11 @@ Node renders the determinations (existing UI)
 
 ### Phase 1 — `src/lib/research/modal/orchestrator.py` (new Modal app)
 - A Modal app (sibling to `worker.py`). Image bundles `research_aiq` + `research_core` + `nvidia-nat` (+ its deps); attaches `modal.Secret`s for OpenAI, the research token, and Supabase. It reuses the existing worker for researchers via `MODAL_RESEARCH_ENDPOINT` (set in the orchestrator's env/secret).
-- `@modal.fastapi_endpoint(method="POST")` `orchestrate`: validates a body token (mirroring `worker.py`'s auth), reads `{scope}`, runs the `research_aiq` `orchestrate` workflow programmatically via nat's Python API (load `research_aiq/configs/workflow.yml`, build + invoke the workflow on the scope JSON string), and returns the orchestrate result `{run_id, determinations, status}`. If the Node renderer needs more than the determinations (e.g. `report_markdown`), the endpoint surfaces it from `research_core.finalize_run` — reconciled against the renderer in the plan. On missing token → 401-style error; on missing OpenAI key / unreachable worker / pipeline error → a fail-loud error response (no fabricated determinations).
+- `@modal.fastapi_endpoint(method="POST")` `orchestrate`: validates a body token (mirroring `worker.py`'s auth), reads `{scope}`, runs the `research_aiq` `orchestrate` workflow programmatically via nat's Python API (load `research_aiq/configs/workflow.yml`, build + invoke the workflow on the scope JSON string), and returns the **full `ResearchRun`** — `research_core.finalize_run`'s output (determinations + `research_graph` + `evidence_bundles` + `verification_verdicts` + `trace_events` + `report_markdown` + coverage families / angles / tasks / …). `research_aiq`'s `finalize` was widened (un-trimmed from `{run_id, determinations, status}`) so the endpoint feeds the Node renderer unchanged. On missing token → 401; on missing OpenAI key / unreachable worker / pipeline error → a fail-loud error response (no fabricated determinations).
 - **Observability (free):** the deployed orchestrate epilogue runs `persist_run` → **Supabase** (reachable from Modal, via the Supabase secret) and `record_run` → Raindrop (localhost unreachable from Modal → fail-soft no-op). So production runs populate the observability backend automatically.
 
 ### Phase 2 — Node thin client + TS-pipeline retirement
-- **New thin client** (e.g. `src/lib/research/orchestrateClient.ts`): `runResearch(scope) → determinations` — POSTs `{token, scope}` to `MODAL_ORCHESTRATE_ENDPOINT`, returns the parsed result; throws a clear error on non-2xx / unreachable (fail-loud).
+- **New thin client** (e.g. `src/lib/research/orchestrateClient.ts`): `runResearch(scope) → ResearchRun` — POSTs `{token, scope}` to `MODAL_ORCHESTRATE_ENDPOINT`, validates + returns the parsed `ResearchRun` (adding the two TS-only fields `project_facts` / `jurisdiction_stack` derived from the scope); throws a clear error on non-2xx / unreachable / malformed response (fail-loud). A shared `assertConfigured()` lets the route fail fast before intake when env is missing.
 - **Rewire the research entry** (`src/lib/research/run.ts` / the `/api/research/run` route): call `orchestrateClient.runResearch(scope)` instead of the in-Node TS pipeline.
 - **Retire** the now-dead TS research modules: the TS planner, verifier, synthesis, `liveResearchAgent`, `liveWorker`, `workers.ts`/`modal/researchPool.ts` fanout, and the `live`/`modal`/`fixtures` mode machinery (`researchMode.ts`). Keep intake (`@/lib/intake`, `scope.ts`) and the determinations renderer.
 - **Determinations shape:** `research_core` is the 1:1 port of the retired TS pipeline, so the returned determinations should match what the Node UI renders; add a thin adapter only for any field the implementation finds differs (verified against the renderer in the plan).

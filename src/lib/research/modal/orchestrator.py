@@ -21,9 +21,11 @@ Supabase (reachable from Modal via the permitpilot-supabase secret) and no-ops R
 (its localhost debugger is unreachable from Modal) — both fail-soft.
 
 Secrets: permitpilot-openai (OPENAI_API_KEY), permitpilot-research (RESEARCH_TOKEN),
-permitpilot-supabase (SUPABASE_URL, SUPABASE_SERVICE_KEY).
-Image env: OPENAI_ORCHESTRATION_MODEL (gpt-5.2, the cost-optimal), MODAL_RESEARCH_ENDPOINT
-(the deployed worker `research` URL the internal fan-out calls).
+permitpilot-supabase (SUPABASE_URL, SUPABASE_SERVICE_KEY), permitpilot-worker-endpoint
+(MODAL_RESEARCH_ENDPOINT — the deployed worker `research` URL the internal fan-out calls,
+provided at RUNTIME via secret so each environment points at its own worker, not baked
+into the image at build time).
+Image env: OPENAI_ORCHESTRATION_MODEL (gpt-5.2, the cost-optimal).
 
 Deploy from the repo root:  modal deploy src/lib/research/modal/orchestrator.py
 """
@@ -33,10 +35,6 @@ import json
 import os
 
 import modal
-
-# The deployed worker `research` endpoint that spawn_researchers fans out to.
-# (Same value as MODAL_RESEARCH_ENDPOINT in the Node app's .env.local.)
-WORKER_RESEARCH_ENDPOINT = "https://biboyang425--permitpilot-research-research.modal.run"
 
 # Image: nat (+ langchain extra for the tool_calling_agent supervisor) + the two local
 # packages, pip-installed editable so research_aiq's nat entry point is discoverable.
@@ -62,7 +60,6 @@ image = (
     .env(
         {
             "OPENAI_ORCHESTRATION_MODEL": "gpt-5.2",
-            "MODAL_RESEARCH_ENDPOINT": WORKER_RESEARCH_ENDPOINT,
         }
     )
 )
@@ -99,6 +96,7 @@ async def _run_orchestrate(scope_json: str) -> str:
         modal.Secret.from_name("permitpilot-openai"),
         modal.Secret.from_name("permitpilot-research"),
         modal.Secret.from_name("permitpilot-supabase"),
+        modal.Secret.from_name("permitpilot-worker-endpoint"),
     ],
     timeout=600,
 )

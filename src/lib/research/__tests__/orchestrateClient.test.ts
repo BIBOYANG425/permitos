@@ -63,6 +63,20 @@ describe("orchestrateClient.runResearch", () => {
     expect(JSON.parse(String(init.body))).toEqual({ token: "secret-token", scope });
   });
 
+  it("throws fail-loud when a 2xx response is missing a required field", async () => {
+    process.env.MODAL_ORCHESTRATE_ENDPOINT = "https://endpoint.test";
+    process.env.MODAL_RESEARCH_TOKEN = "secret-token";
+    const malformed = { ...endpointRun() };
+    delete (malformed as Record<string, unknown>).research_graph;
+    __setFetchForTests(
+      (async () =>
+        ({ ok: true, status: 200, json: async () => malformed }) as unknown as Response) as typeof fetch,
+    );
+    await expect(runResearch(scope)).rejects.toThrow(
+      /malformed orchestrate response - missing research_graph/,
+    );
+  });
+
   it("throws fail-loud on a non-2xx response", async () => {
     process.env.MODAL_ORCHESTRATE_ENDPOINT = "https://endpoint.test";
     process.env.MODAL_RESEARCH_TOKEN = "secret-token";

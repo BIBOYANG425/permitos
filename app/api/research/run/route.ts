@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildScope } from "@/lib/research/buildScope";
-import { runResearch } from "@/lib/research/orchestrateClient";
+import { assertConfigured, runResearch } from "@/lib/research/orchestrateClient";
 
 // Hold the serverless function open as long as the Vercel plan allows (60s — the proven
 // value the intake route deploys with). The orchestrate Modal endpoint itself runs up to
@@ -14,6 +14,11 @@ export async function POST(request: NextRequest) {
       project_description?: string;
       demo_documents?: Array<{ name: string; type: string; text: string }>;
     };
+
+    // Fail fast: if the research backend isn't configured, surface it BEFORE doing any
+    // external work (buildScope makes an OpenAI intake call). The catch below turns this
+    // into a 500 with a clear message — no silent fixture fallback.
+    assertConfigured();
 
     // Intake stays in Node: extract the scope (+ SDS review) here, then hand the scope to
     // the Python orchestrate endpoint. sds_reviews are computed Node-side and merged back
