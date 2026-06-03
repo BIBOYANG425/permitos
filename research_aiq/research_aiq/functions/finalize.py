@@ -84,13 +84,13 @@ async def _finalize_impl(input_message: str) -> str:
     # base_trace seeds the trace event list (empty here); sds_reviews is the SDS
     # review list (none in the agentic tier).
     result = finalize_run(run_id, scope, pruned, bundles, [], [])
-    return json.dumps(
-        {
-            "run_id": run_id,
-            "determinations": result["determinations"],
-            "status": result["status"],
-        }
-    )
+    # Return the FULL ResearchRun-shaped dict, not a trimmed {run_id, determinations,
+    # status}: the deployed orchestrate endpoint returns this verbatim and the Node UI
+    # renders research_graph (index-aligned with determinations), evidence_bundles,
+    # verification_verdicts, coverage families, trace_events, and report_markdown.
+    # finalize_run already keys the result by run_id; the eval evaluators + orchestrate
+    # epilogue read determinations/run_id/status off this superset, so widening is safe.
+    return json.dumps(result)
 
 
 @register_function(config_type=FinalizeConfig)
