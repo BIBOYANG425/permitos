@@ -20,6 +20,8 @@ import math
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from research_aiq.persistence import persist_scorecard
+
 # $ per 1M tokens (input, output). Update as pricing changes.
 MODEL_PRICING: dict[str, dict[str, float]] = {
     "gpt-5.5": {"input": 5.0, "output": 30.0},
@@ -406,6 +408,7 @@ def main(output_dir, out_md, out_json, date: str | None = None) -> None:
         "unpriced_models": sc.unpriced_models,
     }
     Path(out_json).write_text(json.dumps(sidecar, indent=2))
+    persist_scorecard(sidecar, model)
 
 
 if __name__ == "__main__":

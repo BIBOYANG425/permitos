@@ -43,6 +43,7 @@ from nat.data_models.function import FunctionBaseConfig
 
 from research_aiq.invariants import check_invariants
 from research_aiq.observability import record_run
+from research_aiq.persistence import persist_run
 from research_aiq.run_store import _ACTIVE_RUN_LOCK, STORE, set_active_run_id, set_run_id
 
 logger = logging.getLogger("research_aiq.orchestrate")
@@ -128,6 +129,7 @@ async def orchestrate(config: OrchestrateConfig, builder: Builder):
                 "model": os.environ.get("OPENAI_ORCHESTRATION_MODEL"),
             }
             record_run(run_id, metrics)
+            persist_run(run_id, metrics)
         except Exception:  # observability/invariants must never break a run
             logger.exception(
                 "research_aiq post-run observability failed (non-fatal) for run %s", run_id
