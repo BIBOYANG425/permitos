@@ -87,7 +87,7 @@ def run_comparison(models=None, subset=None, reps=1) -> list[dict]:
     Live + costly (models x subset x reps agentic runs); offline/manual."""
     models = models or CANDIDATE_MODELS
     subset = subset or DEFAULT_SUBSET
-    repo_root = _PKG.parents[1]  # the research_aiq outer dir
+    pkg_dir = _PKG.parents[0]  # the outer research_aiq package dir (cwd for nat eval)
     results: list[dict] = []
     with tempfile.TemporaryDirectory() as tmp:
         ds = f"{tmp}/subset.json"
@@ -97,7 +97,7 @@ def run_comparison(models=None, subset=None, reps=1) -> list[dict]:
                 **os.environ,
                 "OPENAI_ORCHESTRATION_MODEL": model,
                 "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python",
-                "PYTHONPATH": f"{repo_root}:{repo_root.parent}/research_core",
+                "PYTHONPATH": f"{pkg_dir}:{pkg_dir.parent}/research_core",
             }
             subprocess.run(
                 [
@@ -112,11 +112,11 @@ def run_comparison(models=None, subset=None, reps=1) -> list[dict]:
                     "--reps",
                     str(reps),
                 ],
-                cwd=str(repo_root),
+                cwd=str(pkg_dir),
                 env=env,
                 check=True,
             )
-            sc = build_scorecard(load_eval_output(repo_root / ".tmp/nat/research_aiq_eval"))
+            sc = build_scorecard(load_eval_output(pkg_dir / ".tmp/nat/research_aiq_eval"))
             sidecar = {
                 "evaluators_primary": sc.evaluators_primary,
                 "evaluators_directional": sc.evaluators_directional,

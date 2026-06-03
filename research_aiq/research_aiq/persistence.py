@@ -7,6 +7,7 @@ If SUPABASE_URL / SUPABASE_SERVICE_KEY are unset, every call is a silent no-op.
 
 Header last reviewed: 2026-06-02
 """
+
 from __future__ import annotations
 
 import json
