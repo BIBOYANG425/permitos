@@ -1,7 +1,14 @@
 import OpenAI from "openai";
 import type { ResearchRunInput, ScopePack } from "./types";
 import type { SdsReview } from "@/lib/sds/types";
-import { SCOPE_EXTRACTION_SYSTEM } from "./prompts";
+
+// Structured fact extraction at intake. Intake-adjacent, not a persona. (Inlined from
+// the retired prompts.ts during the Node thin-client cutover so scope.ts is self-contained.)
+const SCOPE_EXTRACTION_SYSTEM =
+  "You are an EHS intake scoping assistant for Southern California facility/project changes. " +
+  "Extract structured facts from the description using the submit_scope tool. State only facts " +
+  "that are present or clearly implied; never invent quantities, codes, or equipment. Use null " +
+  "for unknown numeric/boolean values and omit unknown lists.";
 
 export function createRunId() {
   return `run_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
