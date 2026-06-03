@@ -159,6 +159,11 @@ scorecard, and writes a comparison report recommending the **cost-optimal** mode
 that still holds the recall/grounding floors. recall + grounding are
 mechanism-constant (~1.0 for every model), so the real lever is **cost + grounding
 depth** (directional accuracy). Live + costly (models × subset × reps agentic runs).
+A model whose `nat eval` fails (a weak model that can't drive the agent, or a
+nat-profiler edge) is skipped so one failure can't abort the whole comparison. See
+`research_aiq/eval/optimize_report.md` for a sample run: **gpt-5.2 is cost-optimal**
+(holds the floors at ~40% of gpt-5.5's cost); gpt-4o-mini was excluded (its eval
+produced no usable profiler data).
 
 ## Fail-loud contract
 

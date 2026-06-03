@@ -1,0 +1,21 @@
+{
+  "comparison": [
+    {
+      "model": "gpt-5.2",
+      "recall": 1.0,
+      "grounding": 1.0,
+      "accuracy": 0.6,
+      "total_cost_usd": 0.032018000000000005,
+      "cost_per_determination_p50_usd": 0.00134155
+    },
+    {
+      "model": "gpt-5.5",
+      "recall": 1.0,
+      "grounding": 1.0,
+      "accuracy": 0.54,
+      "total_cost_usd": 0.07959,
+      "cost_per_determination_p50_usd": 0.0035684999999999996
+    }
+  ],
+  "recommendation": "gpt-5.2"
+}
