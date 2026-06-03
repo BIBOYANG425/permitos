@@ -1,0 +1,2868 @@
+[
+ {
+  "request_number": 0,
+  "intermediate_steps": [
+   {
+    "parent_id": "root",
+    "function_ancestry": {
+     "function_id": "root",
+     "function_name": "root",
+     "parent_id": null,
+     "parent_name": null
+    },
+    "payload": {
+     "event_type": "WORKFLOW_START",
+     "event_timestamp": 1780451341.519042,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "orchestrate",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": {
+       "workflow_run_id": "234cfc87-1618-415b-b0fa-1cae8372...[+4]",
+       "workflow_trace_id": "82f2ee41581845cca17bbbfdff29fafe",
+       "conversation_id": null,
+       "display_name": "<workflow>"
+      },
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{\"facility\": {\"jurisdiction_stac...[+418]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "4e0fec80-d2b9-4b38-b371-f910704c...[+4]"
+    }
+   },
+   {
+    "parent_id": "4e0fec80-d2b9-4b38-b371-f910704c...[+4]",
+    "function_ancestry": {
+     "function_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "function_name": "<workflow>",
+     "parent_id": "root",
+     "parent_name": "root"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451341.51936,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "<workflow>",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "{\"facility\": {\"jurisdiction_stac...[+418]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]"
+    }
+   },
+   {
+    "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+    "function_ancestry": {
+     "function_id": "2f33fc15-535f-4eec-8ffb-f9dd0930...[+4]",
+     "function_name": "plan_candidates",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451341.5194361,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "plan_candidates",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "{\"facility\": {\"jurisdiction_stac...[+418]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "2f33fc15-535f-4eec-8ffb-f9dd0930...[+4]"
+    }
+   },
+   {
+    "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+    "function_ancestry": {
+     "function_id": "2f33fc15-535f-4eec-8ffb-f9dd0930...[+4]",
+     "function_name": "plan_candidates",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451341.519586,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "plan_candidates",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "{\"facility\": {\"jurisdiction_stac...[+418]",
+      "output": "{\"run_id\": \"run-0daef219\", \"cand...[+828]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "2f33fc15-535f-4eec-8ffb-f9dd0930...[+4]"
+    }
+   },
+   {
+    "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451341.519642,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "supervisor",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "- H-AIR-201 [air] Does the new e...[+768]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_START",
+     "event_timestamp": 1780451341.5276968,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       }
+      ],
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": [
+       {
+        "type": "function",
+        "function": {
+         "name": "spawn_researchers",
+         "description": "Spawn bounded research subagents...[+158]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       },
+       {
+        "type": "function",
+        "function": {
+         "name": "submit_plan",
+         "description": "Finish orchestration once every ...[+205]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       }
+      ]
+     },
+     "data": {
+      "input": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       }
+      ],
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 1,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2b-74d7-7b33-a40b-bace1715...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_NEW_TOKEN",
+     "event_timestamp": 1780451344.1365771,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": [
+       {
+        "text": "",
+        "generation_info": null,
+        "type": "ChatGenerationChunk",
+        "message": {
+         "content": "",
+         "additional_kwargs": {},
+         "response_metadata": {
+          "model_provider": "openai"
+         },
+         "type": "AIMessageChunk",
+         "name": null,
+         "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]"
+        }
+       }
+      ],
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "- H-AIR-201 [air] Does the new e...[+768]",
+      "output": null,
+      "chunk": "",
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 1,
+      "seconds_between_calls": 2
+     },
+     "UUID": "019e8b2b-74d7-7b33-a40b-bace1715...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_NEW_TOKEN",
+     "event_timestamp": 1780451344.145356,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": [
+       {
+        "text": "",
+        "generation_info": null,
+        "type": "ChatGenerationChunk",
+        "message": {
+         "content": "",
+         "additional_kwargs": {},
+         "response_metadata": {
+          "model_provider": "openai"
+         },
+         "type": "AIMessageChunk",
+         "name": null,
+         "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]"
+        }
+       }
+      ],
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "- H-AIR-201 [air] Does the new e...[+768]",
+      "output": null,
+      "chunk": "",
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 1,
+      "seconds_between_calls": 2
+     },
+     "UUID": "019e8b2b-74d7-7b33-a40b-bace1715...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_END",
+     "event_timestamp": 1780451344.176683,
+     "span_event_timestamp": 1780451341.527765,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": [
+       {
+        "text": "",
+        "generation_info": {
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ChatGenerationChunk",
+        "message": {
+         "content": "",
+         "additional_kwargs": {},
+         "response_metadata": {
+          "model_provider": "openai",
+          "finish_reason": "tool_calls",
+          "model_name": "gpt-5.2-2025-12-11",
+          "service_tier": "default"
+         },
+         "type": "AIMessageChunk",
+         "name": null,
+         "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]"
+        }
+       }
+      ],
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": [],
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "- H-AIR-201 [air] Does the new e...[+768]",
+      "output": "\n\nTool calls: [{'name': 'spawn_r...[+404]",
+      "chunk": null,
+      "payload": {
+       "text": "",
+       "generation_info": {
+        "finish_reason": "tool_calls",
+        "model_name": "gpt-5.2-2025-12-11",
+        "service_tier": "default"
+       },
+       "type": "ChatGenerationChunk",
+       "message": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "AIMessageChunk",
+        "name": null,
+        "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]"
+       }
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 1095,
+       "completion_tokens": 136,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 1231
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2b-74d7-7b33-a40b-bace1715...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_START",
+     "event_timestamp": 1780451344.1910038,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": {
+       "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+      },
+      "tool_outputs": null,
+      "tool_info": {
+       "name": "spawn_researchers",
+       "description": "Spawn bounded research subagents...[+158]"
+      },
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"hypothesis_...[+146]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2b-7f3e-73f0-83be-70e414c8...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_START",
+     "event_timestamp": 1780451344.191508,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": {
+       "input_message": "{\"hypothesis_ids\":[]}"
+      },
+      "tool_outputs": null,
+      "tool_info": {
+       "name": "spawn_researchers",
+       "description": "Spawn bounded research subagents...[+158]"
+      },
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"hypothesis_...[+10]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2b-7f3f-76a1-8284-83656491...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2b-7f3e-73f0-83be-70e414c8...[+4]",
+    "function_ancestry": {
+     "function_id": "78027685-b39a-44d0-854f-8f653d7c...[+4]",
+     "function_name": "spawn_researchers",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451344.191839,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+      },
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "78027685-b39a-44d0-854f-8f653d7c...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2b-7f3f-76a1-8284-83656491...[+4]",
+    "function_ancestry": {
+     "function_id": "2e61615b-73c6-4ee8-a74c-c9c23a94...[+4]",
+     "function_name": "spawn_researchers",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451344.197282,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"hypothesis_ids\":[]}"
+      },
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "2e61615b-73c6-4ee8-a74c-c9c23a94...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2b-7f3f-76a1-8284-83656491...[+4]",
+    "function_ancestry": {
+     "function_id": "2e61615b-73c6-4ee8-a74c-c9c23a94...[+4]",
+     "function_name": "spawn_researchers",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451344.197348,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"hypothesis_ids\":[]}"
+      },
+      "output": "{\"investigated\": [], \"rejected\":...[+32]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "2e61615b-73c6-4ee8-a74c-c9c23a94...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_END",
+     "event_timestamp": 1780451344.1988108,
+     "span_event_timestamp": 1780451344.191537,
+     "framework": "langchain",
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": {
+       "content": "{\"investigated\": [], \"rejected\":...[+32]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+       "artifact": null,
+       "status": "success"
+      },
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"hypothesis_...[+10]",
+      "output": {
+       "content": "{\"investigated\": [], \"rejected\":...[+32]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+       "artifact": null,
+       "status": "success"
+      },
+      "chunk": null,
+      "payload": {
+       "content": "{\"investigated\": [], \"rejected\":...[+32]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+       "artifact": null,
+       "status": "success"
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2b-7f3f-76a1-8284-83656491...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2b-7f3e-73f0-83be-70e414c8...[+4]",
+    "function_ancestry": {
+     "function_id": "78027685-b39a-44d0-854f-8f653d7c...[+4]",
+     "function_name": "spawn_researchers",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451386.626712,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+      },
+      "output": "{\"investigated\": [{\"hypothesis_i...[+805]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "78027685-b39a-44d0-854f-8f653d7c...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_END",
+     "event_timestamp": 1780451386.638409,
+     "span_event_timestamp": 1780451344.191083,
+     "framework": "langchain",
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": {
+       "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+       "artifact": null,
+       "status": "success"
+      },
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"hypothesis_...[+146]",
+      "output": {
+       "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+       "artifact": null,
+       "status": "success"
+      },
+      "chunk": null,
+      "payload": {
+       "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+       "artifact": null,
+       "status": "success"
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2b-7f3e-73f0-83be-70e414c8...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_START",
+     "event_timestamp": 1780451386.6498802,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+168]"
+           }
+          },
+          {
+           "type": "function",
+           "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+12]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+          },
+          "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+          "type": "tool_call"
+         },
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[]}"
+          },
+          "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1095,
+         "output_tokens": 136,
+         "total_tokens": 1231,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 0
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+        "artifact": null,
+        "status": "success"
+       }
+      ],
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": [
+       {
+        "type": "function",
+        "function": {
+         "name": "spawn_researchers",
+         "description": "Spawn bounded research subagents...[+158]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       },
+       {
+        "type": "function",
+        "function": {
+         "name": "submit_plan",
+         "description": "Finish orchestration once every ...[+205]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       }
+      ]
+     },
+     "data": {
+      "input": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+168]"
+           }
+          },
+          {
+           "type": "function",
+           "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+12]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+          },
+          "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+          "type": "tool_call"
+         },
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[]}"
+          },
+          "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1095,
+         "output_tokens": 136,
+         "total_tokens": 1231,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 0
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+        "artifact": null,
+        "status": "success"
+       }
+      ],
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 1,
+      "seconds_between_calls": 45
+     },
+     "UUID": "019e8b2c-2519-7de2-9bc4-ce33b357...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_END",
+     "event_timestamp": 1780451387.821301,
+     "span_event_timestamp": 1780451386.650083,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": [
+       {
+        "text": "",
+        "generation_info": {
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ChatGenerationChunk",
+        "message": {
+         "content": "",
+         "additional_kwargs": {},
+         "response_metadata": {
+          "model_provider": "openai",
+          "finish_reason": "tool_calls",
+          "model_name": "gpt-5.2-2025-12-11",
+          "service_tier": "default"
+         },
+         "type": "AIMessageChunk",
+         "name": null,
+         "id": "lc_run--019e8b2c-2519-7de2-9bc4-...[+12]"
+        }
+       }
+      ],
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": [],
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{\"investigated\": [], \"rejected\":...[+32]",
+      "output": "\n\nTool calls: [{'name': 'spawn_r...[+209]",
+      "chunk": null,
+      "payload": {
+       "text": "",
+       "generation_info": {
+        "finish_reason": "tool_calls",
+        "model_name": "gpt-5.2-2025-12-11",
+        "service_tier": "default"
+       },
+       "type": "ChatGenerationChunk",
+       "message": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "AIMessageChunk",
+        "name": null,
+        "id": "lc_run--019e8b2c-2519-7de2-9bc4-...[+12]"
+       }
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 1547,
+       "completion_tokens": 72,
+       "cached_tokens": 1152,
+       "reasoning_tokens": 0,
+       "total_tokens": 1619
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2c-2519-7de2-9bc4-ce33b357...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_START",
+     "event_timestamp": 1780451387.828179,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": {
+       "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+73]"
+      },
+      "tool_outputs": null,
+      "tool_info": {
+       "name": "spawn_researchers",
+       "description": "Spawn bounded research subagents...[+158]"
+      },
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"hypothesis_...[+94]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2c-29b4-75d1-b25b-a8480f6b...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2c-29b4-75d1-b25b-a8480f6b...[+4]",
+    "function_ancestry": {
+     "function_id": "a793218e-7510-4985-80df-2d645360...[+4]",
+     "function_name": "spawn_researchers",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451387.828546,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+73]"
+      },
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "a793218e-7510-4985-80df-2d645360...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2c-29b4-75d1-b25b-a8480f6b...[+4]",
+    "function_ancestry": {
+     "function_id": "a793218e-7510-4985-80df-2d645360...[+4]",
+     "function_name": "spawn_researchers",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451387.828676,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+73]"
+      },
+      "output": "{\"investigated\": [], \"rejected\":...[+32]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "a793218e-7510-4985-80df-2d645360...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_END",
+     "event_timestamp": 1780451387.828814,
+     "span_event_timestamp": 1780451387.828217,
+     "framework": "langchain",
+     "name": "spawn_researchers",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": {
+       "content": "{\"investigated\": [], \"rejected\":...[+32]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+       "artifact": null,
+       "status": "success"
+      },
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"hypothesis_...[+94]",
+      "output": {
+       "content": "{\"investigated\": [], \"rejected\":...[+32]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+       "artifact": null,
+       "status": "success"
+      },
+      "chunk": null,
+      "payload": {
+       "content": "{\"investigated\": [], \"rejected\":...[+32]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "spawn_researchers",
+       "id": null,
+       "tool_call_id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+       "artifact": null,
+       "status": "success"
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2c-29b4-75d1-b25b-a8480f6b...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_START",
+     "event_timestamp": 1780451387.830312,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+168]"
+           }
+          },
+          {
+           "type": "function",
+           "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+12]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+          },
+          "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+          "type": "tool_call"
+         },
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[]}"
+          },
+          "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1095,
+         "output_tokens": 136,
+         "total_tokens": 1231,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 0
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+108]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2c-2519-7de2-9bc4-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+73]"
+          },
+          "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1547,
+         "output_tokens": 72,
+         "total_tokens": 1619,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 1152
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+        "artifact": null,
+        "status": "success"
+       }
+      ],
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": [
+       {
+        "type": "function",
+        "function": {
+         "name": "spawn_researchers",
+         "description": "Spawn bounded research subagents...[+158]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       },
+       {
+        "type": "function",
+        "function": {
+         "name": "submit_plan",
+         "description": "Finish orchestration once every ...[+205]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       }
+      ]
+     },
+     "data": {
+      "input": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+168]"
+           }
+          },
+          {
+           "type": "function",
+           "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+12]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+          },
+          "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+          "type": "tool_call"
+         },
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[]}"
+          },
+          "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1095,
+         "output_tokens": 136,
+         "total_tokens": 1231,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 0
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+108]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2c-2519-7de2-9bc4-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+73]"
+          },
+          "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1547,
+         "output_tokens": 72,
+         "total_tokens": 1619,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 1152
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+        "artifact": null,
+        "status": "success"
+       }
+      ],
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 1,
+      "seconds_between_calls": 1
+     },
+     "UUID": "019e8b2c-29b6-76f1-8055-9c09b879...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_END",
+     "event_timestamp": 1780451390.001554,
+     "span_event_timestamp": 1780451387.830375,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": [
+       {
+        "text": "",
+        "generation_info": {
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ChatGenerationChunk",
+        "message": {
+         "content": "",
+         "additional_kwargs": {},
+         "response_metadata": {
+          "model_provider": "openai",
+          "finish_reason": "tool_calls",
+          "model_name": "gpt-5.2-2025-12-11",
+          "service_tier": "default"
+         },
+         "type": "AIMessageChunk",
+         "name": null,
+         "id": "lc_run--019e8b2c-29b6-76f1-8055-...[+12]"
+        }
+       }
+      ],
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": [],
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{\"investigated\": [], \"rejected\":...[+32]",
+      "output": "\n\nTool calls: [{'name': 'submit_...[+520]",
+      "chunk": null,
+      "payload": {
+       "text": "",
+       "generation_info": {
+        "finish_reason": "tool_calls",
+        "model_name": "gpt-5.2-2025-12-11",
+        "service_tier": "default"
+       },
+       "type": "ChatGenerationChunk",
+       "message": {
+        "content": "",
+        "additional_kwargs": {},
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "AIMessageChunk",
+        "name": null,
+        "id": "lc_run--019e8b2c-29b6-76f1-8055-...[+12]"
+       }
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 1652,
+       "completion_tokens": 111,
+       "cached_tokens": 1536,
+       "reasoning_tokens": 0,
+       "total_tokens": 1763
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2c-29b6-76f1-8055-9c09b879...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_START",
+     "event_timestamp": 1780451390.0125492,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "submit_plan",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": {
+       "input_message": "{\"rationale\":\"Spawned research f...[+388]"
+      },
+      "tool_outputs": null,
+      "tool_info": {
+       "name": "submit_plan",
+       "description": "Finish orchestration once every ...[+205]"
+      },
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"rationale\":...[+411]",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2c-323c-7730-950b-168ae7e3...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2c-323c-7730-950b-168ae7e3...[+4]",
+    "function_ancestry": {
+     "function_id": "1425a621-2e6a-4c3e-af9a-e17f5b3d...[+4]",
+     "function_name": "submit_plan",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451390.0132859,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "submit_plan",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"rationale\":\"Spawned research f...[+388]"
+      },
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "1425a621-2e6a-4c3e-af9a-e17f5b3d...[+4]"
+    }
+   },
+   {
+    "parent_id": "019e8b2c-323c-7730-950b-168ae7e3...[+4]",
+    "function_ancestry": {
+     "function_id": "1425a621-2e6a-4c3e-af9a-e17f5b3d...[+4]",
+     "function_name": "submit_plan",
+     "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "parent_name": "supervisor"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451390.013491,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "submit_plan",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": {
+       "input_message": "{\"rationale\":\"Spawned research f...[+388]"
+      },
+      "output": "{\"ok\": true, \"rationale\": \"Spawn...[+401]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "1425a621-2e6a-4c3e-af9a-e17f5b3d...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "TOOL_END",
+     "event_timestamp": 1780451390.0137641,
+     "span_event_timestamp": 1780451390.012631,
+     "framework": "langchain",
+     "name": "submit_plan",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": {
+       "content": "{\"ok\": true, \"rationale\": \"Spawn...[+401]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "submit_plan",
+       "id": null,
+       "tool_call_id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+       "artifact": null,
+       "status": "success"
+      },
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{'input_message': '{\"rationale\":...[+411]",
+      "output": {
+       "content": "{\"ok\": true, \"rationale\": \"Spawn...[+401]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "submit_plan",
+       "id": null,
+       "tool_call_id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+       "artifact": null,
+       "status": "success"
+      },
+      "chunk": null,
+      "payload": {
+       "content": "{\"ok\": true, \"rationale\": \"Spawn...[+401]",
+       "additional_kwargs": {},
+       "response_metadata": {},
+       "type": "tool",
+       "name": "submit_plan",
+       "id": null,
+       "tool_call_id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+       "artifact": null,
+       "status": "success"
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2c-323c-7730-950b-168ae7e3...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_START",
+     "event_timestamp": 1780451390.017809,
+     "span_event_timestamp": null,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+168]"
+           }
+          },
+          {
+           "type": "function",
+           "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+12]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+          },
+          "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+          "type": "tool_call"
+         },
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[]}"
+          },
+          "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1095,
+         "output_tokens": 136,
+         "total_tokens": 1231,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 0
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+108]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2c-2519-7de2-9bc4-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+73]"
+          },
+          "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1547,
+         "output_tokens": 72,
+         "total_tokens": 1619,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 1152
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+           "function": {
+            "name": "submit_plan",
+            "arguments": "{\"input_message\": \"{\\\"rationale\\...[+413]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2c-29b6-76f1-8055-...[+12]",
+        "tool_calls": [
+         {
+          "name": "submit_plan",
+          "args": {
+           "input_message": "{\"rationale\":\"Spawned research f...[+388]"
+          },
+          "id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1652,
+         "output_tokens": 111,
+         "total_tokens": 1763,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 1536
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"ok\": true, \"rationale\": \"Spawn...[+401]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "submit_plan",
+        "id": null,
+        "tool_call_id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+        "artifact": null,
+        "status": "success"
+       }
+      ],
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": [
+       {
+        "type": "function",
+        "function": {
+         "name": "spawn_researchers",
+         "description": "Spawn bounded research subagents...[+158]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       },
+       {
+        "type": "function",
+        "function": {
+         "name": "submit_plan",
+         "description": "Finish orchestration once every ...[+205]",
+         "parameters": {
+          "properties": {
+           "input_message": {
+            "type": "string"
+           }
+          },
+          "required": [
+           "input_message"
+          ],
+          "type_": "object",
+          "additionalProperties": false,
+          "strict": true
+         }
+        }
+       }
+      ]
+     },
+     "data": {
+      "input": [
+       {
+        "content": "You are the orchestration tier o...[+3377]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "system",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "- H-AIR-201 [air] Does the new e...[+768]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": null,
+        "id": null
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+168]"
+           }
+          },
+          {
+           "type": "function",
+           "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+12]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2b-74d7-7b33-a40b-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+125]"
+          },
+          "id": "call_U1D0jS3AiQPhnzl1evY9v605",
+          "type": "tool_call"
+         },
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[]}"
+          },
+          "id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1095,
+         "output_tokens": 136,
+         "total_tokens": 1231,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 0
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [{\"hypothesis_i...[+805]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_U1D0jS3AiQPhnzl1evY9v605",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_CsPUdqWSvNwrUgTzB6DMvTSa",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+           "function": {
+            "name": "spawn_researchers",
+            "arguments": "{\"input_message\": \"{\\\"hypothesis...[+108]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2c-2519-7de2-9bc4-...[+12]",
+        "tool_calls": [
+         {
+          "name": "spawn_researchers",
+          "args": {
+           "input_message": "{\"hypothesis_ids\":[\"H-AIR-201\",\"...[+73]"
+          },
+          "id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1547,
+         "output_tokens": 72,
+         "total_tokens": 1619,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 1152
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"investigated\": [], \"rejected\":...[+32]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "spawn_researchers",
+        "id": null,
+        "tool_call_id": "call_mlX4gmh4uvAqZulXxMENwGgu",
+        "artifact": null,
+        "status": "success"
+       },
+       {
+        "content": "",
+        "additional_kwargs": {
+         "tool_calls": [
+          {
+           "type": "function",
+           "id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+           "function": {
+            "name": "submit_plan",
+            "arguments": "{\"input_message\": \"{\\\"rationale\\...[+413]"
+           }
+          }
+         ]
+        },
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "tool_calls",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ai",
+        "name": null,
+        "id": "lc_run--019e8b2c-29b6-76f1-8055-...[+12]",
+        "tool_calls": [
+         {
+          "name": "submit_plan",
+          "args": {
+           "input_message": "{\"rationale\":\"Spawned research f...[+388]"
+          },
+          "id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+          "type": "tool_call"
+         }
+        ],
+        "invalid_tool_calls": [],
+        "usage_metadata": {
+         "input_tokens": 1652,
+         "output_tokens": 111,
+         "total_tokens": 1763,
+         "input_token_details": {
+          "audio": 0,
+          "cache_read": 1536
+         },
+         "output_token_details": {
+          "audio": 0,
+          "reasoning": 0
+         }
+        }
+       },
+       {
+        "content": "{\"ok\": true, \"rationale\": \"Spawn...[+401]",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "tool",
+        "name": "submit_plan",
+        "id": null,
+        "tool_call_id": "call_4x5iJG1EDf8DxVrDW8xWUG9B",
+        "artifact": null,
+        "status": "success"
+       }
+      ],
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 0,
+       "completion_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "total_tokens": 0
+      },
+      "num_llm_calls": 1,
+      "seconds_between_calls": 2
+     },
+     "UUID": "019e8b2c-3240-7ea1-b668-ce275490...[+4]"
+    }
+   },
+   {
+    "parent_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "LLM_END",
+     "event_timestamp": 1780451393.539059,
+     "span_event_timestamp": 1780451390.017942,
+     "framework": "langchain",
+     "name": "gpt-5.2",
+     "tags": null,
+     "metadata": {
+      "chat_responses": [
+       {
+        "text": "Dispatched research subagents fo...[+698]",
+        "generation_info": {
+         "finish_reason": "stop",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "ChatGenerationChunk",
+        "message": {
+         "content": "Dispatched research subagents fo...[+698]",
+         "additional_kwargs": {},
+         "response_metadata": {
+          "model_provider": "openai",
+          "finish_reason": "stop",
+          "model_name": "gpt-5.2-2025-12-11",
+          "service_tier": "default"
+         },
+         "type": "AIMessageChunk",
+         "name": null,
+         "id": "lc_run--019e8b2c-3240-7ea1-b668-...[+12]"
+        }
+       }
+      ],
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": [],
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": null,
+      "tools_schema": []
+     },
+     "data": {
+      "input": "{\"ok\": true, \"rationale\": \"Spawn...[+401]",
+      "output": "Dispatched research subagents fo...[+698]",
+      "chunk": null,
+      "payload": {
+       "text": "Dispatched research subagents fo...[+698]",
+       "generation_info": {
+        "finish_reason": "stop",
+        "model_name": "gpt-5.2-2025-12-11",
+        "service_tier": "default"
+       },
+       "type": "ChatGenerationChunk",
+       "message": {
+        "content": "Dispatched research subagents fo...[+698]",
+        "additional_kwargs": {},
+        "response_metadata": {
+         "model_provider": "openai",
+         "finish_reason": "stop",
+         "model_name": "gpt-5.2-2025-12-11",
+         "service_tier": "default"
+        },
+        "type": "AIMessageChunk",
+        "name": null,
+        "id": "lc_run--019e8b2c-3240-7ea1-b668-...[+12]"
+       }
+      }
+     },
+     "usage_info": {
+      "token_usage": {
+       "prompt_tokens": 1874,
+       "completion_tokens": 257,
+       "cached_tokens": 1664,
+       "reasoning_tokens": 0,
+       "total_tokens": 2131
+      },
+      "num_llm_calls": 0,
+      "seconds_between_calls": 0
+     },
+     "UUID": "019e8b2c-3240-7ea1-b668-ce275490...[+4]"
+    }
+   },
+   {
+    "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+    "function_ancestry": {
+     "function_id": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]",
+     "function_name": "supervisor",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451393.545194,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "supervisor",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "- H-AIR-201 [air] Does the new e...[+768]",
+      "output": "Dispatched research subagents fo...[+698]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "0270c2df-4d80-4bef-a48d-b1d7949f...[+4]"
+    }
+   },
+   {
+    "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+    "function_ancestry": {
+     "function_id": "01fc81fc-bc83-40c6-811d-a4a59f9d...[+4]",
+     "function_name": "finalize",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "FUNCTION_START",
+     "event_timestamp": 1780451393.545333,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "finalize",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "{\"run_id\": \"run-0daef219\"}",
+      "output": null,
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "01fc81fc-bc83-40c6-811d-a4a59f9d...[+4]"
+    }
+   },
+   {
+    "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+    "function_ancestry": {
+     "function_id": "01fc81fc-bc83-40c6-811d-a4a59f9d...[+4]",
+     "function_name": "finalize",
+     "parent_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "parent_name": "<workflow>"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451393.5458748,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "finalize",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "{\"run_id\": \"run-0daef219\"}",
+      "output": "{\"run_id\": \"run-0daef219\", \"dete...[+5113]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "01fc81fc-bc83-40c6-811d-a4a59f9d...[+4]"
+    }
+   },
+   {
+    "parent_id": "4e0fec80-d2b9-4b38-b371-f910704c...[+4]",
+    "function_ancestry": {
+     "function_id": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]",
+     "function_name": "<workflow>",
+     "parent_id": "root",
+     "parent_name": "root"
+    },
+    "payload": {
+     "event_type": "FUNCTION_END",
+     "event_timestamp": 1780451393.604029,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "<workflow>",
+     "tags": null,
+     "metadata": null,
+     "data": {
+      "input": "{\"facility\": {\"jurisdiction_stac...[+418]",
+      "output": "{\"run_id\": \"run-0daef219\", \"dete...[+5113]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "c3bea71f-8cac-454c-b2da-4a10bbcf...[+4]"
+    }
+   },
+   {
+    "parent_id": "root",
+    "function_ancestry": {
+     "function_id": "root",
+     "function_name": "root",
+     "parent_id": null,
+     "parent_name": null
+    },
+    "payload": {
+     "event_type": "WORKFLOW_END",
+     "event_timestamp": 1780451393.604322,
+     "span_event_timestamp": null,
+     "framework": null,
+     "name": "orchestrate",
+     "tags": null,
+     "metadata": {
+      "chat_responses": null,
+      "chat_inputs": null,
+      "tool_inputs": null,
+      "tool_outputs": null,
+      "tool_info": null,
+      "span_inputs": null,
+      "span_outputs": null,
+      "provided_metadata": {
+       "workflow_run_id": "234cfc87-1618-415b-b0fa-1cae8372...[+4]",
+       "workflow_trace_id": "82f2ee41581845cca17bbbfdff29fafe",
+       "conversation_id": null,
+       "display_name": "<workflow>"
+      },
+      "tools_schema": []
+     },
+     "data": {
+      "input": null,
+      "output": "{\"run_id\": \"run-0daef219\", \"dete...[+5113]",
+      "chunk": null,
+      "payload": null
+     },
+     "usage_info": null,
+     "UUID": "4e0fec80-d2b9-4b38-b371-f910704c...[+4]"
+    }
+   }
+  ],
+  "_fixture_note": "LLM_NEW_TOKEN steps trimmed from...[+94]"
+ }
+]

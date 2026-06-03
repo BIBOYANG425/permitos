@@ -111,23 +111,41 @@ PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python \
   --config_file research_aiq/configs/eval_config.yml --reps=N
 ```
 
-Dataset: `research_aiq/eval/dataset.json` — three realistic SoCal scopes with gold
-per-program disposition maps (derivation in `research_aiq/eval/dataset_notes.md`).
+Dataset: `research_aiq/eval/dataset.json` — **12 hand-curated SoCal scopes** spanning
+coverage families (air, stormwater, hazmat, waste, wastewater, …) and threshold edges,
+each with a gold per-program disposition map (derivation in
+`research_aiq/eval/dataset_notes.md`).
 
-Three evaluators (each scores 0..1, averaged across items × reps):
+Three evaluators (each scores 0..1, averaged across items × reps), split by rigor:
 
-| Evaluator | Measures |
-|---|---|
-| `determination_accuracy` | Per-program predicted disposition vs gold (fraction matching). |
-| `grounding_faithfulness` | Fraction of *verified* determinations whose verbatim quote is actually present in its gathered source (reuses the grounding invariant). |
-| `expected_program_recall` | Fraction of `expected_programs_for_scope(scope)` that surface in the determinations (reuses the recall-floor coverage logic). |
+| Evaluator | Tier | Measures |
+|---|---|---|
+| `expected_program_recall` | **primary (rigorous)** | Fraction of `expected_programs_for_scope(scope)` that surface in the determinations (reuses the recall-floor coverage logic). |
+| `grounding_faithfulness` | **primary (rigorous)** | Fraction of *verified* determinations whose verbatim quote is actually present in its gathered source (reuses the grounding invariant). |
+| `determination_accuracy` | **directional only** | Per-program predicted disposition vs the curated map. The dispositions are curated, not gold-truth, so read this as a **trend, not a benchmark**. |
+
+nat's inference **profiler is enabled** (`nvidia-nat-profiler`): it captures the
+**orchestration LLM** token usage + latency only — Modal researcher LLM usage runs
+out-of-process and is outside its scope.
 
 `--reps` is the **live-sampling mechanism**: each rep re-runs the full agentic
 workflow (live Modal fan-out on `gpt-5.x`), so raising reps quantifies the
-*non-determinism* of the agentic tier. Expected scorecard direction: **grounding and
-recall sit at ~1.0** (mechanism guarantees them every run), while
-**`determination_accuracy` varies** rep-to-rep — that variance is exactly what the
-deterministic backstop bounds into a safe `needs_review` rather than a wrong yes/no.
+*non-determinism* of the agentic tier. Expected scorecard direction: the **primary
+metrics (grounding + recall) sit at ~1.0** (mechanism guarantees them every run),
+while **`determination_accuracy` varies** rep-to-rep — that variance is exactly what
+the deterministic backstop bounds into a safe `needs_review` rather than a wrong yes/no.
+
+**The committed scorecard** (`research_aiq/eval/scorecard.md` + `.json`) is produced
+from a `nat eval` output dir by:
+
+```bash
+.venv/bin/python -m research_aiq.eval_report \
+  <output_dir> research_aiq/eval/scorecard.md research_aiq/eval/scorecard.json
+```
+
+A full run is `--reps=N` over all 12 scopes — note it costs **real OpenAI + Modal
+money** and takes on the order of tens of minutes (each item fans ~10-12 live
+researchers).
 
 ## Fail-loud contract
 

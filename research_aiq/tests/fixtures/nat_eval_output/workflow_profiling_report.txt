@@ -1,0 +1,10 @@
+
+
+
+---- BOTTLENECK REPORT ----
+Total distinct operations found: 3
+Overall max concurrency (all ops): 2
+Top 3 Bottlenecks by bottleneck_score (avg_duration * max_concurrency):
+1) TOOL 'spawn_researchers': score=28.30, avg_dur=14.15, max_concurrency=2
+2) LLM 'gpt-5.2': score=2.38, avg_dur=2.38, max_concurrency=1
+3) TOOL 'submit_plan': score=0.00, avg_dur=0.00, max_concurrency=1

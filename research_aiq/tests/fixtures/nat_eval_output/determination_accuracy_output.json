@@ -1,0 +1,51 @@
+{
+  "average_score": 0.57,
+  "eval_output_items": [
+    {
+      "id": "scope-scaqmd-coating-booth",
+      "score": 0.5714285714285714,
+      "reasoning": {
+        "matched": 4,
+        "total": 7,
+        "per_program": {
+          "scaqmd-permit-to-construct": {
+            "gold": "applies",
+            "predicted": "needs_review",
+            "match": false
+          },
+          "scaqmd-rule-219-exemption": {
+            "gold": "needs_review",
+            "predicted": "applies",
+            "match": false
+          },
+          "scaqmd-rule-222-registration": {
+            "gold": "needs_review",
+            "predicted": "needs_review",
+            "match": true
+          },
+          "ca-hmbp": {
+            "gold": "applies",
+            "predicted": "needs_review",
+            "match": false
+          },
+          "caa-title-v": {
+            "gold": "needs_review",
+            "predicted": "needs_review",
+            "match": true
+          },
+          "epcra-tier-ii": {
+            "gold": "needs_review",
+            "predicted": "needs_review",
+            "match": true
+          },
+          "osha-psm": {
+            "gold": "needs_review",
+            "predicted": "needs_review",
+            "match": true
+          }
+        }
+      },
+      "error": null
+    }
+  ]
+}

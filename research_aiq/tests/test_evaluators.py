@@ -284,7 +284,7 @@ def test_dataset_scopes_drive_the_deterministic_pipeline():
     (with no evidence) must run clean. This is the cheap pre-flight the live eval
     relies on — a malformed scope must fail HERE, not after spending Modal budget."""
     dataset = json.loads(_DATASET.read_text())
-    assert len(dataset) == 3
+    assert len(dataset) == 12
     for item in dataset:
         scope = json.loads(item["question"])  # question is a SCOPE JSON string
         plan = plan_research(scope, [])

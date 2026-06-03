@@ -33,5 +33,96 @@
       "epa-pretreatment": "applies",
       "caa-title-v": "needs_review"
     }
+  },
+  {
+    "id": "scope-cgp-edge-under",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"Los Angeles RWQCB\"], \"naics\": \"236220\", \"sic\": null}, \"project_change\": {\"description\": \"Grade 0.9 acres for a small parking pad; no equipment, chemicals, or discharge.\", \"equipment\": [], \"chemicals\": [], \"waste_streams\": [], \"disturbance_acres\": 0.9, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "ca-industrial-general-permit": "needs_review",
+      "ca-construction-general-permit": "needs_review"
+    }
+  },
+  {
+    "id": "scope-cgp-edge-over",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"Los Angeles RWQCB\"], \"naics\": \"236220\", \"sic\": null}, \"project_change\": {\"description\": \"Grade 1.0 acre for a building pad; no equipment, chemicals, or discharge.\", \"equipment\": [], \"chemicals\": [], \"waste_streams\": [], \"disturbance_acres\": 1.0, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "ca-industrial-general-permit": "needs_review",
+      "ca-construction-general-permit": "applies"
+    }
+  },
+  {
+    "id": "scope-titlev-large-voc",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"SCAQMD\"], \"naics\": \"337110\", \"sic\": null}, \"project_change\": {\"description\": \"Install a high-throughput automotive coating line using 4000 gallons/month of VOC-containing solvent coatings.\", \"equipment\": [{\"kind\": \"coating_booth\", \"description\": \"high-volume spray line\"}], \"chemicals\": [{\"name\": \"VOC coating solvent\", \"quantity\": 4000, \"unit\": \"gal\"}], \"waste_streams\": [], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "scaqmd-permit-to-construct": "applies",
+      "scaqmd-rule-219-exemption": "needs_review",
+      "scaqmd-rule-222-registration": "needs_review",
+      "ca-industrial-general-permit": "needs_review",
+      "ca-construction-general-permit": "needs_review",
+      "ca-hmbp": "applies",
+      "caa-title-v": "needs_review",
+      "epcra-tier-ii": "needs_review",
+      "osha-psm": "needs_review"
+    }
+  },
+  {
+    "id": "scope-hmbp-threshold",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"SCAQMD\"], \"naics\": null, \"sic\": null}, \"project_change\": {\"description\": \"Store 55 gallons of a flammable solvent and 500 pounds of a corrosive solid for a new line.\", \"equipment\": [], \"chemicals\": [{\"name\": \"flammable solvent\", \"quantity\": 55, \"unit\": \"gal\"}, {\"name\": \"corrosive solid\", \"quantity\": 500, \"unit\": \"lb\"}], \"waste_streams\": [], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "ca-hmbp": "needs_review",
+      "epcra-tier-ii": "needs_review",
+      "osha-psm": "needs_review"
+    }
+  },
+  {
+    "id": "scope-epcra-tier2",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"SCAQMD\"], \"naics\": null, \"sic\": null}, \"project_change\": {\"description\": \"Store 12000 pounds of a hazardous chemical in a new warehouse bay.\", \"equipment\": [], \"chemicals\": [{\"name\": \"hazardous chemical\", \"quantity\": 12000, \"unit\": \"lb\"}], \"waste_streams\": [], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "ca-hmbp": "needs_review",
+      "epcra-tier-ii": "applies",
+      "osha-psm": "needs_review"
+    }
+  },
+  {
+    "id": "scope-osha-psm",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"SCAQMD\"], \"naics\": null, \"sic\": null}, \"project_change\": {\"description\": \"Install a process using 1800 pounds of chlorine, a highly hazardous chemical.\", \"equipment\": [{\"kind\": \"process_vessel\", \"description\": \"chlorination process\"}], \"chemicals\": [{\"name\": \"chlorine\", \"quantity\": 1800, \"unit\": \"lb\"}], \"waste_streams\": [], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "scaqmd-permit-to-construct": "applies",
+      "scaqmd-rule-219-exemption": "needs_review",
+      "scaqmd-rule-222-registration": "needs_review",
+      "ca-hmbp": "needs_review",
+      "caa-title-v": "needs_review",
+      "epcra-tier-ii": "needs_review",
+      "osha-psm": "applies"
+    }
+  },
+  {
+    "id": "scope-hazwaste-generator",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"LA County\"], \"naics\": \"332813\", \"sic\": null}, \"project_change\": {\"description\": \"Add a parts-cleaning line generating 1500 kg/month of spent solvent hazardous waste.\", \"equipment\": [{\"kind\": \"parts_washer\", \"description\": \"solvent degreaser\"}], \"chemicals\": [], \"waste_streams\": [{\"description\": \"spent halogenated solvent\", \"kg_per_month\": 1500}], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "scaqmd-permit-to-construct": "applies",
+      "scaqmd-rule-219-exemption": "needs_review",
+      "scaqmd-rule-222-registration": "needs_review",
+      "ca-industrial-general-permit": "needs_review",
+      "ca-construction-general-permit": "needs_review",
+      "epa-hazwaste-generator": "applies",
+      "caa-title-v": "needs_review"
+    }
+  },
+  {
+    "id": "scope-igp-industrial",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"Los Angeles RWQCB\"], \"naics\": \"331110\", \"sic\": \"3312\"}, \"project_change\": {\"description\": \"Begin steel-manufacturing operations at an existing building; no grading and no process wastewater discharge.\", \"equipment\": [], \"chemicals\": [], \"waste_streams\": [], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "ca-industrial-general-permit": "needs_review",
+      "ca-construction-general-permit": "needs_review"
+    }
+  },
+  {
+    "id": "scope-benign-ti",
+    "question": "{\"facility\": {\"jurisdiction_stack\": [\"SCAQMD\"], \"naics\": \"541110\", \"sic\": null}, \"project_change\": {\"description\": \"Interior office tenant improvement: new partitions and lighting only.\", \"equipment\": [], \"chemicals\": [], \"waste_streams\": [], \"disturbance_acres\": null, \"process_discharge\": false}, \"missing_facts\": [], \"assumptions\": []}",
+    "answer": {
+      "ca-industrial-general-permit": "needs_review",
+      "ca-construction-general-permit": "needs_review"
+    }
   }
 ]

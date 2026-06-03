@@ -1,0 +1,34 @@
+{
+  "simple_stack_analysis": {
+    "LLM:gpt-5.2": {
+      "operation_type": "LLM",
+      "operation_name": "gpt-5.2",
+      "usage_count": 4,
+      "avg_duration": 2.378224730491638,
+      "p95_duration": 3.390410423278808,
+      "p99_duration": 3.495082092285156,
+      "max_concurrency": 1,
+      "bottleneck_score": 2.378224730491638
+    },
+    "TOOL:spawn_researchers": {
+      "operation_type": "TOOL",
+      "operation_name": "spawn_researchers",
+      "usage_count": 3,
+      "avg_duration": 14.15178100268046,
+      "p95_duration": 38.20339486598968,
+      "p99_duration": 41.59860305309296,
+      "max_concurrency": 2,
+      "bottleneck_score": 28.30356200536092
+    },
+    "TOOL:submit_plan": {
+      "operation_type": "TOOL",
+      "operation_name": "submit_plan",
+      "usage_count": 1,
+      "avg_duration": 0.0012149810791015625,
+      "p95_duration": 0.0012149810791015625,
+      "p99_duration": 0.0012149810791015625,
+      "max_concurrency": 1,
+      "bottleneck_score": 0.0012149810791015625
+    }
+  }
+}

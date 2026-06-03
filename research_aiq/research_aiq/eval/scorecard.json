@@ -1,0 +1,97 @@
+{
+  "evaluators_primary": {
+    "expected_program_recall": 1.0,
+    "grounding_faithfulness": 1.0
+  },
+  "evaluators_directional": {
+    "determination_accuracy": 0.62
+  },
+  "aggregate": {
+    "n_runs": 12,
+    "total_cost_usd": 0.15042125,
+    "mean_cost_per_run_usd": 0.012535104166666667,
+    "cost_per_determination_p50_usd": 0.0021678999999999995,
+    "cost_per_determination_p95_usd": 0.004508875
+  },
+  "run_metrics": [
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.016010749999999997,
+      "n_determinations": 10,
+      "cost_per_determination_usd": 0.0016010749999999998
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.007950249999999999,
+      "n_determinations": 2,
+      "cost_per_determination_usd": 0.0039751249999999995
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.01627325,
+      "n_determinations": 9,
+      "cost_per_determination_usd": 0.0018081388888888889
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.00847525,
+      "n_determinations": 2,
+      "cost_per_determination_usd": 0.004237625
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.00854875,
+      "n_determinations": 2,
+      "cost_per_determination_usd": 0.004274375
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.01902425,
+      "n_determinations": 10,
+      "cost_per_determination_usd": 0.001902425
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.0115185,
+      "n_determinations": 5,
+      "cost_per_determination_usd": 0.0023036999999999997
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.010839499999999998,
+      "n_determinations": 5,
+      "cost_per_determination_usd": 0.0021678999999999995
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.01712375,
+      "n_determinations": 10,
+      "cost_per_determination_usd": 0.001712375
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.0173285,
+      "n_determinations": 8,
+      "cost_per_determination_usd": 0.0021660625
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.00831075,
+      "n_determinations": 2,
+      "cost_per_determination_usd": 0.004155375
+    },
+    {
+      "model": "gpt-5.2",
+      "cost_usd": 0.00901775,
+      "n_determinations": 2,
+      "cost_per_determination_usd": 0.004508875
+    }
+  ],
+  "spawn_latency_ms": {
+    "avg_ms": 19358.891675346775,
+    "p95_ms": 54369.830131530754,
+    "usage_count": 19
+  },
+  "spawn_researchers_calls_per_run": 1.5833333333333333,
+  "unpriced_models": []
+}
