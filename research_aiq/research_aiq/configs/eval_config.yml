@@ -20,10 +20,7 @@ general:
         _type: file
         output_path: ./.tmp/research_aiq_eval_traces.jsonl
         project: research_aiq_eval
-      raindrop_otlp:
-        _type: otelcollector
-        endpoint: ${RAINDROP_LOCAL_DEBUGGER:-http://localhost:5899/v1/}traces
-        project: research_aiq_eval
+      # OTLP-span export to Raindrop is a follow-up — Raindrop rejects nat's OTLP protobuf (400).
 llms:
   openai_llm:
     _type: openai
@@ -75,6 +72,26 @@ workflow:
 # ---------------------------------------------------------------------------
 eval:
   general:
+    # AIQ's built-in inference profiler (nvidia-nat-profiler plugin). Keys map to
+    # nat.data_models.profiler.ProfilerConfig (nat 1.7.0). With these on, the profiler
+    # writes per-step token usage + LLM latency into the eval output dir:
+    #   - all_requests_profiler_traces.json : per-request intermediate steps (each step's
+    #     token_usage {prompt_tokens, completion_tokens, total_tokens} + timestamps + llm_name)
+    #   - standardized_data_all.csv         : one row per step; columns prompt_tokens,
+    #     completion_tokens, total_tokens, llm_name, event_type, event_timestamp, plus the
+    #     NOVA-* latency columns (NOVA-Time-To-Next-Event, NOVA-Time-To-Session-End, ...)
+    #     that compute_llm_metrics adds.
+    #   - inference_optimization.json       : aggregate workflow-runtime + llm-latency CIs.
+    #   - workflow_profiling_report.txt / workflow_profiling_metrics.json : per-component
+    #     bottleneck stats (from bottleneck_analysis.enable_simple_stack).
+    # NOTE: the profiler captures the ORCHESTRATION LLM only; Modal researcher LLM usage
+    # runs out-of-process on Modal and is outside nat's profiler scope.
+    profiler:
+      token_usage_forecast: true
+      compute_llm_metrics: true
+      workflow_runtime_forecast: true
+      bottleneck_analysis:
+        enable_simple_stack: true
     # Defense-in-depth + intent: run dataset items one at a time. NOTE nat's LOCAL
     # eval runner (nat/plugins/eval/runtime/evaluate.py::run_workflow_local) does an
     # UNCONDITIONAL `asyncio.gather` over items and does NOT honor max_concurrency on

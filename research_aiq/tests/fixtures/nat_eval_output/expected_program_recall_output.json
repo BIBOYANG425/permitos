@@ -1,0 +1,15 @@
+{
+  "average_score": 1.0,
+  "eval_output_items": [
+    {
+      "id": "scope-scaqmd-coating-booth",
+      "score": 1.0,
+      "reasoning": {
+        "expected": 7,
+        "surfaced": 7,
+        "missing_program_ids": []
+      },
+      "error": null
+    }
+  ]
+}
