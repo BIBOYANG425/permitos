@@ -1,6 +1,7 @@
 import math
 from pathlib import Path
 
+import research_aiq.eval_report as eval_report_mod
 from research_aiq.eval_report import (
     MODEL_PRICING,
     aggregate_run_metrics,
@@ -8,6 +9,7 @@ from research_aiq.eval_report import (
     cost_from_usage,
     derive_run_metrics,
     load_eval_output,
+    main,
     percentile,
     render_scorecard_md,
 )
@@ -119,3 +121,24 @@ def test_render_fills_date_model_and_uses_calls_metric_name():
     assert "Researchers / run" not in md
     assert sc.spawn_researchers_calls_per_run is not None
     assert not hasattr(sc, "researchers_per_run")
+
+
+def test_main_persists_scorecard_once(monkeypatch, tmp_path):
+    """main writes the markdown + JSON sidecar AND fires the fail-soft Supabase
+    writer exactly once, with the scorecard sidecar (which carries the aggregate
+    block) and the fixture's orchestration model."""
+    calls: list[tuple[dict, str | None]] = []
+    monkeypatch.setattr(
+        eval_report_mod,
+        "persist_scorecard",
+        lambda sidecar, model: calls.append((sidecar, model)),
+    )
+
+    out_md = tmp_path / "scorecard.md"
+    out_json = tmp_path / "scorecard.json"
+    main(_FIXTURE, out_md, out_json)
+
+    assert len(calls) == 1
+    sidecar, model = calls[0]
+    assert "aggregate" in sidecar
+    assert model == "gpt-5.2"

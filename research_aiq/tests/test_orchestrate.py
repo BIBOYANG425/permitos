@@ -84,6 +84,16 @@ def test_orchestrate_threads_run_id_plan_to_finalize(monkeypatch):
         orchestrate_mod, "record_run", lambda run_id, metrics: recorded.append((run_id, metrics))
     )
 
+    # Capture persist_run (the fail-soft Supabase writer) the same way: asserting on
+    # its captured args proves the epilogue persists the run exactly once with the same
+    # run_id + metrics dict that record_run got.
+    persisted: list[tuple[str, dict]] = []
+    monkeypatch.setattr(
+        orchestrate_mod,
+        "persist_run",
+        lambda run_id, metrics: persisted.append((run_id, metrics)),
+    )
+
     out = asyncio.run(_drive(builder, '{"facility": {}, "project_change": {}}'))
 
     # plan got the raw scope input
@@ -116,6 +126,13 @@ def test_orchestrate_threads_run_id_plan_to_finalize(monkeypatch):
     )
     assert rec_metrics["n_invariant_violations"] == len(expected_violations)
     assert rec_metrics["invariant_violations"] == expected_violations
+
+    # the fail-soft Supabase writer was invoked exactly once with the SAME run_id and
+    # the SAME metrics dict the run produced (the epilogue persists what it records).
+    assert len(persisted) == 1
+    pers_run_id, pers_metrics = persisted[0]
+    assert pers_run_id == "run-ORCH"
+    assert pers_metrics is rec_metrics
 
 
 def test_orchestrate_is_fail_loud_when_a_step_raises():
@@ -164,6 +181,13 @@ def test_orchestrate_epilogue_is_fail_soft(monkeypatch):
         raise RuntimeError("raindrop exploded")
 
     monkeypatch.setattr(orchestrate_mod, "record_run", _boom)
+
+    # persist_run is also part of the epilogue: make it explode too. The epilogue must
+    # stay fail-soft whether the telemetry OR the Supabase write blows up.
+    def _persist_boom(run_id, metrics):
+        raise RuntimeError("supabase exploded")
+
+    monkeypatch.setattr(orchestrate_mod, "persist_run", _persist_boom)
 
     out = asyncio.run(_drive(builder, "{}"))  # must NOT raise
 
