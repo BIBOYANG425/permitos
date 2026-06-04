@@ -111,7 +111,7 @@ def _guarded_get(
         if not _is_redirect(response):
             return response, None, redirect_chain
         raw_location = _header(response, "location")
-        next_url = urljoin(str(getattr(response, "url", current_url)), raw_location or "")
+        next_url = urljoin(current_url, raw_location or "")
         chain_entry["location"] = next_url
         if not host_fetchable(next_url):
             return (None, _error("blocked", "redirect_blocked",
@@ -153,6 +153,8 @@ def web_fetch(policy: SandboxPolicy, url: str) -> dict[str, Any]:
         if redirect_error is not None:
             return redirect_error
         final_url = str(response.url)
+        # Defense-in-depth: _guarded_get already checks every hop, but re-verify the
+        # terminal URL in case a future client diverges response.url from current_url.
         if not host_fetchable(final_url):
             return _error("blocked", "redirect_blocked", "Fetch redirected to a non-fetchable public host (SSRF guard).",
                           url=url, final_url=final_url)

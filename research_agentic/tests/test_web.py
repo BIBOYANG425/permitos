@@ -83,3 +83,27 @@ def test_web_search_unavailable_without_key(monkeypatch):
     out = web.web_search(_policy(), "graphic arts permit ventura county")
     assert out["ok"] is False
     assert out["error"]["code"] in {"search_provider_unavailable", "search_dependency_missing"}
+
+
+def test_web_fetch_redirect_chain_success(monkeypatch):
+    r1 = _Resp(status=302, headers={"location": "https://www.arb.ca.gov/step2", "content-type": "text/plain"},
+               url="https://www.aqmd.gov/go")
+    r2 = _Resp(status=200, text="Final content.", url="https://www.arb.ca.gov/step2")
+    _patch_client(monkeypatch, [r1, r2])
+    out = web_fetch(_policy(), "https://www.aqmd.gov/go")
+    assert out["ok"] is True
+    assert len(out["redirect_chain"]) == 2
+    assert out["redirect_chain"][0]["status_code"] == 302
+    assert "Final content" in out["text"]
+
+
+def test_web_fetch_redirect_limit_exceeded(monkeypatch):
+    from research_agentic.policy import MAX_REDIRECT_HOPS
+    redirects = [
+        _Resp(status=302, headers={"location": "https://www.arb.ca.gov/x", "content-type": "text/plain"})
+        for _ in range(MAX_REDIRECT_HOPS + 1)
+    ]
+    _patch_client(monkeypatch, redirects)
+    out = web_fetch(_policy(), "https://www.aqmd.gov/start")
+    assert out["ok"] is False
+    assert out["error"]["code"] == "redirect_limit_exceeded"
