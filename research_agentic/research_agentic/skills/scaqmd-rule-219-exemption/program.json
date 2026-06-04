@@ -1,0 +1,18 @@
+{
+  "order": 1,
+  "id": "scaqmd-rule-219-exemption",
+  "family": "air",
+  "name": "SCAQMD Rule 219 exemption",
+  "what_it_does": "Exempts listed equipment from written permit requirements if conditions are met.",
+  "jurisdiction": "SCAQMD",
+  "authority_source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-219.pdf",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-AIR-219",
+      "question": "Is Rule 219 exemption available?",
+      "claim_to_test": "Rule 219 may exempt listed equipment if conditions are satisfied."
+    }
+  ]
+}

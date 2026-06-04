@@ -1,0 +1,19 @@
+{
+  "order": 24,
+  "id": "vcapcd-rule-23-exemption",
+  "family": "air",
+  "name": "VCAPCD Rule 23 Exemptions from Permit",
+  "what_it_does": "Lists the equipment and operations exempt from VCAPCD Rule 10 permit requirements, including graphic-arts/printing operations below the 200 lb ROC per rolling 12-month threshold, subject to recordkeeping.",
+  "jurisdiction": "Ventura County APCD",
+  "authority_source_url": "https://www.vcapcd.org/wp-content/uploads/Rulebook/Reg2/RULE%2023.pdf",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "air_district": "Ventura County APCD",
+  "hypotheses": [
+    {
+      "id": "H-AIR-VCAPCD-RULE23",
+      "question": "Does the operation qualify for a VCAPCD Rule 23 exemption from the Rule 10 permit?",
+      "claim_to_test": "Graphic-arts/printing operations losing less than 200 lb ROC per rolling 12 months are exempt under Rule 23(F)(13), subject to recordkeeping."
+    }
+  ]
+}

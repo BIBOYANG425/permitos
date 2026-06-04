@@ -1,0 +1,18 @@
+{
+  "order": 18,
+  "id": "ca-fire-high-pile-storage",
+  "family": "fire_code",
+  "name": "Fire Code High-Piled Combustible Storage Permit (CFC Ch. 32)",
+  "what_it_does": "Requires a fire-department permit and fire-protection features for high-piled combustible storage; the controlling authority is the local fire agency (e.g. VCFD in Ventura County).",
+  "jurisdiction": "Local fire authority (CUPA fire / fire district)",
+  "authority_source_url": "https://codes.iccsafe.org/content/CAFC2022P1/chapter-32-high-piled-combustible-storage",
+  "authority_rank": 2,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-FIRE-HIGHPILE",
+      "question": "Does the facility's combustible storage configuration require a high-piled storage permit from the local fire authority?",
+      "claim_to_test": "High-piled combustible storage above the area/height thresholds triggers a CFC Chapter 32 permit and fire-protection requirements."
+    }
+  ]
+}

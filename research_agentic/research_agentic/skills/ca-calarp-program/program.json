@@ -1,0 +1,18 @@
+{
+  "order": 10,
+  "id": "ca-calarp-program",
+  "family": "hazmat",
+  "name": "California Accidental Release Prevention (CalARP)",
+  "what_it_does": "Requires a Risk Management Plan for processes holding a regulated substance above its threshold quantity.",
+  "jurisdiction": "CalEPA; administered by the local UPA/CUPA",
+  "authority_source_url": "https://calepa.ca.gov/wp-content/uploads/2024/08/California-Code-of-Regulations-Title-19-Division-5-Chapter-2-%E2%80%93-California-Accidental-Release-Prevention.pdf",
+  "authority_rank": 1,
+  "trigger": "chemicals",
+  "hypotheses": [
+    {
+      "id": "H-HAZMAT-CALARP",
+      "question": "Does a process hold a regulated substance above its CalARP threshold quantity?",
+      "claim_to_test": "Per-substance threshold quantities in 19 CCR 5130.6 Tables 1-3 determine RMP applicability."
+    }
+  ]
+}

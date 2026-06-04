@@ -1,0 +1,18 @@
+{
+  "order": 20,
+  "id": "cal-osha-psm",
+  "family": "osha",
+  "name": "Cal/OSHA Process Safety Management (8 CCR 5189)",
+  "what_it_does": "Requires a Process Safety Management program when a process involves a listed highly hazardous chemical at or above its threshold quantity, or a process using a flammable liquid/gas above 10,000 lb.",
+  "jurisdiction": "Cal/OSHA (DIR Division of Occupational Safety and Health)",
+  "authority_source_url": "https://www.dir.ca.gov/title8/5189.html",
+  "authority_rank": 1,
+  "trigger": "chemicals",
+  "hypotheses": [
+    {
+      "id": "H-OSHA-PSM",
+      "question": "Does a process at the facility involve a highly hazardous chemical at or above the PSM threshold quantity?",
+      "claim_to_test": "A process with a listed highly hazardous chemical at/above its threshold quantity (or >10,000 lb flammable) triggers Cal/OSHA PSM."
+    }
+  ]
+}

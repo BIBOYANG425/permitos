@@ -1,0 +1,18 @@
+{
+  "order": 4,
+  "id": "ca-construction-general-permit",
+  "family": "stormwater",
+  "name": "California Construction General Permit (CGP)",
+  "what_it_does": "Stormwater coverage for construction disturbing one or more acres.",
+  "jurisdiction": "California Water Boards",
+  "authority_source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/construction.html",
+  "authority_rank": 1,
+  "trigger": "code_or_acres",
+  "hypotheses": [
+    {
+      "id": "H-STORM-CGP",
+      "question": "Does construction disturb one or more acres?",
+      "claim_to_test": "Construction disturbance at or above one acre may require construction stormwater permit coverage."
+    }
+  ]
+}

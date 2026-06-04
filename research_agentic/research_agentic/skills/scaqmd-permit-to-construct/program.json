@@ -1,0 +1,23 @@
+{
+  "order": 0,
+  "id": "scaqmd-permit-to-construct",
+  "family": "air",
+  "name": "SCAQMD Permit to Construct (Rule 201)",
+  "what_it_does": "Authorizes installing/modifying equipment that may emit air contaminants.",
+  "jurisdiction": "SCAQMD",
+  "authority_source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-201.pdf",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-AIR-201",
+      "question": "Does the new equipment require an SCAQMD Permit to Construct?",
+      "claim_to_test": "SCAQMD Permit to Construct may apply before installing emitting equipment."
+    },
+    {
+      "id": "H-AIR-VOC",
+      "question": "Do solvent VOC emissions require additional review?",
+      "claim_to_test": "Solvent use may create VOC-related review needs."
+    }
+  ]
+}

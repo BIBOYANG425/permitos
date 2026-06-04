@@ -1,0 +1,18 @@
+{
+  "order": 22,
+  "id": "local-zoning-cup",
+  "family": "land_use",
+  "name": "Local Zoning Clearance / Conditional Use Permit",
+  "what_it_does": "Confirms the use is permitted in the zoning district and obtains a zoning clearance, conditional use permit (CUP), or variance from the local planning authority before establishing or changing a use.",
+  "jurisdiction": "Local planning authority (city/county planning department)",
+  "authority_source_url": "https://www.opr.ca.gov/planning/general-plan/guidelines.html",
+  "authority_rank": 2,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-LANDUSE-ZONING",
+      "question": "Is the proposed use allowed in the facility's zoning district, or is a conditional use permit / variance required?",
+      "claim_to_test": "Establishing or changing the use may require a zoning clearance, conditional use permit, or variance from the local planning authority."
+    }
+  ]
+}

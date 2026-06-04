@@ -21,6 +21,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["research_agentic"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"research_agentic/skills" = "research_agentic/skills"
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

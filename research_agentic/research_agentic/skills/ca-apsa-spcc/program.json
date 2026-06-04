@@ -1,0 +1,18 @@
+{
+  "order": 9,
+  "id": "ca-apsa-spcc",
+  "family": "hazmat",
+  "name": "Aboveground Petroleum Storage Act (APSA)",
+  "what_it_does": "Requires an SPCC plan and CUPA registration for aboveground petroleum storage.",
+  "jurisdiction": "CAL FIRE Office of the State Fire Marshal; administered by the local CUPA",
+  "authority_source_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=HSC&sectionNum=25270.",
+  "authority_rank": 1,
+  "trigger": "chemicals",
+  "hypotheses": [
+    {
+      "id": "H-HAZMAT-APSA",
+      "question": "Does aggregate aboveground petroleum storage reach the APSA threshold?",
+      "claim_to_test": "Aggregate aboveground petroleum capacity of 1,320 gallons or more (containers >=55 gal) triggers APSA."
+    }
+  ]
+}

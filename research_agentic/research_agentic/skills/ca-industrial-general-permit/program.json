@@ -1,0 +1,18 @@
+{
+  "order": 3,
+  "id": "ca-industrial-general-permit",
+  "family": "stormwater",
+  "name": "California Industrial General Permit (IGP)",
+  "what_it_does": "Stormwater coverage triggered by industrial activity SIC/NAICS codes.",
+  "jurisdiction": "California Water Boards",
+  "authority_source_url": "https://www.waterboards.ca.gov/water_issues/programs/stormwater/industrial.html",
+  "authority_rank": 1,
+  "trigger": "code_or_acres",
+  "hypotheses": [
+    {
+      "id": "H-STORM-IGP",
+      "question": "Does SIC/NAICS trigger Industrial General Permit coverage?",
+      "claim_to_test": "SIC/NAICS may trigger California Industrial General Permit coverage."
+    }
+  ]
+}

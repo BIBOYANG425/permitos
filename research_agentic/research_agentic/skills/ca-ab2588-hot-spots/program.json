@@ -1,0 +1,18 @@
+{
+  "order": 11,
+  "id": "ca-ab2588-hot-spots",
+  "family": "air",
+  "name": "AB 2588 Air Toxics \"Hot Spots\"",
+  "what_it_does": "Toxic air emissions inventory, risk assessment, and public notification for stationary sources.",
+  "jurisdiction": "CARB statewide guidelines; administered by the local air district",
+  "authority_source_url": "https://ww2.arb.ca.gov/our-work/programs/ab-2588-air-toxics-hot-spots",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-AIR-AB2588",
+      "question": "Is the facility subject to AB 2588 air-toxics reporting?",
+      "claim_to_test": "Stationary sources emitting Appendix A substances report per district-defined inclusion criteria (no single statewide tonnage)."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "order": 14,
+  "id": "ca-medical-waste",
+  "family": "waste",
+  "name": "Medical Waste Management Act",
+  "what_it_does": "Registration and management of medical/biohazardous and sharps waste.",
+  "jurisdiction": "CDPH; enforced by the local enforcement agency",
+  "authority_source_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=HSC&sectionNum=117600.",
+  "authority_rank": 1,
+  "trigger": "waste",
+  "hypotheses": [
+    {
+      "id": "H-WASTE-MEDICAL",
+      "question": "Does the facility generate regulated medical waste?",
+      "claim_to_test": "Generating 200 lb/month or more of medical waste makes a facility a Large Quantity Generator requiring registration and a management plan."
+    }
+  ]
+}

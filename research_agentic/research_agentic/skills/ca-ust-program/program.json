@@ -1,0 +1,18 @@
+{
+  "order": 8,
+  "id": "ca-ust-program",
+  "family": "hazmat",
+  "name": "Underground Storage Tank (UST) Program",
+  "what_it_does": "Leak prevention, monitoring, and permitting for tanks storing hazardous substances substantially beneath ground.",
+  "jurisdiction": "State Water Board; administered by the local CUPA",
+  "authority_source_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=HSC&sectionNum=25281.",
+  "authority_rank": 1,
+  "trigger": "chemicals",
+  "hypotheses": [
+    {
+      "id": "H-HAZMAT-UST",
+      "question": "Does the facility have a regulated underground storage tank?",
+      "claim_to_test": "Any qualifying underground tank storing a hazardous substance is regulated (farm/residential <=1,100 gal exemptions aside)."
+    }
+  ]
+}

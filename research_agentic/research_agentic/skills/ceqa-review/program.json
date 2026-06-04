@@ -1,0 +1,18 @@
+{
+  "order": 21,
+  "id": "ceqa-review",
+  "family": "ceqa",
+  "name": "CEQA Environmental Review (Pub. Resources Code 21000 et seq.)",
+  "what_it_does": "Requires a lead agency to evaluate the environmental effects of a discretionary project under the California Environmental Quality Act, unless the project is statutorily or categorically exempt.",
+  "jurisdiction": "Lead agency (local/state agency granting the discretionary approval)",
+  "authority_source_url": "https://califaep.org/statute_and_guidelines.php",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-CEQA-REVIEW",
+      "question": "Does the project require CEQA review, or does a statutory/categorical exemption apply?",
+      "claim_to_test": "A discretionary project requires CEQA review unless a statutory or categorical exemption applies."
+    }
+  ]
+}

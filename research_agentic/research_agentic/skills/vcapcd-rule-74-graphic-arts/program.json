@@ -1,0 +1,19 @@
+{
+  "order": 25,
+  "id": "vcapcd-rule-74-graphic-arts",
+  "family": "air",
+  "name": "VCAPCD Rule 74.19 Graphic Arts (and 74-series VOC rules)",
+  "what_it_does": "Sets ROC/VOC content limits, add-on control, and work-practice requirements for graphic-arts / printing operations and related solvent cleaning in Ventura County.",
+  "jurisdiction": "Ventura County APCD",
+  "authority_source_url": "https://www.vcapcd.org/rules/",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "air_district": "Ventura County APCD",
+  "hypotheses": [
+    {
+      "id": "H-AIR-VCAPCD-RULE74",
+      "question": "Do VCAPCD graphic-arts / solvent-cleaning VOC rules (74-series) impose content limits or controls on the operation?",
+      "claim_to_test": "VCAPCD Rule 74.19 (graphic arts) and related 74-series rules may impose ROC/VOC content limits and work practices even if a Rule 10 permit is not required."
+    }
+  ]
+}
