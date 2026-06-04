@@ -6,4 +6,4 @@ points here. Each researcher-tool function is registered by importing its module
 until then this module is intentionally import-only so entry-point discovery works.
 """
 
-# from research_agentic.functions import researcher_tools  # noqa: F401  (enabled in Task 16)
+from research_agentic.functions import researcher_tools  # noqa: F401
