@@ -168,3 +168,36 @@ def source_authority_rank(url: str, allowed_hosts: tuple[str, ...] = DEFAULT_ALL
     if host == "gov" or host == "mil" or host.endswith((".gov", ".mil")):
         return 2
     return 3
+
+
+# ----- per-tool output cap -----
+
+def _max_tool_chars() -> int:
+    """Per-tool-output character cap. The agent's full tool-output history accumulates in
+    the model's context every turn, so a single uncapped fetch can blow a small-context
+    worker's window. Override with RESEARCH_CORE_MAX_TOOL_CHARS (min 1000)."""
+    import os
+
+    raw = os.environ.get("RESEARCH_CORE_MAX_TOOL_CHARS")
+    if raw:
+        try:
+            return max(1000, int(raw))
+        except ValueError:
+            pass
+    return 16000
+
+
+def _cap_text(text: Any) -> Any:
+    """Truncate over-long tool output, leaving a marker so the agent knows to fetch a more
+    specific page/section. Non-str inputs pass through unchanged."""
+    if not isinstance(text, str):
+        return text
+    limit = _max_tool_chars()
+    if len(text) <= limit:
+        return text
+    dropped = len(text) - limit
+    return (
+        text[:limit]
+        + f"\n\n[...truncated {dropped} of {len(text)} characters to fit the model context — "
+        "fetch a more specific URL/section, or read a particular SDS/page, if you need the rest...]"
+    )
