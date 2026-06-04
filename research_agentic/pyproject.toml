@@ -9,7 +9,7 @@ requires-python = ">=3.11"
 dependencies = ["nvidia-nat[langchain]>=1.5", "modal>=1.4", "httpx"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6"]
 
 [project.entry-points.'nat.components']
 research_agentic = "research_agentic.register"
@@ -31,3 +31,4 @@ target-version = "py311"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+asyncio_mode = "auto"

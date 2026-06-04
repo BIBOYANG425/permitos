@@ -1,4 +1,3 @@
-import research_agentic.policy as policy
 from research_agentic.policy import _cap_text, _max_tool_chars
 
 

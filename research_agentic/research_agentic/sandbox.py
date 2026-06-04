@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import contextvars
 import json as _json
+import warnings
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
@@ -29,6 +30,19 @@ _SANDBOX_PIP = (
     "openpyxl",
     "openai",
 )
+
+
+def _default_secrets() -> list:
+    """The OpenAI secret, looked up lazily (so importing sandbox.py needs no Modal auth).
+    Returns [] if Modal can't resolve it — the tools then fail-soft to 'unavailable'."""
+    try:
+        return [modal.Secret.from_name("permitpilot-openai")]
+    except Exception:  # noqa: BLE001 — absence degrades web_search to 'unavailable', not a crash
+        warnings.warn(
+            "Modal secret 'permitpilot-openai' not resolved — web_search will be unavailable in-sandbox.",
+            stacklevel=2,
+        )
+        return []
 
 
 def build_sandbox_image() -> modal.Image:
@@ -95,7 +109,9 @@ class SandboxSession:
         self._timeout = timeout_seconds
         self._cpu = cpu
         self._memory = memory
-        self._secrets = secrets or []
+        # Default to the OpenAI secret so in-sandbox web_search (OpenAI Responses) works.
+        # Pass secrets=[] explicitly to opt out (e.g. a no-network tool-only sandbox).
+        self._secrets = secrets if secrets is not None else _default_secrets()
         self.sandbox: Any = None
 
     def __enter__(self) -> "SandboxSession":
