@@ -42,12 +42,16 @@ def test_run_researcher_binds_session_runs_and_collects(monkeypatch):
 
 def test_run_researcher_propagates_operational_failure(monkeypatch):
     from research_agentic.sandbox import SandboxOperationalError
+    seen = {}
 
     class _FakeSession:
         run_id = "r"
         sandbox = object()
-        def __enter__(self): return self
-        def __exit__(self, *a): return False
+        def __enter__(self):
+            return self
+        def __exit__(self, *a):
+            seen["torn_down"] = True
+            return False  # re-raise
 
     async def boom(input_message: str) -> str:
         raise SandboxOperationalError("sandbox died mid-run")
@@ -56,3 +60,4 @@ def test_run_researcher_propagates_operational_failure(monkeypatch):
     monkeypatch.setattr(R, "_run_agent", boom)
     with pytest.raises(SandboxOperationalError):
         run_researcher(ResearcherTask(run_id="r", hypothesis="H?"))
+    assert seen.get("torn_down") is True  # sandbox torn down even on failure

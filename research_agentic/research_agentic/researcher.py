@@ -45,7 +45,8 @@ async def _run_agent(input_message: str) -> str:
             return await runner.result(to_type=str)
 
 
-async def _drive(task: ResearcherTask) -> ResearcherResult:
+async def drive(task: ResearcherTask) -> ResearcherResult:
+    """Async entry point — call this from an async context (e.g. Phase 3 orchestration)."""
     session = _make_session(task.run_id)
     with session:  # provisions the modal.Sandbox (or the fake in tests)
         # Bind the session in THIS coroutine so the tools resolve it (contextvar propagates
@@ -60,5 +61,6 @@ async def _drive(task: ResearcherTask) -> ResearcherResult:
 
 
 def run_researcher(task: ResearcherTask) -> ResearcherResult:
-    """Synchronous entry point. Runs the async driver on a fresh event loop."""
-    return asyncio.run(_drive(task))
+    """Synchronous entry point (CLI / smoke). Do NOT call from within a running event loop;
+    use `await drive(task)` there instead."""
+    return asyncio.run(drive(task))

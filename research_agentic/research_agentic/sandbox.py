@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import contextvars
 import json as _json
+import warnings
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
@@ -37,6 +38,10 @@ def _default_secrets() -> list:
     try:
         return [modal.Secret.from_name("permitpilot-openai")]
     except Exception:  # noqa: BLE001 — absence degrades web_search to 'unavailable', not a crash
+        warnings.warn(
+            "Modal secret 'permitpilot-openai' not resolved — web_search will be unavailable in-sandbox.",
+            stacklevel=2,
+        )
         return []
 
 
