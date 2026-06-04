@@ -12,8 +12,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
-from research_agentic.authority_hosts import DEFAULT_ALLOWED_HOSTS
+from research_agentic.authority_hosts import DEFAULT_ALLOWED_HOSTS, ca_authority_hosts
 
 
 # ----- structured results (un-foolable shape; tools never raise across the boundary) -----
@@ -86,3 +87,76 @@ def _resolve_workspace_path(policy: SandboxPolicy, relative_path: str | Path) ->
 
 def _resolve_artifact_path(policy: SandboxPolicy, relative_path: str | Path) -> Path:
     return _resolve_workspace_path(policy, relative_path)
+
+
+# ----- network SSRF guard + authority tiering -----
+
+REDIRECT_STATUS_CODES = {301, 302, 303, 307, 308}
+MAX_REDIRECT_HOPS = 5
+
+
+def _normalize_host(host: str | None) -> str:
+    return (host or "").strip().rstrip(".").lower()
+
+
+def host_fetchable(url: str) -> bool:
+    """The sandbox NETWORK boundary (a safety gate, not a content allowlist): allow any
+    public http(s) host so the subagent can do broad, durable research, but block
+    SSRF-dangerous targets (localhost, private/loopback/link-local nets, cloud metadata).
+    Source AUTHORITY is judged downstream by source_authority_rank, not here."""
+    if not isinstance(url, str):
+        return False
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    host = _normalize_host(parsed.hostname)
+    if not host:
+        return False
+    if host == "localhost" or host.endswith((".localhost", ".internal", ".local")):
+        return False
+    try:
+        import ipaddress
+
+        ip = ipaddress.ip_address(host)
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            return False
+    except ValueError:
+        pass  # a hostname, not a raw IP -> allowed
+    return True
+
+
+def _host_in(host: str, allowed: frozenset[str] | tuple[str, ...]) -> bool:
+    return any(host == a or host.endswith("." + a) for a in allowed)
+
+
+def host_allowed(url: str, allowed_hosts: tuple[str, ...] = DEFAULT_ALLOWED_HOSTS) -> bool:
+    if not isinstance(url, str):
+        return False
+    parsed = urlparse(url)
+    host = _normalize_host(parsed.hostname)
+    if not host or parsed.scheme not in {"http", "https"}:
+        return False
+    for allowed in allowed_hosts:
+        allowed_host = _normalize_host(allowed)
+        if host == allowed_host or host.endswith(f".{allowed_host}"):
+            return True
+    return False
+
+
+def source_authority_rank(url: str, allowed_hosts: tuple[str, ...] = DEFAULT_ALLOWED_HOSTS) -> int:
+    """Authority tier for a fetched source (the verifier's authority gate requires <= 2):
+      1 = known EHS authority — curated allowlist OR a CA air-district authority host
+          (incl. .org/.us/.net like vcapcd.org)
+      2 = other government / official source (*.gov, *.mil)
+      3 = other public source -> fails the verifier's authority gate (fail-closed)."""
+    host = _normalize_host(urlparse(url).hostname)
+    if not host:
+        return 3
+    if host_allowed(url, allowed_hosts) or _host_in(host, ca_authority_hosts()):
+        return 1
+    # Suffix-only (never substring): a spoof like aqmd.gov.evil.example ends in .example,
+    # so it stays rank 3.
+    if host == "gov" or host == "mil" or host.endswith((".gov", ".mil")):
+        return 2
+    return 3
