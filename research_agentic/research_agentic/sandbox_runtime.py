@@ -26,7 +26,7 @@ def _t_read_skill(policy: SandboxPolicy, args: dict[str, Any]) -> dict[str, Any]
 
 
 def _t_web_search(policy: SandboxPolicy, args: dict[str, Any]) -> dict[str, Any]:
-    return web.web_search(policy, str(args.get("query", "")), limit=int(args.get("limit", 5)))
+    return web.web_search(policy, str(args.get("query", "")), limit=args.get("limit", 5))
 
 
 def _t_web_fetch(policy: SandboxPolicy, args: dict[str, Any]) -> dict[str, Any]:
@@ -95,7 +95,11 @@ _TOOLS: dict[str, Callable[[SandboxPolicy, dict[str, Any]], dict[str, Any]]] = {
 def policy_from_env() -> SandboxPolicy:
     root = Path(os.environ.get("ARTIFACT_ROOT", "/workspace"))
     run_id = os.environ.get("RUN_ID", "run")
-    timeout = float(os.environ.get("RESEARCH_SANDBOX_TIMEOUT", "15"))
+    raw_timeout = os.environ.get("RESEARCH_SANDBOX_TIMEOUT", "15")
+    try:
+        timeout = float(raw_timeout)
+    except ValueError:
+        timeout = 15.0
     return SandboxPolicy(run_id=run_id, artifact_root=root, timeout_seconds=timeout)
 
 
@@ -128,6 +132,8 @@ def main(argv: list[str]) -> int:
         (Path(policy.artifact_root) / policy.run_id).mkdir(parents=True, exist_ok=True)
     except OSError:
         pass
+    # Soft errors return 0 with a structured {"ok": false} JSON; the host distinguishes
+    # success/failure by the "ok" field, reserving non-zero exit for true crashes.
     print(json.dumps(dispatch(tool, args, policy)))
     return 0
 
