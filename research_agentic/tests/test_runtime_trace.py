@@ -54,3 +54,14 @@ def test_collect_workspace_write_artifact_is_artifact_not_finding(tmp_path):
     assert out["findings"] == []
     wa = [r for r in out["trace"] if r["tool"] == "write_artifact"][-1]
     assert wa.get("path", "").endswith("notes/a.txt")  # Fix 2: write_artifact path captured
+
+
+def test_trace_record_captures_browser_snapshot():
+    from research_agentic.sandbox_runtime import _trace_record
+    rec = _trace_record("browser_use", {"url": "https://x.gov"},
+                        {"ok": True, "status": "navigated",
+                         "snapshot": {"url": "https://www.vcapcd.org/r.pdf", "status_code": 200, "text": "RULE 23 body"}})
+    assert rec["tool"] == "browser_use" and rec["ok"] is True
+    assert rec["url"] == "https://www.vcapcd.org/r.pdf"
+    assert rec["status_code"] == 200
+    assert "text_sha256" in rec and rec["text_len"] == len("RULE 23 body")

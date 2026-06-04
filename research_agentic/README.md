@@ -195,9 +195,9 @@ after submitting its finding.
 Two entry points in `researcher.py`:
 
 - **`run_researcher(task: ResearcherTask) → ResearcherResult`** — synchronous entry point
-  (for scripts and tests). Runs the async `_drive` coroutine on a fresh event loop.
-- **`_drive(task) → ResearcherResult`** — async entry (exposed as `drive` for Phase 3's
-  concurrent orchestrator). Provisions the sandbox, binds it, runs the agent, collects, and
+  (for scripts and tests). Runs the async `drive` coroutine on a fresh event loop.
+- **`drive(task) → ResearcherResult`** — async entry (the public coroutine Phase 3's
+  concurrent orchestrator calls). Provisions the sandbox, binds it, runs the agent, collects, and
   tears down.
 
 ```python
@@ -222,7 +222,7 @@ process-global or lock. This is critical for Phase 3's concurrent orchestrator: 
 researcher coroutine binds its own session contextvar independently.
 
 ```python
-async def _drive(task):
+async def drive(task: ResearcherTask) -> ResearcherResult:
     session = _make_session(task.run_id)
     with session:                         # provisions the modal.Sandbox
         with use_sandbox_session(session):  # binds the contextvar
@@ -278,9 +278,9 @@ planning; they do NOT affect single-researcher runs today.
 ### Async Modal I/O for concurrency
 
 `run_tool`, `store.collect_run`, and `SandboxSession.__enter__`/`__exit__` call **blocking**
-Modal APIs inside the async `_drive()` coroutine. Modal emits `AsyncUsageWarning` for this
+Modal APIs inside the async `drive()` coroutine. Modal emits `AsyncUsageWarning` for this
 pattern. For a single researcher this is harmless (the event loop blocks briefly). Phase 3's
-concurrent orchestrator (multiple `_drive()` coroutines running in parallel) must wrap these
+concurrent orchestrator (multiple `drive()` coroutines running in parallel) must wrap these
 in `asyncio.to_thread(...)` or switch to Modal's `.aio()` async variants so researchers
 actually run in parallel rather than serializing on the event loop.
 

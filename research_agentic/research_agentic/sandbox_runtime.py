@@ -116,6 +116,15 @@ def _trace_record(tool: str, args: dict, result: dict) -> dict:
     if isinstance(text, str) and text:
         rec["text_sha256"] = hashlib.sha256(text.encode("utf-8", "replace")).hexdigest()
         rec["text_len"] = len(text)
+    snap = result.get("snapshot")
+    if isinstance(snap, dict):
+        for k in ("url", "status_code", "content_type"):
+            if k in snap and k not in rec:
+                rec[k] = snap[k]
+        snap_text = snap.get("text")
+        if isinstance(snap_text, str) and snap_text and "text_sha256" not in rec:
+            rec["text_sha256"] = hashlib.sha256(snap_text.encode("utf-8", "replace")).hexdigest()
+            rec["text_len"] = len(snap_text)
     return rec
 
 
