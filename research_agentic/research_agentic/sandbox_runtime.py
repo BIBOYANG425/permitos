@@ -10,6 +10,7 @@ a non-zero exit code (handled in sandbox.run_tool).
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
@@ -105,14 +106,64 @@ def policy_from_env() -> SandboxPolicy:
     return SandboxPolicy(run_id=run_id, artifact_root=root, timeout_seconds=timeout)
 
 
+def _trace_record(tool: str, args: dict, result: dict) -> dict:
+    """A compact, provenance-bearing record of one tool call (no full text blobs)."""
+    rec = {"tool": tool, "ok": bool(result.get("ok")), "status": result.get("status")}
+    for k in ("url", "final_url", "status_code", "extracted_format", "skill_id", "artifact_path"):
+        if k in result:
+            rec[k] = result[k]
+    text = result.get("text")
+    if isinstance(text, str) and text:
+        rec["text_sha256"] = hashlib.sha256(text.encode("utf-8", "replace")).hexdigest()
+        rec["text_len"] = len(text)
+    return rec
+
+
+def _append_trace(policy: SandboxPolicy, record: dict) -> None:
+    try:
+        d = Path(policy.artifact_root) / policy.run_id
+        d.mkdir(parents=True, exist_ok=True)
+        with (d / "trace.jsonl").open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record) + "\n")
+    except OSError:
+        pass  # tracing is best-effort; never break a tool call
+
+
+def collect_workspace(policy: SandboxPolicy) -> dict[str, Any]:
+    """Read the run workspace: submitted findings, the tool-call trace, and any write_artifacts.
+    Host-driven (not an agent tool). Returns one JSON-able dict."""
+    root = Path(policy.artifact_root) / policy.run_id
+    findings: list[dict] = []
+    fdir = root / "findings"
+    if fdir.is_dir():
+        for fp in sorted(fdir.glob("*.json")):
+            try:
+                findings.append(json.loads(fp.read_text(encoding="utf-8")))
+            except (OSError, ValueError):
+                continue
+    trace: list[dict] = []
+    tf = root / "trace.jsonl"
+    if tf.is_file():
+        for line in tf.read_text(encoding="utf-8").splitlines():
+            try:
+                trace.append(json.loads(line))
+            except ValueError:
+                continue
+    artifacts = [str(p.relative_to(root)) for p in sorted(root.rglob("*"))
+                 if p.is_file() and p.name != "trace.jsonl" and fdir not in p.parents]
+    return {"ok": True, "run_id": policy.run_id, "findings": findings, "trace": trace, "artifacts": artifacts}
+
+
 def dispatch(tool: str, args: dict[str, Any], policy: SandboxPolicy) -> dict[str, Any]:
     fn = _TOOLS.get(tool)
     if fn is None:
         return _error("error", "unknown_tool", f"Unknown tool: {tool!r}.", tool=tool, known=sorted(_TOOLS))
     try:
-        return fn(policy, args)
+        result = fn(policy, args)
     except Exception as exc:  # noqa: BLE001 — never raise across the sandbox boundary
-        return _error("error", "tool_call_failed", str(exc), tool=tool, exception_type=exc.__class__.__name__)
+        result = _error("error", "tool_call_failed", str(exc), tool=tool, exception_type=exc.__class__.__name__)
+    _append_trace(policy, _trace_record(tool, args, result))
+    return result
 
 
 def main(argv: list[str]) -> int:
@@ -120,6 +171,9 @@ def main(argv: list[str]) -> int:
         print(json.dumps(_error("error", "bad_invocation", "usage: sandbox_runtime <tool> <json-args>")))
         return 0
     tool = argv[1]
+    if tool == "__collect__":
+        print(json.dumps(collect_workspace(policy_from_env())))
+        return 0
     raw = argv[2] if len(argv) > 2 else "{}"
     try:
         args = json.loads(raw) if raw else {}
