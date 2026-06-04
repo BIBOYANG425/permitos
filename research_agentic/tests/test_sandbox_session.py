@@ -1,22 +1,21 @@
-def test_build_sandbox_image_returns_image():
-    import modal
-
-    from research_agentic.sandbox import build_sandbox_image
-
-    image = build_sandbox_image()
-    assert isinstance(image, modal.Image)
-
-
 import json
 
+import modal
 import pytest
 
 from research_agentic.sandbox import (
     SandboxOperationalError,
+    SandboxSession,
+    build_sandbox_image,
     current_sandbox_session,
     run_tool,
     use_sandbox_session,
 )
+
+
+def test_build_sandbox_image_returns_image():
+    image = build_sandbox_image()
+    assert isinstance(image, modal.Image)
 
 
 class _FakeProc:
@@ -105,6 +104,5 @@ def test_run_tool_parses_last_line_after_log_noise():
 
 
 def test_sandbox_session_exit_without_enter_is_safe():
-    from research_agentic.sandbox import SandboxSession
     s = SandboxSession(run_id="x")
     s.__exit__(None, None, None)  # must not raise
