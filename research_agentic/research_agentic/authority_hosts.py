@@ -32,7 +32,6 @@ CA_AIR_DISTRICT_HOSTS: frozenset[str] = frozenset(
         "valleyair.org",
         "ourair.org",
         "slocleanair.org",
-        "aqmd.gov",
     }
 )
 

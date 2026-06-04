@@ -31,7 +31,12 @@ def test_safe_run_workspace_is_under_root(tmp_path):
 
 def test_resolve_workspace_path_allows_relative(tmp_path):
     p = _resolve_workspace_path(_policy(tmp_path), "findings/a.json")
-    assert str(p).endswith("run-123/findings/a.json")
+    assert p == (tmp_path / "run-123" / "findings" / "a.json").resolve()
+
+
+def test_resolve_workspace_path_rejects_wrong_type(tmp_path):
+    with pytest.raises(TypeError):
+        _resolve_workspace_path(_policy(tmp_path), 42)  # type: ignore[arg-type]
 
 
 def test_resolve_workspace_path_blocks_absolute(tmp_path):
