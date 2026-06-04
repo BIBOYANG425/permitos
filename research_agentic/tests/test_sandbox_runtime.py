@@ -60,3 +60,14 @@ def test_main_bad_timeout_env(capsys, tmp_path, monkeypatch):
     out = json.loads(capsys.readouterr().out)
     assert rc == 0
     assert out["ok"] is True
+
+
+def test_dispatch_submit_finding_string_source_not_char_split(tmp_path):
+    # A bare-string source must be wrapped as a single-element list, not char-split.
+    out = dispatch(
+        "submit_finding",
+        {"title": "t", "summary": "s", "sources": "https://www.aqmd.gov/x", "confidence": 0.5},
+        _policy(tmp_path),
+    )
+    assert out["ok"] is True
+    assert out["finding"]["sources"] == ["https://www.aqmd.gov/x"]

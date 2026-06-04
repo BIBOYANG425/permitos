@@ -68,11 +68,13 @@ def _t_write_artifact(policy: SandboxPolicy, args: dict[str, Any]) -> dict[str, 
 
 
 def _t_submit_finding(policy: SandboxPolicy, args: dict[str, Any]) -> dict[str, Any]:
+    raw_sources = args.get("sources") or []
+    sources = raw_sources if isinstance(raw_sources, list) else [raw_sources]
     return artifacts.submit_finding(
         policy,
         title=str(args.get("title", "")),
         summary=str(args.get("summary", "")),
-        sources=list(args.get("sources", []) or []),
+        sources=sources,
         confidence=args.get("confidence", 0.0),
         metadata=args.get("metadata"),
     )
