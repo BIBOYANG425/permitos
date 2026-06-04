@@ -53,6 +53,9 @@ def _no_session() -> str:
     })
 
 
+# These wrappers are async because nat's FunctionInfo.from_fn requires a coroutine. They
+# call the blocking run_tool directly — fine for Phase 1 and one-tool-at-a-time use; a
+# Phase 2 refinement may wrap run_tool in asyncio.to_thread for event-loop concurrency.
 def _call(tool: str, args: dict[str, Any]) -> str:
     session = current_sandbox_session()
     if session is None:
@@ -62,35 +65,35 @@ def _call(tool: str, args: dict[str, Any]) -> str:
 
 # --- per-tool impls (typed signatures so nat/LangChain builds a proper tool schema) ---
 
-def _read_skill_impl(skill_id: str = "") -> str:
+async def _read_skill_impl(skill_id: str = "") -> str:
     return _call("read_skill", {"skill_id": skill_id})
 
 
-def _web_search_impl(query: str, limit: int = 5) -> str:
+async def _web_search_impl(query: str, limit: int = 5) -> str:
     return _call("web_search", {"query": query, "limit": limit})
 
 
-def _web_fetch_impl(url: str) -> str:
+async def _web_fetch_impl(url: str) -> str:
     return _call("web_fetch", {"url": url})
 
 
-def _browser_use_impl(url: str, wait_until: str = "domcontentloaded") -> str:
+async def _browser_use_impl(url: str, wait_until: str = "domcontentloaded") -> str:
     return _call("browser_use", {"url": url, "wait_until": wait_until})
 
 
-def _read_pdf_impl(path: str) -> str:
+async def _read_pdf_impl(path: str) -> str:
     return _call("read_pdf", {"path": path})
 
 
-def _read_docx_impl(path: str) -> str:
+async def _read_docx_impl(path: str) -> str:
     return _call("read_docx", {"path": path})
 
 
-def _read_spreadsheet_impl(path: str) -> str:
+async def _read_spreadsheet_impl(path: str) -> str:
     return _call("read_spreadsheet", {"path": path})
 
 
-def _compute_voc_threshold_impl(
+async def _compute_voc_threshold_impl(
     voc_content: float,
     voc_content_unit: str = "weight_percent",
     density: float | None = None,
@@ -107,21 +110,24 @@ def _compute_voc_threshold_impl(
     })
 
 
-def _write_artifact_impl(relative_path: str, contents: str) -> str:
+async def _write_artifact_impl(relative_path: str, contents: str) -> str:
     return _call("write_artifact", {"relative_path": relative_path, "contents": contents})
 
 
-def _submit_finding_impl(
+async def _submit_finding_impl(
     title: str, summary: str, sources: list[str], confidence: float, metadata_json: str | None = None,
 ) -> str:
     metadata: dict[str, Any] | None = None
     if metadata_json:
         try:
             parsed = json.loads(metadata_json)
-            metadata = parsed if isinstance(parsed, dict) else None
         except json.JSONDecodeError:
             return json.dumps({"ok": False, "status": "error",
-                               "error": {"code": "invalid_metadata_json", "message": "metadata_json must be valid JSON object."}})
+                               "error": {"code": "invalid_metadata_json", "message": "metadata_json must be valid JSON."}})
+        if not isinstance(parsed, dict):
+            return json.dumps({"ok": False, "status": "error",
+                               "error": {"code": "invalid_metadata_json", "message": "metadata_json must decode to a JSON object."}})
+        metadata = parsed
     return _call("submit_finding", {
         "title": title, "summary": summary, "sources": sources, "confidence": confidence, "metadata": metadata,
     })

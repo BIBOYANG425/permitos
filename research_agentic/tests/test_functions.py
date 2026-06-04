@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import pytest
@@ -15,7 +16,7 @@ class _FakeSession:
 
 
 def test_tool_without_session_returns_structured_error():
-    out = json.loads(rt._web_fetch_impl("https://x.gov"))
+    out = json.loads(asyncio.run(rt._web_fetch_impl("https://x.gov")))
     assert out["ok"] is False and out["error"]["code"] == "sandbox_required"
 
 
@@ -29,7 +30,7 @@ def test_tool_with_session_routes_to_run_tool(monkeypatch):
 
     monkeypatch.setattr(rt, "run_tool", fake_run_tool)
     with use_sandbox_session(_FakeSession()):
-        out = json.loads(rt._web_fetch_impl("https://www.aqmd.gov/x"))
+        out = json.loads(asyncio.run(rt._web_fetch_impl("https://www.aqmd.gov/x")))
     assert out["ok"] is True
     assert captured["tool"] == "web_fetch"
     assert captured["args"] == {"url": "https://www.aqmd.gov/x"}
@@ -43,3 +44,26 @@ def test_all_ten_tools_registered():
         "read_skill", "web_search", "web_fetch", "browser_use", "read_pdf",
         "read_docx", "read_spreadsheet", "compute_voc_threshold", "write_artifact", "submit_finding",
     }
+
+
+def test_all_impls_build_as_aiq_functions():
+    # Guards the sync-vs-async regression: every impl must build as a nat FunctionInfo.
+    from nat.builder.function_info import FunctionInfo
+    for name in rt.TOOL_NAMES:
+        fi = FunctionInfo.from_fn(rt._IMPLS[name], description="t")
+        assert fi is not None
+
+
+def test_tool_raises_on_sandbox_operational_error(monkeypatch):
+    from research_agentic.sandbox import SandboxOperationalError
+    def boom(session, tool, args):
+        raise SandboxOperationalError("sandbox died")
+    monkeypatch.setattr(rt, "run_tool", boom)
+    with use_sandbox_session(_FakeSession()):
+        with pytest.raises(SandboxOperationalError):
+            asyncio.run(rt._web_fetch_impl("https://www.aqmd.gov/x"))
+
+
+def test_submit_finding_non_dict_metadata_returns_structured_error():
+    out = json.loads(asyncio.run(rt._submit_finding_impl("t", "s", ["https://x.gov"], 0.5, "[1,2]")))
+    assert out["ok"] is False and out["error"]["code"] == "invalid_metadata_json"
