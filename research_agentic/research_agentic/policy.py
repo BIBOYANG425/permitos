@@ -9,6 +9,7 @@ SSRF guard + authority tiering (Task 4), and the per-tool output cap (Task 5).
 
 from __future__ import annotations
 
+import ipaddress
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -91,8 +92,10 @@ def _resolve_artifact_path(policy: SandboxPolicy, relative_path: str | Path) -> 
 
 # ----- network SSRF guard + authority tiering -----
 
-REDIRECT_STATUS_CODES = {301, 302, 303, 307, 308}
-MAX_REDIRECT_HOPS = 5
+REDIRECT_STATUS_CODES = {301, 302, 303, 307, 308}  # consumed by sandbox_tools.web._guarded_get (Task 9)
+MAX_REDIRECT_HOPS = 5  # consumed by sandbox_tools.web._guarded_get (Task 9)
+# RFC 6598 carrier-grade NAT shared space — not flagged is_private by ipaddress.
+_CGNAT_NET = ipaddress.ip_network("100.64.0.0/10")
 
 
 def _normalize_host(host: str | None) -> str:
@@ -115,14 +118,19 @@ def host_fetchable(url: str) -> bool:
     if host == "localhost" or host.endswith((".localhost", ".internal", ".local")):
         return False
     try:
-        import ipaddress
-
         ip = ipaddress.ip_address(host)
         if (ip.is_private or ip.is_loopback or ip.is_link_local
-                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified
+                or ip in _CGNAT_NET):
             return False
     except ValueError:
-        pass  # a hostname, not a raw IP -> allowed
+        # Not a standard IP literal. Reject non-standard numeric encodings that
+        # ipaddress rejects but getaddrinfo() still resolves to an IP — e.g.
+        # 0x7f000001, 2130706433, 0177.0.0.1 all reach 127.0.0.1 on common libc
+        # (an SSRF bypass). A legitimate public hostname has letters and is not a
+        # bare integer or 0x-prefixed token.
+        if host.startswith(("0x", "0X")) or host.replace(".", "").isdigit():
+            return False
     return True
 
 

@@ -23,6 +23,9 @@ def test_public_hosts_are_fetchable(url):
     "http://192.168.1.1/x",            # private
     "http://169.254.169.254/latest",   # cloud metadata (link-local)
     "http://[::1]/x",                  # ipv6 loopback
+    "http://0x7f000001/x",            # hex-encoded 127.0.0.1
+    "http://2130706433/x",            # decimal-encoded 127.0.0.1
+    "http://100.64.0.1/x",            # RFC6598 CGNAT shared space
     "not-a-url",
     "",
 ])
