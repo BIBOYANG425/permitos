@@ -95,3 +95,16 @@ def test_contextvar_set_and_get():
     with use_sandbox_session(sess):
         assert current_sandbox_session() is sess
     assert current_sandbox_session() is None
+
+
+def test_run_tool_parses_last_line_after_log_noise():
+    payload = json.dumps({"ok": True, "status": "fetched", "text": "body"})
+    sess = _FakeSession(_FakeProc(out=f"[modal] connecting...\nsome debug line\n{payload}"))
+    out = run_tool(sess, "web_fetch", {"url": "https://x.gov"})
+    assert out["ok"] is True and out["text"] == "body"
+
+
+def test_sandbox_session_exit_without_enter_is_safe():
+    from research_agentic.sandbox import SandboxSession
+    s = SandboxSession(run_id="x")
+    s.__exit__(None, None, None)  # must not raise

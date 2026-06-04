@@ -128,11 +128,15 @@ def run_tool(session: "SandboxSession", tool: str, args: dict[str, Any]) -> dict
     Returns the tool's structured result dict (including {"ok": false} tool errors).
     Raises SandboxOperationalError when the SANDBOX failed (non-zero exit, empty/unparseable
     stdout) — an operational failure, distinct from a tool-level rejection."""
+    if session.sandbox is None:
+        raise SandboxOperationalError("run_tool called on a session with no active sandbox (not entered?)")
     proc = session.sandbox.exec(
         "python", "-m", "research_agentic.sandbox_runtime", tool, _json.dumps(args),
     )
-    stdout = proc.stdout.read()
+    stdout = proc.stdout.read()  # drain before wait() — avoids pipe-full deadlock
     code = proc.wait()
+    # stderr is consumed only on failure. Modal exec streams are cloud-backed (no fixed
+    # OS pipe buffer), so leaving stderr unread on success is safe.
     if code != 0:
         stderr = ""
         with contextlib.suppress(Exception):
