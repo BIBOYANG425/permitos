@@ -30,3 +30,27 @@ def test_collect_workspace_returns_findings_and_trace(tmp_path):
     assert len(out["findings"]) == 1
     assert out["findings"][0]["title"] == "Rule 23 applies"
     assert any(r["tool"] == "submit_finding" for r in out["trace"])
+
+
+def test_dispatch_records_failed_call(tmp_path, monkeypatch):
+    import research_agentic.sandbox_runtime as rt
+    pol = _policy(tmp_path)
+    (Path(pol.artifact_root) / pol.run_id).mkdir(parents=True, exist_ok=True)
+    def boom(p, a):
+        raise RuntimeError("boom")
+    monkeypatch.setitem(rt._TOOLS, "web_fetch", boom)
+    result = dispatch("web_fetch", {"url": "https://x.gov"}, pol)
+    assert result["ok"] is False and result["error"]["code"] == "tool_call_failed"
+    last = json.loads((Path(pol.artifact_root) / pol.run_id / "trace.jsonl").read_text().splitlines()[-1])
+    assert last["ok"] is False and last["tool"] == "web_fetch"
+
+
+def test_collect_workspace_write_artifact_is_artifact_not_finding(tmp_path):
+    pol = _policy(tmp_path)
+    (Path(pol.artifact_root) / pol.run_id).mkdir(parents=True, exist_ok=True)
+    dispatch("write_artifact", {"relative_path": "notes/a.txt", "contents": "hi"}, pol)
+    out = collect_workspace(pol)
+    assert "notes/a.txt" in out["artifacts"]
+    assert out["findings"] == []
+    wa = [r for r in out["trace"] if r["tool"] == "write_artifact"][-1]
+    assert wa.get("path", "").endswith("notes/a.txt")  # Fix 2: write_artifact path captured

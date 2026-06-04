@@ -109,7 +109,7 @@ def policy_from_env() -> SandboxPolicy:
 def _trace_record(tool: str, args: dict, result: dict) -> dict:
     """A compact, provenance-bearing record of one tool call (no full text blobs)."""
     rec = {"tool": tool, "ok": bool(result.get("ok")), "status": result.get("status")}
-    for k in ("url", "final_url", "status_code", "extracted_format", "skill_id", "artifact_path"):
+    for k in ("url", "final_url", "status_code", "extracted_format", "skill_id", "artifact_path", "path"):
         if k in result:
             rec[k] = result[k]
     text = result.get("text")
@@ -150,19 +150,23 @@ def collect_workspace(policy: SandboxPolicy) -> dict[str, Any]:
             except ValueError:
                 continue
     artifacts = [str(p.relative_to(root)) for p in sorted(root.rglob("*"))
-                 if p.is_file() and p.name != "trace.jsonl" and fdir not in p.parents]
+                 if p.is_file() and p.name != "trace.jsonl" and fdir not in p.parents]  # exclude trace + findings/ subtree
     return {"ok": True, "run_id": policy.run_id, "findings": findings, "trace": trace, "artifacts": artifacts}
 
 
 def dispatch(tool: str, args: dict[str, Any], policy: SandboxPolicy) -> dict[str, Any]:
     fn = _TOOLS.get(tool)
     if fn is None:
-        return _error("error", "unknown_tool", f"Unknown tool: {tool!r}.", tool=tool, known=sorted(_TOOLS))
+        result = _error("error", "unknown_tool", f"Unknown tool: {tool!r}.", tool=tool, known=sorted(_TOOLS))
+    else:
+        try:
+            result = fn(policy, args)
+        except Exception as exc:  # noqa: BLE001 — never raise across the sandbox boundary
+            result = _error("error", "tool_call_failed", str(exc), tool=tool, exception_type=exc.__class__.__name__)
     try:
-        result = fn(policy, args)
-    except Exception as exc:  # noqa: BLE001 — never raise across the sandbox boundary
-        result = _error("error", "tool_call_failed", str(exc), tool=tool, exception_type=exc.__class__.__name__)
-    _append_trace(policy, _trace_record(tool, args, result))
+        _append_trace(policy, _trace_record(tool, args, result))
+    except Exception:  # noqa: BLE001 — tracing is best-effort; it must never break the boundary
+        pass
     return result
 
 
