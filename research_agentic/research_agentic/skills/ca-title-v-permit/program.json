@@ -1,0 +1,18 @@
+{
+  "order": 16,
+  "id": "ca-title-v-permit",
+  "family": "air",
+  "name": "Federal Title V Operating Permit (CA air districts)",
+  "what_it_does": "Consolidated operating permit for major stationary sources, issued by CA air districts.",
+  "jurisdiction": "US EPA delegated to the local air district",
+  "authority_source_url": "https://ww2.arb.ca.gov/our-work/programs/federal-clean-air-act-title-v-operating-permits/fcaa-title-v-overview",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-AIR-TITLE-V",
+      "question": "Is the facility a major source requiring a Title V operating permit?",
+      "claim_to_test": "Potential to emit >=100 tpy of a regulated pollutant (lower in nonattainment; 10/25 tpy HAP) makes a source a Title V major source."
+    }
+  ]
+}

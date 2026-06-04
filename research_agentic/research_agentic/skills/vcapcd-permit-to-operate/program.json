@@ -1,0 +1,19 @@
+{
+  "order": 23,
+  "id": "vcapcd-permit-to-operate",
+  "family": "air",
+  "name": "VCAPCD Authority to Construct / Permit to Operate (Rule 10)",
+  "what_it_does": "Requires a Ventura County APCD permit before constructing, operating, or modifying any equipment that may emit air contaminants, unless exempted by Rule 23.",
+  "jurisdiction": "Ventura County APCD",
+  "authority_source_url": "https://www.vcapcd.org/wp-content/uploads/Rulebook/Reg2/RULE%2010.pdf",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "air_district": "Ventura County APCD",
+  "hypotheses": [
+    {
+      "id": "H-AIR-VCAPCD-PERMIT",
+      "question": "Does the new or modified equipment require a VCAPCD Authority to Construct / Permit to Operate?",
+      "claim_to_test": "VCAPCD Rule 10 requires a permit to construct/operate emitting equipment unless a Rule 23 exemption applies."
+    }
+  ]
+}

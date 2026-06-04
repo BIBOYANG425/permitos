@@ -1,0 +1,18 @@
+{
+  "order": 6,
+  "id": "epa-hazwaste-generator",
+  "family": "waste",
+  "name": "EPA Hazardous Waste Generator Category",
+  "what_it_does": "Generator status (VSQG/SQG/LQG) based on monthly hazardous waste quantity.",
+  "jurisdiction": "US EPA / CA DTSC",
+  "authority_source_url": "https://www.epa.gov/hwgenerators/categories-hazardous-waste-generators",
+  "authority_rank": 1,
+  "trigger": "waste",
+  "hypotheses": [
+    {
+      "id": "H-WASTE-GENERATOR",
+      "question": "Does waste generation change hazardous waste generator status?",
+      "claim_to_test": "Spent solvent or process waste may affect generator category."
+    }
+  ]
+}

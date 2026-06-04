@@ -1,0 +1,18 @@
+{
+  "order": 5,
+  "id": "ca-hmbp",
+  "family": "hazmat",
+  "name": "California Hazardous Materials Business Plan (HMBP)",
+  "what_it_does": "Reporting plan triggered by hazardous material quantities at or above thresholds.",
+  "jurisdiction": "CalEPA / local CUPA",
+  "authority_source_url": "https://calepa.ca.gov/cupa/hazardous-materials-business-plan/",
+  "authority_rank": 1,
+  "trigger": "chemicals",
+  "hypotheses": [
+    {
+      "id": "H-HAZMAT-HMBP",
+      "question": "Does hazardous material quantity exceed HMBP thresholds?",
+      "claim_to_test": "Hazardous material quantities at or above HMBP thresholds require a business plan."
+    }
+  ]
+}

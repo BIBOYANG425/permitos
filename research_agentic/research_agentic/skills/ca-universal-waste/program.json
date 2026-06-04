@@ -1,0 +1,18 @@
+{
+  "order": 15,
+  "id": "ca-universal-waste",
+  "family": "waste",
+  "name": "Universal Waste (batteries, lamps, e-waste)",
+  "what_it_does": "Streamlined management of universal wastes (batteries, lamps, electronics, mercury devices).",
+  "jurisdiction": "DTSC; administered by the local CUPA",
+  "authority_source_url": "https://dtsc.ca.gov/requirements-for-handlers-and-or-recyclers/",
+  "authority_rank": 1,
+  "trigger": "waste",
+  "hypotheses": [
+    {
+      "id": "H-WASTE-UNIVERSAL",
+      "question": "Does the facility accumulate universal waste?",
+      "claim_to_test": "Batteries, lamps, electronic devices, and mercury devices are managed under universal-waste handler standards (22 CCR 66273)."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "order": 13,
+  "id": "ca-title22-hazwaste",
+  "family": "waste",
+  "name": "California Hazardous Waste (Title 22, non-RCRA)",
+  "what_it_does": "California-only hazardous wastes broader than federal RCRA (STLC/TTLC criteria).",
+  "jurisdiction": "DTSC; administered by the local CUPA",
+  "authority_source_url": "https://dtsc.ca.gov/non-rcra-hazardous-wastes/",
+  "authority_rank": 1,
+  "trigger": "waste",
+  "hypotheses": [
+    {
+      "id": "H-WASTE-CA-TITLE22",
+      "question": "Is the waste a California-only (non-RCRA) hazardous waste?",
+      "claim_to_test": "A waste may be California hazardous under 22 CCR 66261.24 (STLC/TTLC) even if not federally hazardous."
+    }
+  ]
+}

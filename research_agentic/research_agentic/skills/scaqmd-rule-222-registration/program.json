@@ -1,0 +1,18 @@
+{
+  "order": 2,
+  "id": "scaqmd-rule-222-registration",
+  "family": "air",
+  "name": "SCAQMD Rule 222 registration",
+  "what_it_does": "Registration path for specified equipment categories instead of a full permit.",
+  "jurisdiction": "SCAQMD",
+  "authority_source_url": "https://www.aqmd.gov/docs/default-source/rule-book/reg-ii/rule-222.pdf",
+  "authority_rank": 1,
+  "trigger": "equipment",
+  "hypotheses": [
+    {
+      "id": "H-AIR-222",
+      "question": "Does Rule 222 registration apply instead?",
+      "claim_to_test": "Rule 222 registration may apply to specified equipment categories."
+    }
+  ]
+}

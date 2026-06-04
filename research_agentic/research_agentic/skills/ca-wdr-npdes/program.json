@@ -1,0 +1,18 @@
+{
+  "order": 17,
+  "id": "ca-wdr-npdes",
+  "family": "wastewater",
+  "name": "NPDES Individual Permit / Waste Discharge Requirements (WDRs)",
+  "what_it_does": "Regional Water Board permit for process wastewater discharged to surface water or land, not covered by the IGP or POTW pretreatment.",
+  "jurisdiction": "Regional Water Quality Control Board (one of 9)",
+  "authority_source_url": "https://www.waterboards.ca.gov/water_issues/programs/waste_discharge_requirements/",
+  "authority_rank": 1,
+  "trigger": "discharge_possible",
+  "hypotheses": [
+    {
+      "id": "H-WASTEWATER-WDR",
+      "question": "Does the discharge require an individual NPDES permit or WDRs?",
+      "claim_to_test": "Discharge of waste to waters of the state/US may require WDRs (Porter-Cologne, Water Code 13260) or an individual NPDES permit."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "order": 7,
+  "id": "epa-pretreatment",
+  "family": "wastewater",
+  "name": "EPA National Pretreatment Program",
+  "what_it_does": "Pretreatment requirements for industrial process wastewater discharges.",
+  "jurisdiction": "US EPA",
+  "authority_source_url": "https://www.epa.gov/npdes/national-pretreatment-program",
+  "authority_rank": 1,
+  "trigger": "discharge_possible",
+  "hypotheses": [
+    {
+      "id": "H-WASTEWATER-PRETREATMENT",
+      "question": "Does process wastewater discharge require pretreatment review?",
+      "claim_to_test": "Industrial process wastewater may require pretreatment review."
+    }
+  ]
+}

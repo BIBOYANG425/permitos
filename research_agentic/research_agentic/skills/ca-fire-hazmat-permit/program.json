@@ -1,0 +1,18 @@
+{
+  "order": 19,
+  "id": "ca-fire-hazmat-permit",
+  "family": "fire_code",
+  "name": "Fire Code Hazardous Materials Operational Permit (CFC §105 / §5001)",
+  "what_it_does": "Requires an operational permit from the local fire authority to store, handle, or use hazardous materials above California Fire Code permit-amount thresholds, with related fire-protection and reporting conditions.",
+  "jurisdiction": "Local fire authority (fire CUPA / fire district)",
+  "authority_source_url": "https://codes.iccsafe.org/content/CAFC2022P1/chapter-50-hazardous-materials-general-provisions",
+  "authority_rank": 2,
+  "trigger": "chemicals",
+  "hypotheses": [
+    {
+      "id": "H-FIRE-HAZMAT",
+      "question": "Does on-site hazardous-material storage or use require a fire department operational permit?",
+      "claim_to_test": "Hazardous materials at or above the CFC permit-amount thresholds require a fire-department operational permit."
+    }
+  ]
+}

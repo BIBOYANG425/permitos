@@ -1,0 +1,18 @@
+{
+  "order": 12,
+  "id": "ca-prop-65",
+  "family": "hazmat",
+  "name": "Proposition 65",
+  "what_it_does": "Warning and discharge requirements for chemicals on the OEHHA Prop 65 list.",
+  "jurisdiction": "OEHHA lists; enforced by the AG, DAs, and private litigants",
+  "authority_source_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=HSC&sectionNum=25249.6.",
+  "authority_rank": 1,
+  "trigger": "chemicals",
+  "hypotheses": [
+    {
+      "id": "H-HAZMAT-PROP65",
+      "question": "Does the facility expose people to a Prop 65-listed chemical above safe-harbor levels?",
+      "claim_to_test": "Businesses with 10+ employees must warn before exposing individuals to a listed chemical above its safe-harbor level."
+    }
+  ]
+}
