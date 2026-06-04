@@ -1,0 +1,30 @@
+[project]
+name = "research_agentic"
+version = "0.1.0"
+description = "AIQ-native open-discovery EHS research core (sub-project E): sandboxed agentic researchers."
+requires-python = ">=3.11"
+# HOST deps only. Heavy tool deps (pymupdf, beautifulsoup4, python-docx, openpyxl,
+# openai, playwright) live in the SANDBOX image (research_agentic.sandbox.build_sandbox_image),
+# import-guarded in the tool bodies, and are NOT needed on the host or in unit tests.
+dependencies = ["nvidia-nat[langchain]>=1.5", "modal>=1.4", "httpx"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.entry-points.'nat.components']
+research_agentic = "research_agentic.register"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["research_agentic"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
