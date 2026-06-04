@@ -16,6 +16,14 @@ def test_write_artifact_within_workspace(tmp_path):
     assert Path(out["path"]).read_text() == "hello"
 
 
+def test_write_artifact_bytes(tmp_path):
+    data = b"\x89PNG\r\n"
+    out = write_artifact(_policy(tmp_path), "img/test.png", data)
+    assert out["ok"] is True
+    assert out["bytes_written"] == len(data)
+    assert Path(out["path"]).read_bytes() == data
+
+
 def test_write_artifact_blocks_traversal(tmp_path):
     out = write_artifact(_policy(tmp_path), "../escape.txt", "x")
     assert out["ok"] is False and out["error"]["code"] == "path_traversal"

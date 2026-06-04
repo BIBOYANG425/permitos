@@ -39,7 +39,7 @@ def write_artifact(policy: SandboxPolicy, relative_path: str | Path, contents: s
             path.write_bytes(contents)
             bytes_written = len(contents)
         else:
-            path.write_text(contents)
+            path.write_text(contents, encoding="utf-8")
             bytes_written = len(contents.encode())
         return _success("written", path=str(path), workspace=str(workspace), bytes_written=bytes_written)
     except TypeError as exc:
